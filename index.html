@@ -964,6 +964,9 @@ function initTomSelect(){
   if(typeof TomSelect==='undefined')return;
   document.querySelectorAll('select').forEach(s=>{
     if(s.tomselect)return;
+    // Skip flatpickr's internal month/year selects — wrapping them breaks the calendar
+    if(s.closest('.flatpickr-calendar'))return;
+    if(s.classList.contains('flatpickr-monthDropdown-months'))return;
     new TomSelect(s,{create:false,allowEmptyOption:true,maxOptions:500});
   });
 }
