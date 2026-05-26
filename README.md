@@ -6,12 +6,24 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 
 ## Features
 
-- **Dashboard** — stat cards (total hours, tasks, projects, customers) + 3 charts
-- **Tasks** — filterable task list with status tabs (Pending / In-Progress / Completed)
+- **Dashboard** — stat cards + 3 charts, with a **month-period filter** so you can drill into hours by month
+- **Tasks** — filterable list with status tabs, project/customer filters, and a **date-range filter** (From / To)
+- **Export** — one-click **CSV** (Excel) and **PDF** export of the current filtered task view, with totals and active-filter summary
 - **Log Work** — form to add work entries, recent history table
 - **Customers** — internal 🏢 vs external 🤝 customer cards
 - **Projects** — project overview with total hours
 - **Auth** — email/password, registration, Google OAuth via Appwrite
+
+---
+
+## Filtering & Export
+
+- **Dashboard** — pick a month from the **Period** dropdown to scope all stats and charts to that month (or "All time").
+- **Tasks** — combine status tabs, project, customer, and **From / To** date inputs to narrow the list. Click **Clear dates** to reset.
+- **Export buttons** (Tasks page):
+  - **📊 Export CSV** — opens in Excel; UTF-8 BOM so emoji and accents render correctly.
+  - **📄 Export PDF** — landscape A4 report with branded header, filter summary, alternating rows, and a TOTAL row.
+  - Filenames auto-include the active filters, e.g. `worktracker_completed_BMC_Sentosa_2026-05-26.pdf`.
 
 ---
 
@@ -112,7 +124,7 @@ Open `index.html` → register an account → your default data seeds automatica
    | Setting | Value |
    |---|---|
    | Build command | `node build.js` |
-   | Build output directory | `/` *(root)* |
+   | Build output directory | `dist` |
 
 4. **Environment variables (production)**:
 
@@ -130,7 +142,7 @@ Open `index.html` → register an account → your default data seeds automatica
 npm install -g wrangler
 wrangler login
 node build.js
-wrangler pages deploy . --project-name work-effort-tracker
+wrangler pages deploy dist --project-name work-effort-tracker --branch master
 ```
 
 Set the three environment variables in Cloudflare Pages → **Settings** → **Environment variables**.
@@ -143,8 +155,8 @@ Set the three environment variables in Cloudflare Pages → **Settings** → **E
 |---|---|
 | `index.html` | Entire app — HTML + CSS + JS |
 | `schema.sql` | Collection attribute reference (not SQL — see file) |
-| `build.js` | Reads `.env.local` / CI env → writes `config.js` |
-| `config.js` | **Generated, gitignored** — never commit |
+| `build.js` | Reads `.env.local` / CI env → writes `dist/config.js` and copies `dist/index.html` |
+| `dist/` | **Generated, gitignored** — Cloudflare Pages build output |
 | `.env.local` | **Gitignored** — your local Appwrite keys |
 | `.env.example` | Safe template |
 

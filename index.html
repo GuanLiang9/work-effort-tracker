@@ -7,8 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0/dist/iife/sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0/dist/iife/sdk.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <style>
 /* ── TOKENS ─────────────────────────────────────────────── */
 :root{
@@ -169,11 +171,26 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 /* ── FILTER BAR ──────────────────────────────────────────── */
 .filter-bar{display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;}
+.filter-group{display:flex;align-items:center;gap:6px;}
+.filter-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.dash-filter-bar{display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
 .filter-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;}
 .tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;user-select:none;}
 .tab.active{background:var(--primary);color:#fff;font-weight:600;}
-.sel-filter{background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:8px 12px;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;outline:none;}
-.sel-filter:focus{border-color:var(--primary);}
+.sel-filter,.date-filter{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:9px;
+  padding:9px 36px 9px 14px;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;outline:none;
+  transition:border-color .15s,box-shadow .15s,background .15s;min-height:38px;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%238899bb' d='M6 8L0 0h12z'/%3e%3c/svg%3e");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:10px;
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+}
+.sel-filter:hover,.date-filter:hover{border-color:var(--border);background-color:var(--surface3);}
+.sel-filter:focus,.date-filter:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.15);}
+.date-filter{padding-right:14px;background-image:none;color-scheme:dark;min-width:140px;}
+.date-filter::-webkit-calendar-picker-indicator{filter:invert(.7);cursor:pointer;opacity:.7;}
+.date-filter::-webkit-calendar-picker-indicator:hover{opacity:1;}
+.sel-filter option{background:var(--surface);color:var(--text);}
 
 /* ── TASKS ────────────────────────────────────────────────── */
 .task-list{display:flex;flex-direction:column;gap:8px;}
@@ -305,6 +322,20 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
   <div class="loading-brand">⚡ WorkTracker</div>
 </div>
 
+<!-- HARD FAIL-SAFE: runs independently of main script. If loading screen is still visible after 3s, force-show the login screen. ES5 syntax to ensure it parses on any browser. -->
+<script>
+(function(){
+  setTimeout(function(){
+    var l = document.getElementById('loading');
+    if (!l || l.style.display === 'none') return;
+    l.style.display = 'none';
+    var a = document.getElementById('auth-screen');
+    if (a) a.classList.add('show');
+    console.warn('Hard fail-safe: forced login screen at 3s');
+  }, 3000);
+})();
+</script>
+
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
@@ -357,7 +388,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
         <button class="auth-btn-primary" onclick="handleForgot()">Send reset link</button>
       </div>
     </div>
-    <div id="dev-notice" class="dev-notice">⚠️ Dev mode — no Supabase config. Add keys to <code>.env.local</code> and run <code>node build.js</code>.</div>
+    <div id="dev-notice" class="dev-notice">⚠️ Dev mode — no Appwrite config. Add keys to <code>.env.local</code> and run <code>node build.js</code>.</div>
   </div>
 </div>
 
@@ -398,6 +429,13 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
       <!-- DASHBOARD -->
       <div id="page-dashboard" class="page active">
         <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">Your work overview &amp; productivity insights</div></div><button class="btn btn-primary" onclick="openAddEntry()">+ Log Work</button></div>
+        <div class="dash-filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Period</span>
+            <select class="sel-filter" id="dash-month" onchange="setDashMonth()"><option value="">All time</option></select>
+          </div>
+          <div id="dash-period-summary" style="margin-left:auto;font-size:13px;color:var(--muted)"></div>
+        </div>
         <div class="stats" id="dash-stats"></div>
         <div class="charts-row">
           <div class="chart-card"><div class="chart-title">Hours by Project</div><canvas id="chartHours" height="180"></canvas></div>
@@ -415,7 +453,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
       <!-- TASKS -->
       <div id="page-tasks" class="page">
-        <div class="ph"><div><div class="ph-title">Tasks</div><div class="ph-sub">Track pending and completed work items</div></div><button class="btn btn-primary" onclick="openAddEntry()">+ Add Task</button></div>
+        <div class="ph"><div><div class="ph-title">Tasks</div><div class="ph-sub">Track pending and completed work items</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="exportCSV()" title="Export current view to CSV (opens in Excel)">📊 Export CSV</button><button class="btn btn-ghost" onclick="exportPDF()" title="Export current view to PDF">📄 Export PDF</button><button class="btn btn-primary" onclick="openAddEntry()">+ Add Task</button></div></div>
         <div class="filter-bar">
           <div class="filter-tabs" id="filter-tabs">
             <div class="tab active" onclick="setFilter('all')">All</div>
@@ -425,6 +463,9 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
           </div>
           <select class="sel-filter" id="proj-filter"  onchange="renderTasks()"><option value="">All Projects</option></select>
           <select class="sel-filter" id="cust-filter"  onchange="renderTasks()"><option value="">All Customers</option></select>
+          <div class="filter-group"><span class="filter-label">From</span><input type="date" class="date-filter" id="date-from" onchange="renderTasks()"></div>
+          <div class="filter-group"><span class="filter-label">To</span><input type="date" class="date-filter" id="date-to" onchange="renderTasks()"></div>
+          <button class="btn btn-ghost btn-sm" onclick="clearDateRange()" title="Clear date range">Clear dates</button>
         </div>
         <div id="task-list" class="task-list"></div>
       </div>
@@ -531,15 +572,28 @@ const CFG=window.APP_CONFIG||{};
 let DEMO_MODE=!CFG.appwriteProjectId||CFG.appwriteProjectId==='DEMO';
 let aw_account=null,aw_databases=null,AW_DB='';
 const COL={projects:'projects',customers:'customers',entries:'entries'};
-if(!DEMO_MODE){
+
+/* Wait for an async-loaded SDK to appear on window */
+async function waitForSDK(name,ms=10000){
+  const t=Date.now();
+  while(typeof window[name]==='undefined'){
+    if(Date.now()-t>ms)throw new Error(name+' SDK did not load within '+ms+'ms');
+    await new Promise(r=>setTimeout(r,50));
+  }
+}
+
+/* Initialise Appwrite client — called after SDK is confirmed loaded */
+function initAppwrite(){
+  if(DEMO_MODE)return;
   try{
-    if(typeof Appwrite==='undefined') throw new Error('Appwrite SDK not loaded');
     const aw=new Appwrite.Client()
       .setEndpoint(CFG.appwriteEndpoint||'https://cloud.appwrite.io/v1')
       .setProject(CFG.appwriteProjectId);
     aw_account=new Appwrite.Account(aw);
     aw_databases=new Appwrite.Databases(aw);
     AW_DB=CFG.appwriteDatabaseId||'';
+    perm=uid=>[Appwrite.Permission.read(Appwrite.Role.user(uid)),Appwrite.Permission.update(Appwrite.Role.user(uid)),Appwrite.Permission.delete(Appwrite.Role.user(uid))];
+    Q=Appwrite.Query;
   }catch(e){
     console.error('Appwrite init error:',e.message);
     DEMO_MODE=true;
@@ -572,6 +626,7 @@ const SE=[
 let currentUser=null,currentPage='dashboard',taskFilter='all';
 let db={projects:[],customers:[],entries:[]};
 let chartH=null,chartS=null,chartC=null;
+let dashMonth='';
 
 /* LOCAL STORAGE (demo) */
 function lsLoad(){try{const s=localStorage.getItem('wt_v3');if(s)return JSON.parse(s);}catch(_){}return null;}
@@ -580,8 +635,7 @@ function lsInit(){const s=lsLoad();if(s){db=s;}else{db={projects:[...SP],custome
 
 /* APPWRITE DATA */
 const norm=d=>({...d,id:d.$id});/* normalise $id → id */
-const perm=uid=>[Appwrite.Permission.read(Appwrite.Role.user(uid)),Appwrite.Permission.update(Appwrite.Role.user(uid)),Appwrite.Permission.delete(Appwrite.Role.user(uid))];
-const Q=Appwrite.Query;
+let perm=null,Q=null;/* assigned in initAppwrite() after SDK loads */
 async function dbLoad(uid){
   showLoading(true);
   try{
@@ -662,7 +716,7 @@ async function initAuth(){
     lsInit();showApp();return;
   }
   showLoading(true);
-  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Auth timeout')),8000));
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Auth timeout')),5000));
   try{
     const u=await Promise.race([aw_account.get(),timeout]);
     currentUser={...u,id:u.$id};
@@ -672,9 +726,22 @@ async function initAuth(){
     currentUser=null;showLogin();
   }finally{showLoading(false);}
 }
+/* Ensure Appwrite SDK + client are ready. Returns true if ready, false otherwise (with error shown). */
+async function ensureAppwrite(){
+  if(DEMO_MODE){showAuthError('App is in Demo mode — Appwrite config missing.');return false;}
+  if(!aw_account){
+    try{await waitForSDK('Appwrite',5000);initAppwrite();}
+    catch(e){console.error('ensureAppwrite:',e);}
+  }
+  if(!aw_account){showAuthError('Appwrite SDK failed to load. Check your network/CORS settings.');return false;}
+  return true;
+}
+
 async function handleLogin(){
+  console.log('handleLogin clicked');
   const email=v('login-email'),password=v('login-password');
   if(!email||!password){showAuthError('Please enter email and password.');return;}
+  if(!await ensureAppwrite())return;
   const btn=document.getElementById('login-btn-text');
   btn.textContent='Signing in…';
   try{
@@ -682,13 +749,15 @@ async function handleLogin(){
     const u=await aw_account.get();
     currentUser={...u,id:u.$id};
     await dbLoad(u.$id);showApp();
-  }catch(e){showAuthError(e.message||'Invalid email or password.');}
+  }catch(e){console.error('login error:',e);showAuthError(e.message||'Invalid email or password.');}
   finally{btn.textContent='Sign In';}
 }
 async function handleRegister(){
+  console.log('handleRegister clicked');
   const name=v('reg-name'),email=v('reg-email'),password=v('reg-password');
   if(!name||!email||!password){showAuthError('Please fill all fields.');return;}
   if(password.length<8){showAuthError('Password must be at least 8 characters.');return;}
+  if(!await ensureAppwrite())return;
   const btn=document.getElementById('reg-btn-text');
   btn.textContent='Creating account…';
   try{
@@ -697,12 +766,15 @@ async function handleRegister(){
     const u=await aw_account.get();
     currentUser={...u,id:u.$id};
     await dbLoad(u.$id);showApp();
-  }catch(e){showAuthError(e.message||'Registration failed.');}
+  }catch(e){console.error('register error:',e);showAuthError(e.message||'Registration failed.');}
   finally{btn.textContent='Create Account';}
 }
 async function handleGoogle(){
-  if(DEMO_MODE){toast('Google auth requires Appwrite config.','error');return;}
-  aw_account.createOAuth2Session('google',window.location.href,window.location.href);
+  console.log('handleGoogle clicked');
+  if(!await ensureAppwrite())return;
+  try{
+    aw_account.createOAuth2Session('google',window.location.href,window.location.href);
+  }catch(e){console.error('google error:',e);showAuthError(e.message||'Google sign-in failed.');}
 }
 async function handleForgot(){
   const email=v('forgot-email');
@@ -735,6 +807,7 @@ function populateUserUI(){
   else av.textContent=name.charAt(0).toUpperCase();
 }
 function switchAuthTab(tab){
+  console.log('switchAuthTab:',tab);
   document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
   document.getElementById('login-form').style.display=tab==='login'?'block':'none';
   document.getElementById('register-form').style.display=tab==='register'?'block':'none';
@@ -779,54 +852,178 @@ function populateSel(id,items,ph,vk,lk,keep=false){const s=document.getElementBy
 
 /* DASHBOARD */
 function renderDashboard(){
-  const all=db.entries,completed=all.filter(e=>e.status==='completed').length,pending=all.filter(e=>e.status!=='completed').length,hours=all.reduce((s,e)=>s+(parseFloat(e.hours)||0),0);
+  populateMonthFilter();
+  const all=getDashEntries();
+  const completed=all.filter(e=>e.status==='completed').length,pending=all.filter(e=>e.status!=='completed').length,hours=all.reduce((s,e)=>s+(parseFloat(e.hours)||0),0);
+  document.getElementById('dash-period-summary').textContent=monthLabel(dashMonth)+' — '+hours+' hrs across '+all.length+' entries';
   document.getElementById('dash-stats').innerHTML='<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:var(--pri-bg)">⏱️</div><div class="stat-label">Total Hours</div></div><div class="stat-value">'+hours+'<span style="font-size:16px;color:var(--muted)"> hrs</span></div><div class="stat-sub">'+db.projects.length+' projects</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,182,212,.1)">📋</div><div class="stat-label">Total Tasks</div></div><div class="stat-value">'+all.length+'</div><div class="stat-sub">'+db.customers.length+' customers</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(34,197,94,.1)">✅</div><div class="stat-label">Completed</div></div><div class="stat-value" style="color:var(--green)">'+completed+'</div><div class="stat-sub">'+(all.length?Math.round(completed/all.length*100):0)+'% rate</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(245,158,11,.1)">⏳</div><div class="stat-label">Pending</div></div><div class="stat-value" style="color:var(--amber)">'+pending+'</div><div class="stat-sub">'+(all.length?Math.round(pending/all.length*100):0)+'% remaining</div></div>';
-  const maxH=Math.max(...db.projects.map(p=>projHours(p.id)),1);
-  document.getElementById('proj-overview').innerHTML=db.projects.map(proj=>{const h=projHours(proj.id),t=db.entries.filter(e=>getProjId(e)===proj.id).length;return'<div class="prog-row"><div class="prog-label"><span style="display:flex;align-items:center;gap:8px;font-weight:500"><span class="adot" style="background:'+proj.color+'"></span>'+proj.name+'</span><span style="color:var(--muted)">'+h+'h · '+t+' tasks</span></div><div class="prog-bar"><div class="prog-fill" style="width:'+Math.round(h/maxH*100)+'%;background:'+proj.color+'"></div></div></div>';}).join('');
+  const dashProjHours=pid=>all.filter(e=>getProjId(e)===pid).reduce((s,e)=>s+(parseFloat(e.hours)||0),0);
+  const maxH=Math.max(...db.projects.map(p=>dashProjHours(p.id)),1);
+  document.getElementById('proj-overview').innerHTML=db.projects.map(proj=>{const h=dashProjHours(proj.id),t=all.filter(e=>getProjId(e)===proj.id).length;return'<div class="prog-row"><div class="prog-label"><span style="display:flex;align-items:center;gap:8px;font-weight:500"><span class="adot" style="background:'+proj.color+'"></span>'+proj.name+'</span><span style="color:var(--muted)">'+h+'h · '+t+' tasks</span></div><div class="prog-bar"><div class="prog-fill" style="width:'+Math.round(h/maxH*100)+'%;background:'+proj.color+'"></div></div></div>';}).join('');
   const recent=[...all].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
-  document.getElementById('recent-work').innerHTML=recent.length?recent.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="background:'+p.color+'"></span><div class="atext"><div>'+e.title+'</div><div class="ameta">'+p.name+(c?' · '+c.name:'')+' · '+fmtDate(e.date)+'</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No entries yet</div></div>';
+  document.getElementById('recent-work').innerHTML=recent.length?recent.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="background:'+p.color+'"></span><div class="atext"><div>'+e.title+'</div><div class="ameta">'+p.name+(c?' · '+c.name:'')+' · '+fmtDate(e.date)+'</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No entries in this period</div></div>';
   const pend=[...all].filter(e=>e.status!=='completed').slice(0,5);
   document.getElementById('pending-list').innerHTML=pend.length?pend.map(e=>{const p=getProj(getProjId(e));return'<div class="act-item"><span class="adot" style="background:var(--amber)"></span><div class="atext"><div>'+e.title+'</div><div class="ameta">'+p.name+' · <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">🎉</div><div class="empty-title">All caught up!</div></div>';
   setTimeout(()=>{buildChartHours();buildChartStatus();buildChartCustomer();},60);
 }
 function buildChartHours(){
+  if(typeof Chart==='undefined')return;
   const ctx=document.getElementById('chartHours').getContext('2d');
   if(chartH)chartH.destroy();
-  chartH=new Chart(ctx,{type:'bar',data:{labels:db.projects.map(p=>p.name),datasets:[{label:'Hours',data:db.projects.map(p=>projHours(p.id)),backgroundColor:db.projects.map(p=>h2r(p.color,.7)),borderColor:db.projects.map(p=>p.color),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' hrs'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
+  const ents=getDashEntries();
+  const ph=pid=>ents.filter(e=>getProjId(e)===pid).reduce((s,e)=>s+(parseFloat(e.hours)||0),0);
+  chartH=new Chart(ctx,{type:'bar',data:{labels:db.projects.map(p=>p.name),datasets:[{label:'Hours',data:db.projects.map(p=>ph(p.id)),backgroundColor:db.projects.map(p=>h2r(p.color,.7)),borderColor:db.projects.map(p=>p.color),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' hrs'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
 }
 function buildChartStatus(){
-  const all=db.entries,ctx=document.getElementById('chartStatus').getContext('2d');
+  if(typeof Chart==='undefined')return;
+  const all=getDashEntries(),ctx=document.getElementById('chartStatus').getContext('2d');
   if(chartS)chartS.destroy();
   chartS=new Chart(ctx,{type:'doughnut',data:{labels:['Completed','Pending','In Progress'],datasets:[{data:[all.filter(e=>e.status==='completed').length,all.filter(e=>e.status==='pending').length,all.filter(e=>e.status==='in-progress').length],backgroundColor:['rgba(34,197,94,.75)','rgba(245,158,11,.75)','rgba(59,130,246,.75)'],borderColor:['#22c55e','#f59e0b','#3b82f6'],borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8899bb',padding:14,boxWidth:12}}}}});
 }
 function buildChartCustomer(){
+  if(typeof Chart==='undefined')return;
   const ctx=document.getElementById('chartCustomer').getContext('2d');
   if(chartC)chartC.destroy();
-  const custs=db.customers.filter(c=>custHours(c.id)>0).sort((a,b)=>custHours(b.id)-custHours(a.id));
-  chartC=new Chart(ctx,{type:'bar',data:{labels:custs.map(c=>c.name),datasets:[{label:'Hours',data:custs.map(c=>custHours(c.id)),backgroundColor:custs.map(c=>c.type==='internal'?'rgba(59,130,246,.7)':'rgba(245,158,11,.7)'),borderColor:custs.map(c=>c.type==='internal'?'#3b82f6':'#f59e0b'),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>' '+c.parsed.y+' hrs ('+custs[c.dataIndex].type+')'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
+  const ents=getDashEntries();
+  const ch=cid=>ents.filter(e=>getCustId(e)===cid).reduce((s,e)=>s+(parseFloat(e.hours)||0),0);
+  const custs=db.customers.filter(c=>ch(c.id)>0).sort((a,b)=>ch(b.id)-ch(a.id));
+  chartC=new Chart(ctx,{type:'bar',data:{labels:custs.map(c=>c.name),datasets:[{label:'Hours',data:custs.map(c=>ch(c.id)),backgroundColor:custs.map(c=>c.type==='internal'?'rgba(59,130,246,.7)':'rgba(245,158,11,.7)'),borderColor:custs.map(c=>c.type==='internal'?'#3b82f6':'#f59e0b'),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>' '+c.parsed.y+' hrs ('+custs[c.dataIndex].type+')'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
 }
 
 /* TASKS */
 function setFilter(f){taskFilter=f;document.querySelectorAll('#filter-tabs .tab').forEach(t=>t.classList.toggle('active',t.textContent.trim().toLowerCase()===f.replace('-',' ')));renderTasks();}
-function renderTasks(){
-  populateSel('proj-filter',db.projects,'All Projects','id','name',true);
-  populateSel('cust-filter',db.customers,'All Customers','id','name',true);
+function getFilteredEntries(){
   let list=[...db.entries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(taskFilter==='pending')list=list.filter(e=>e.status==='pending');
   else if(taskFilter==='in-progress')list=list.filter(e=>e.status==='in-progress');
   else if(taskFilter==='completed')list=list.filter(e=>e.status==='completed');
-  const pf=document.getElementById('proj-filter').value,cf=document.getElementById('cust-filter').value;
+  const pfEl=document.getElementById('proj-filter'),cfEl=document.getElementById('cust-filter');
+  const pf=pfEl?pfEl.value:'',cf=cfEl?cfEl.value:'';
   if(pf)list=list.filter(e=>getProjId(e)===pf);
   if(cf)list=list.filter(e=>getCustId(e)===cf);
+  const fromEl=document.getElementById('date-from'),toEl=document.getElementById('date-to');
+  const from=fromEl?fromEl.value:'',to=toEl?toEl.value:'';
+  if(from)list=list.filter(e=>e.date&&e.date>=from);
+  if(to)list=list.filter(e=>e.date&&e.date<=to);
+  return list;
+}
+function clearDateRange(){const f=document.getElementById('date-from'),t=document.getElementById('date-to');if(f)f.value='';if(t)t.value='';renderTasks();}
+function monthLabel(ym){if(!ym)return'All time';const[y,m]=ym.split('-');const d=new Date(parseInt(y),parseInt(m)-1,1);return d.toLocaleDateString('en-SG',{month:'long',year:'numeric'});}
+function populateMonthFilter(){
+  const sel=document.getElementById('dash-month');if(!sel)return;
+  const months=new Set();db.entries.forEach(e=>{if(e.date)months.add(e.date.slice(0,7));});
+  const sorted=[...months].sort().reverse();
+  const cur=sel.value;
+  sel.innerHTML='<option value="">All time</option>'+sorted.map(m=>'<option value="'+m+'"'+(cur===m?' selected':'')+'>'+monthLabel(m)+'</option>').join('');
+  if(cur&&!sorted.includes(cur)){sel.value='';dashMonth='';}
+}
+function setDashMonth(){dashMonth=document.getElementById('dash-month').value;renderDashboard();}
+function getDashEntries(){return dashMonth?db.entries.filter(e=>e.date&&e.date.startsWith(dashMonth)):db.entries;}
+function renderTasks(){
+  populateSel('proj-filter',db.projects,'All Projects','id','name',true);
+  populateSel('cust-filter',db.customers,'All Customers','id','name',true);
+  const list=getFilteredEntries();
   const el=document.getElementById('task-list');
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No tasks found</div><div class="empty-sub">Change filters or add a task</div></div>';return;}
-  el.innerHTML=list.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e)),done=e.status==='completed';return'<div class="task-item"><div class="task-cb '+(done?'done':'')+'" onclick="toggleStatus(''+e.id+'')">'+(done?'✓':'')+'</div><div class="task-body"><div class="task-title '+(done?'done':'')+'">'+e.title+'</div><div class="task-meta">'+pBadge(p)+(c?cBadge(c):'')+' <span class="hrs-badge">⏱ '+e.hours+'h</span> <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span>'+(e.date?' <span>📅 '+fmtDate(e.date)+'</span>':'')+'</div></div><div class="task-actions"><button class="icon-btn" onclick="editEntry(''+e.id+'')">✏️</button><button class="icon-btn del" onclick="deleteEntry(''+e.id+'')">🗑️</button></div></div>';}).join('');
+  el.innerHTML=list.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e)),done=e.status==='completed';return'<div class="task-item"><div class="task-cb '+(done?'done':'')+'" onclick="toggleStatus(\''+e.id+'\')">'+(done?'✓':'')+'</div><div class="task-body"><div class="task-title '+(done?'done':'')+'">'+e.title+'</div><div class="task-meta">'+pBadge(p)+(c?cBadge(c):'')+' <span class="hrs-badge">⏱ '+e.hours+'h</span> <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span>'+(e.date?' <span>📅 '+fmtDate(e.date)+'</span>':'')+'</div></div><div class="task-actions"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')">🗑️</button></div></div>';}).join('');
 }
 async function toggleStatus(id){const e=db.entries.find(x=>x.id===id);if(!e)return;const ns=e.status==='completed'?'pending':'completed';try{await dbUpdate('entries',id,{status:ns});refresh();updatePendingBadge();}catch(err){toast('Update failed: '+err.message,'error');}}
 async function deleteEntry(id){if(!confirm('Delete this entry?'))return;try{await dbDelete('entries',id);refresh();updatePendingBadge();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
+
+/* EXPORT */
+function buildExportRows(){
+  const list=getFilteredEntries();
+  return list.map(e=>{
+    const p=getProj(getProjId(e)),c=getCust(getCustId(e));
+    return{
+      date:e.date||'',
+      project:p.name||'—',
+      customer:c?c.name+' ('+c.type+')':'—',
+      title:e.title||'',
+      notes:e.notes||'',
+      hours:parseFloat(e.hours)||0,
+      status:e.status||''
+    };
+  });
+}
+function csvEscape(v){const s=String(v==null?'':v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function downloadBlob(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
+function exportFilename(ext){
+  const parts=['worktracker'];
+  if(taskFilter!=='all')parts.push(taskFilter);
+  const pf=document.getElementById('proj-filter'),cf=document.getElementById('cust-filter');
+  if(pf&&pf.value){const p=db.projects.find(x=>x.id===pf.value);if(p)parts.push(p.name.replace(/\s+/g,'-'));}
+  if(cf&&cf.value){const c=db.customers.find(x=>x.id===cf.value);if(c)parts.push(c.name.replace(/\s+/g,'-'));}
+  parts.push(today());
+  return parts.join('_')+'.'+ext;
+}
+function exportCSV(){
+  const rows=buildExportRows();
+  if(!rows.length){toast('No entries to export with current filter.','error');return;}
+  const headers=['Date','Project','Customer','Task','Notes','Hours','Status'];
+  const totalH=rows.reduce((s,r)=>s+r.hours,0);
+  const lines=[headers.join(',')];
+  rows.forEach(r=>lines.push([r.date,r.project,r.customer,r.title,r.notes,r.hours,r.status].map(csvEscape).join(',')));
+  lines.push(['','','','TOTAL','',totalH,''].map(csvEscape).join(','));
+  const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  downloadBlob(blob,exportFilename('csv'));
+  toast('Exported '+rows.length+' entries to CSV','success');
+}
+async function waitForPDFLibs(){
+  const t=Date.now();
+  while(!window.jspdf||!window.jspdf.jsPDF){
+    if(Date.now()-t>8000)throw new Error('jsPDF library did not load. Check your internet connection.');
+    await new Promise(r=>setTimeout(r,80));
+  }
+  while(!window.jspdf.jsPDF.API||!window.jspdf.jsPDF.API.autoTable){
+    if(Date.now()-t>10000)throw new Error('PDF table plugin did not load.');
+    await new Promise(r=>setTimeout(r,80));
+  }
+}
+async function exportPDF(){
+  const rows=buildExportRows();
+  if(!rows.length){toast('No entries to export with current filter.','error');return;}
+  try{await waitForPDFLibs();}catch(e){toast(e.message,'error');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+  const totalH=rows.reduce((s,r)=>s+r.hours,0);
+  const userName=currentUser?.name||currentUser?.email||'User';
+  /* Header */
+  doc.setFontSize(16);doc.setFont('helvetica','bold');
+  doc.text('Work Effort Report',40,40);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(100);
+  doc.text(userName+'  ·  Generated '+today()+'  ·  '+rows.length+' entries  ·  '+totalH+' hrs total',40,58);
+  /* Filter summary */
+  const filters=[];
+  if(taskFilter!=='all')filters.push('Status: '+taskFilter);
+  const pf=document.getElementById('proj-filter'),cf=document.getElementById('cust-filter');
+  if(pf&&pf.value){const p=db.projects.find(x=>x.id===pf.value);if(p)filters.push('Project: '+p.name);}
+  if(cf&&cf.value){const c=db.customers.find(x=>x.id===cf.value);if(c)filters.push('Customer: '+c.name);}
+  if(filters.length)doc.text('Filters — '+filters.join(' · '),40,74);
+  doc.setTextColor(0);
+  /* Table */
+  doc.autoTable({
+    startY:filters.length?86:70,
+    head:[['Date','Project','Customer','Task','Notes','Hours','Status']],
+    body:rows.map(r=>[r.date,r.project,r.customer,r.title,r.notes,r.hours,r.status]),
+    foot:[['','','','TOTAL','',totalH,'']],
+    styles:{fontSize:9,cellPadding:5,overflow:'linebreak'},
+    headStyles:{fillColor:[99,102,241],textColor:255,fontStyle:'bold'},
+    footStyles:{fillColor:[240,242,247],textColor:0,fontStyle:'bold'},
+    columnStyles:{0:{cellWidth:60},1:{cellWidth:80},2:{cellWidth:110},3:{cellWidth:200},4:{cellWidth:180},5:{cellWidth:50,halign:'right'},6:{cellWidth:70}},
+    alternateRowStyles:{fillColor:[248,250,252]}
+  });
+  doc.save(exportFilename('pdf'));
+  toast('Exported '+rows.length+' entries to PDF','success');
+}
 
 /* LOG WORK */
 function renderLog(){
@@ -836,7 +1033,7 @@ function renderLog(){
   const rows=[...db.entries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const tb=document.getElementById('log-tbody');
   if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No entries yet</td></tr>';return;}
-  tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(''+e.id+'')">✏️</button><button class="icon-btn del" onclick="deleteEntry(''+e.id+'')">🗑️</button></td></tr>';}).join('');
+  tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')">🗑️</button></td></tr>';}).join('');
 }
 async function saveLogEntry(){
   const title=v('lw-title'),projectId=v('lw-project'),hours=parseFloat(v('lw-hours'))||0,date=v('lw-date'),status=v('lw-status'),notes=v('lw-notes'),customerId=v('lw-customer')||null;
@@ -854,7 +1051,7 @@ function clearLogForm(){['lw-title','lw-hours','lw-notes'].forEach(id=>document.
 function renderCustomers(){
   const g=document.getElementById('customers-grid');
   if(!db.customers.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🤝</div><div class="empty-title">No customers yet</div></div>';return;}
-  g.innerHTML=db.customers.map(c=>{const h=custHours(c.id),tasks=db.entries.filter(e=>getCustId(e)===c.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+c.color+'">'+ic+' '+c.name+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(''+c.id+'')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(''+c.id+'')">Delete</button></div></div>';}).join('');
+  g.innerHTML=db.customers.map(c=>{const h=custHours(c.id),tasks=db.entries.filter(e=>getCustId(e)===c.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+c.color+'">'+ic+' '+c.name+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(\''+c.id+'\')">Delete</button></div></div>';}).join('');
 }
 function openAddCustomer(){document.getElementById('m-cust-heading').textContent='New Customer';document.getElementById('m-cust-id').value='';document.getElementById('m-cust-name').value='';document.getElementById('m-cust-type').value='external';document.getElementById('m-cust-color').value='#f59e0b';openModal('customer-modal');}
 function editCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;document.getElementById('m-cust-heading').textContent='Edit Customer';document.getElementById('m-cust-id').value=c.id;document.getElementById('m-cust-name').value=c.name;document.getElementById('m-cust-type').value=c.type;document.getElementById('m-cust-color').value=c.color;openModal('customer-modal');}
@@ -869,7 +1066,7 @@ async function deleteCustomer(id){const t=db.entries.filter(e=>getCustId(e)===id
 function renderProjects(){
   const g=document.getElementById('projects-grid');
   if(!db.projects.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><div class="empty-title">No projects yet</div></div>';return;}
-  g.innerHTML=db.projects.map(proj=>{const h=projHours(proj.id),tasks=db.entries.filter(e=>getProjId(e)===proj.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0;return'<div class="entity-card"><div class="entity-card-bar" style="background:'+proj.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+proj.color+'">'+proj.name+'</div><div class="entity-card-sub"></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+proj.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editProject(''+proj.id+'')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteProject(''+proj.id+'')">Delete</button></div></div>';}).join('');
+  g.innerHTML=db.projects.map(proj=>{const h=projHours(proj.id),tasks=db.entries.filter(e=>getProjId(e)===proj.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0;return'<div class="entity-card"><div class="entity-card-bar" style="background:'+proj.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+proj.color+'">'+proj.name+'</div><div class="entity-card-sub"></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+proj.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editProject(\''+proj.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteProject(\''+proj.id+'\')">Delete</button></div></div>';}).join('');
 }
 function openAddProject(){document.getElementById('m-proj-heading').textContent='New Project';document.getElementById('m-proj-id').value='';document.getElementById('m-proj-name').value='';document.getElementById('m-proj-color').value='#6366f1';openModal('project-modal');}
 function editProject(id){const p=db.projects.find(x=>x.id===id);if(!p)return;document.getElementById('m-proj-heading').textContent='Edit Project';document.getElementById('m-proj-id').value=p.id;document.getElementById('m-proj-name').value=p.name;document.getElementById('m-proj-color').value=p.color;openModal('project-modal');}
@@ -949,15 +1146,32 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');}));
 
 /* BOOT */
-document.addEventListener('DOMContentLoaded',()=>{
-  initResponsive();
-  document.getElementById('lw-date').value=today();
-  initAuth();
-  /* Safety net — if loading screen is still up after 12s, force login */
-  setTimeout(()=>{
-    const l=document.getElementById('loading');
-    if(l&&l.style.display!=='none'){console.error('Safety net: forcing login');showLoading(false);showLogin();}
-  },12000);
+document.addEventListener('DOMContentLoaded',async()=>{
+  /* Safety net — registered first, always fires regardless of what happens below */
+  const safetyTimer=setTimeout(()=>{
+    console.error('Safety net: forcing login after 5s');
+    showLoading(false);showLogin();
+  },5000);
+
+  try{
+    initResponsive();
+    const lwDate=document.getElementById('lw-date');
+    if(lwDate)lwDate.value=today();
+
+    /* Wait for async CDN scripts, then init Appwrite */
+    if(!DEMO_MODE){
+      try{await waitForSDK('Appwrite',4000);}
+      catch(e){console.warn(e.message);DEMO_MODE=true;}
+      if(!DEMO_MODE)initAppwrite();
+    }
+
+    await initAuth();
+  }catch(e){
+    console.error('Boot error:',e);
+    showLoading(false);showLogin();
+  }finally{
+    clearTimeout(safetyTimer);
+  }
 });
 </script>
 </body>
