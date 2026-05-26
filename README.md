@@ -9,10 +9,11 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 - **Dashboard** — stat cards + 3 charts, with a **month-period filter** so you can drill into hours by month
 - **Tasks** — filterable list with status tabs, project/customer filters, and a **date-range filter** (From / To)
 - **Export** — one-click **CSV** (Excel) and **PDF** export of the current filtered task view, with totals and active-filter summary
-- **Log Work** — form to add work entries, recent history table
+- **Log Work** — form to add work entries with a **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable)
 - **Customers** — internal 🏢 vs external 🤝 customer cards
 - **Projects** — project overview with total hours
 - **Auth** — email/password, registration, Google OAuth via Appwrite
+- **Mobile-friendly** — sliding sidebar, finger-sized tap targets, no iOS zoom on input focus, swipeable tables, stacked layouts on phones
 
 ---
 
@@ -24,6 +25,12 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
   - **📊 Export CSV** — opens in Excel; UTF-8 BOM so emoji and accents render correctly.
   - **📄 Export PDF** — landscape A4 report with branded header, filter summary, alternating rows, and a TOTAL row.
   - Filenames auto-include the active filters, e.g. `worktracker_completed_BMC_Sentosa_2026-05-26.pdf`.
+
+---
+
+## Recurring tasks
+
+On the **Log Work** page, tick **🔁 Recurring task** and set how many months to repeat for (2–36). One entry is created per month at the same day-of-month as the original (clamped to month-end if needed — e.g. Jan 31 → Feb 28). Each generated entry is independent, so you can edit hours, mark complete, or delete any individual occurrence without affecting the others.
 
 ---
 

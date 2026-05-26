@@ -659,6 +659,9 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
             <div class="fg"><label>Hours Spent *</label><input type="number" id="lw-hours" min="0" step="0.5" placeholder="0"></div>
             <div class="fg"><label>Date</label><input type="date" id="lw-date"></div>
             <div class="fg"><label>Status</label><select id="lw-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed" selected>Completed</option></select></div>
+            <div class="fg full">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:normal;font-size:13px;color:var(--text);font-weight:500"><input type="checkbox" id="lw-recurring" style="width:18px;height:18px;cursor:pointer;flex:none" onchange="toggleRecurring()">🔁 Recurring task — repeat monthly for <input type="number" id="lw-recurring-months" min="2" max="36" value="12" style="width:64px;padding:6px 8px;font-size:14px;display:inline-block" disabled> months</label>
+            </div>
             <div class="fg full"><label>Notes</label><textarea id="lw-notes" placeholder="Additional notes…"></textarea></div>
           </div>
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button class="btn btn-ghost" onclick="clearLogForm()">Clear</button><button class="btn btn-primary" onclick="saveLogEntry()">Save Entry</button></div>
@@ -1020,8 +1023,16 @@ function updatePendingBadge(){const n=db.entries.filter(e=>e.status!=='completed
 function populateSel(id,items,ph,vk,lk,keep=false){
   const s=document.getElementById(id);if(!s)return;
   const c=keep?s.value:'';
-  s.innerHTML='<option value="">'+ph+'</option>'+items.map(i=>'<option value="'+i[vk]+'"'+(c===i[vk]?' selected':'')+'>'+i[lk]+'</option>').join('');
-  if(s.tomselect){s.tomselect.sync();s.tomselect.setValue(c||'',true);}
+  // Sort alphabetically by label so dropdowns aren't jumbled
+  const sorted=[...items].sort((a,b)=>String(a[lk]||'').localeCompare(String(b[lk]||'')));
+  const opts=[{value:'',text:ph}].concat(sorted.map(i=>({value:String(i[vk]),text:String(i[lk])})));
+  if(s.tomselect){
+    const ts=s.tomselect;
+    ts.clear(true);ts.clearOptions();ts.addOptions(opts);ts.refreshOptions(false);
+    ts.setValue(c||'',true);
+  }else{
+    s.innerHTML=opts.map(o=>'<option value="'+o.value+'"'+(c===o.value?' selected':'')+'>'+o.text+'</option>').join('');
+  }
 }
 function initTomSelect(){
   if(typeof TomSelect==='undefined')return;
@@ -1103,10 +1114,16 @@ function monthLabel(ym){if(!ym)return'All time';const[y,m]=ym.split('-');const d
 function populateMonthFilter(){
   const sel=document.getElementById('dash-month');if(!sel)return;
   const months=new Set();db.entries.forEach(e=>{if(e.date)months.add(e.date.slice(0,7));});
-  const sorted=[...months].sort().reverse();
+  const sorted=[...months].sort().reverse();   // newest month first
   const cur=sel.value;
-  sel.innerHTML='<option value="">All time</option>'+sorted.map(m=>'<option value="'+m+'"'+(cur===m?' selected':'')+'>'+monthLabel(m)+'</option>').join('');
-  if(sel.tomselect){sel.tomselect.sync();sel.tomselect.setValue(cur&&sorted.includes(cur)?cur:'',true);}
+  const opts=[{value:'',text:'All time'}].concat(sorted.map(m=>({value:m,text:monthLabel(m)})));
+  if(sel.tomselect){
+    const ts=sel.tomselect;
+    ts.clear(true);ts.clearOptions();ts.addOptions(opts);ts.refreshOptions(false);
+    ts.setValue(cur&&sorted.includes(cur)?cur:'',true);
+  }else{
+    sel.innerHTML=opts.map(o=>'<option value="'+o.value+'"'+(cur===o.value?' selected':'')+'>'+o.text+'</option>').join('');
+  }
   if(cur&&!sorted.includes(cur)){dashMonth='';}
 }
 function setDashMonth(){dashMonth=document.getElementById('dash-month').value;renderDashboard();}
@@ -1241,17 +1258,35 @@ function renderLog(){
   if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No entries yet</td></tr>';return;}
   tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')">🗑️</button></td></tr>';}).join('');
 }
+function toggleRecurring(){
+  const cb=document.getElementById('lw-recurring');
+  const n=document.getElementById('lw-recurring-months');
+  if(n)n.disabled=!cb.checked;
+}
+function addMonthsToDate(yyyymmdd,n){
+  const [y,m,d]=yyyymmdd.split('-').map(Number);
+  const dt=new Date(y,m-1+n,1);
+  const daysInTarget=new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();
+  dt.setDate(Math.min(d,daysInTarget));
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
 async function saveLogEntry(){
   const title=v('lw-title'),projectId=v('lw-project'),hours=parseFloat(v('lw-hours'))||0,date=v('lw-date'),status=v('lw-status'),notes=v('lw-notes'),customerId=v('lw-customer')||null;
   if(!title){toast('Enter a task description.','error');return;}
   if(!projectId){toast('Select a project.','error');return;}
   if(hours<=0){toast('Enter hours > 0.','error');return;}
+  const recurring=document.getElementById('lw-recurring').checked;
+  const months=recurring?Math.max(2,Math.min(36,parseInt(v('lw-recurring-months'),10)||12)):1;
   try{
-    const row=DEMO_MODE?{id:uid(),title,projectId,customerId,hours,status,date,notes}:{title,project_id:projectId,customer_id:customerId||null,hours,status,date,notes};
-    await dbInsert('entries',row);clearLogForm();renderLog();updatePendingBadge();toast('Entry saved!','success');
+    const baseRow=DEMO_MODE?{title,projectId,customerId,hours,status,notes}:{title,project_id:projectId,customer_id:customerId||null,hours,status,notes};
+    const dates=[];
+    for(let i=0;i<months;i++)dates.push(addMonthsToDate(date,i));
+    await Promise.all(dates.map(d=>dbInsert('entries',DEMO_MODE?{id:uid(),...baseRow,date:d}:{...baseRow,date:d})));
+    clearLogForm();renderLog();updatePendingBadge();
+    toast(recurring?'Saved '+months+' recurring entries!':'Entry saved!','success');
   }catch(err){toast('Save failed: '+err.message,'error');}
 }
-function clearLogForm(){['lw-title','lw-hours','lw-notes'].forEach(id=>document.getElementById(id).value='');setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setDate('lw-date',today());}
+function clearLogForm(){['lw-title','lw-hours','lw-notes'].forEach(id=>document.getElementById(id).value='');setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setDate('lw-date',today());const cb=document.getElementById('lw-recurring');if(cb){cb.checked=false;toggleRecurring();}}
 
 /* CUSTOMERS */
 function renderCustomers(){
