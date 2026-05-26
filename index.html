@@ -11,6 +11,8 @@
   <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
   <style>
 /* ── TOKENS ─────────────────────────────────────────────── */
 :root{
@@ -275,6 +277,47 @@ span.flatpickr-weekday{color:var(--muted);font-weight:600;font-size:11px;text-tr
 .numInputWrapper span:hover{background:var(--surface3);}
 .numInputWrapper span.arrowUp:after{border-bottom-color:var(--muted);}
 .numInputWrapper span.arrowDown:after{border-top-color:var(--muted);}
+
+/* ── TOM SELECT DARK THEME ──────────────────────────────── */
+.ts-wrapper{font-family:inherit;}
+.ts-wrapper.single .ts-control,.ts-wrapper.multi .ts-control{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  padding:10px 38px 10px 14px;color:var(--text);font-size:14px;font-weight:500;
+  min-height:42px;cursor:pointer;
+  transition:border-color .18s,box-shadow .18s,background .18s;
+  box-shadow:none;
+  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e");
+  background-repeat:no-repeat;background-position:right 14px center;background-size:10px;
+}
+.ts-wrapper.single .ts-control:hover,.ts-wrapper.multi .ts-control:hover{border-color:var(--border);}
+.ts-wrapper.focus .ts-control{border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(99,102,241,.18) !important;background:var(--surface3);}
+.ts-wrapper.disabled .ts-control{opacity:.5;cursor:not-allowed;}
+.ts-control>input{color:var(--text) !important;font-family:inherit;font-weight:500;}
+.ts-control>input::placeholder{color:var(--dim) !important;}
+.ts-control .item{color:var(--text);background:transparent;border:none;padding:0;}
+.ts-wrapper .ts-control:after{display:none !important;}
+/* Dropdown popup */
+.ts-dropdown{
+  background:var(--surface) !important;border:1px solid var(--border2) !important;border-radius:12px !important;
+  box-shadow:0 12px 36px rgba(0,0,0,.5);margin-top:6px;padding:6px;
+  color:var(--text);overflow:hidden;
+}
+.ts-dropdown .option{
+  padding:10px 14px;color:var(--text);background:transparent;border-radius:8px;
+  font-size:14px;font-weight:500;cursor:pointer;transition:background .12s,color .12s;
+}
+.ts-dropdown .option:hover,.ts-dropdown .active{background:var(--surface2) !important;color:var(--text) !important;}
+.ts-dropdown .option.selected{background:var(--pri-bg) !important;color:var(--pri-h) !important;font-weight:600;}
+.ts-dropdown .option.active.selected{background:var(--primary) !important;color:#fff !important;}
+.ts-dropdown .no-results{color:var(--muted);padding:14px;text-align:center;font-size:13px;}
+.ts-dropdown .create{color:var(--pri-h);}
+.ts-dropdown-content{max-height:280px;}
+.ts-dropdown [data-selectable]{cursor:pointer;}
+.ts-dropdown [data-selectable].option{opacity:1;}
+.ts-wrapper.has-items .ts-control>input{display:none;}
+/* Wrapper utility — inputs in sel-row keep flex behaviour */
+.sel-row .ts-wrapper{flex:1;}
+.new-row .ts-wrapper{flex:1;min-width:120px;}
 .sel-row{display:flex;gap:8px;}
 .sel-row select{flex:1;}
 .new-row{display:none;gap:8px;margin-top:8px;flex-wrap:wrap;}
@@ -891,7 +934,23 @@ function sCls(s){return s==='completed'?'s-completed':s==='in-progress'?'s-in-pr
 function pBadge(p){return'<span class="proj-badge" style="background:'+h2r(p.color,.14)+';color:'+p.color+'"><span class="pdot" style="background:'+p.color+'"></span>'+p.name+'</span>';}
 function cBadge(c){if(!c)return'';const cl=c.type==='internal'?'internal':'external';const ic=c.type==='internal'?'🏢':'🤝';return'<span class="cust-badge '+cl+'">'+ic+' '+c.name+'</span>';}
 function updatePendingBadge(){const n=db.entries.filter(e=>e.status!=='completed').length;const b=document.getElementById('pending-badge');if(n>0){b.textContent=n;b.style.display='';}else b.style.display='none';}
-function populateSel(id,items,ph,vk,lk,keep=false){const s=document.getElementById(id);if(!s)return;const c=keep?s.value:'';s.innerHTML='<option value="">'+ph+'</option>'+items.map(i=>'<option value="'+i[vk]+'"'+(c===i[vk]?' selected':'')+'>'+i[lk]+'</option>').join('');}
+function populateSel(id,items,ph,vk,lk,keep=false){
+  const s=document.getElementById(id);if(!s)return;
+  const c=keep?s.value:'';
+  s.innerHTML='<option value="">'+ph+'</option>'+items.map(i=>'<option value="'+i[vk]+'"'+(c===i[vk]?' selected':'')+'>'+i[lk]+'</option>').join('');
+  if(s.tomselect){s.tomselect.sync();s.tomselect.setValue(c||'',true);}
+}
+function initTomSelect(){
+  if(typeof TomSelect==='undefined')return;
+  document.querySelectorAll('select').forEach(s=>{
+    if(s.tomselect)return;
+    new TomSelect(s,{create:false,allowEmptyOption:true,maxOptions:500});
+  });
+}
+function setSel(id,val){
+  const el=document.getElementById(id);if(!el)return;
+  if(el.tomselect)el.tomselect.setValue(val||'',true);else el.value=val||'';
+}
 
 /* DASHBOARD */
 function renderDashboard(){
@@ -961,7 +1020,8 @@ function populateMonthFilter(){
   const sorted=[...months].sort().reverse();
   const cur=sel.value;
   sel.innerHTML='<option value="">All time</option>'+sorted.map(m=>'<option value="'+m+'"'+(cur===m?' selected':'')+'>'+monthLabel(m)+'</option>').join('');
-  if(cur&&!sorted.includes(cur)){sel.value='';dashMonth='';}
+  if(sel.tomselect){sel.tomselect.sync();sel.tomselect.setValue(cur&&sorted.includes(cur)?cur:'',true);}
+  if(cur&&!sorted.includes(cur)){dashMonth='';}
 }
 function setDashMonth(){dashMonth=document.getElementById('dash-month').value;renderDashboard();}
 function getDashEntries(){return dashMonth?db.entries.filter(e=>e.date&&e.date.startsWith(dashMonth)):db.entries;}
@@ -1105,7 +1165,7 @@ async function saveLogEntry(){
     await dbInsert('entries',row);clearLogForm();renderLog();updatePendingBadge();toast('Entry saved!','success');
   }catch(err){toast('Save failed: '+err.message,'error');}
 }
-function clearLogForm(){['lw-title','lw-hours','lw-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('lw-project').value='';document.getElementById('lw-customer').value='';document.getElementById('lw-status').value='completed';setDate('lw-date',today());}
+function clearLogForm(){['lw-title','lw-hours','lw-notes'].forEach(id=>document.getElementById(id).value='');setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setDate('lw-date',today());}
 
 /* CUSTOMERS */
 function renderCustomers(){
@@ -1113,8 +1173,8 @@ function renderCustomers(){
   if(!db.customers.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🤝</div><div class="empty-title">No customers yet</div></div>';return;}
   g.innerHTML=db.customers.map(c=>{const h=custHours(c.id),tasks=db.entries.filter(e=>getCustId(e)===c.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+c.color+'">'+ic+' '+c.name+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(\''+c.id+'\')">Delete</button></div></div>';}).join('');
 }
-function openAddCustomer(){document.getElementById('m-cust-heading').textContent='New Customer';document.getElementById('m-cust-id').value='';document.getElementById('m-cust-name').value='';document.getElementById('m-cust-type').value='external';document.getElementById('m-cust-color').value='#f59e0b';openModal('customer-modal');}
-function editCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;document.getElementById('m-cust-heading').textContent='Edit Customer';document.getElementById('m-cust-id').value=c.id;document.getElementById('m-cust-name').value=c.name;document.getElementById('m-cust-type').value=c.type;document.getElementById('m-cust-color').value=c.color;openModal('customer-modal');}
+function openAddCustomer(){document.getElementById('m-cust-heading').textContent='New Customer';document.getElementById('m-cust-id').value='';document.getElementById('m-cust-name').value='';setSel('m-cust-type','external');document.getElementById('m-cust-color').value='#f59e0b';openModal('customer-modal');}
+function editCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;document.getElementById('m-cust-heading').textContent='Edit Customer';document.getElementById('m-cust-id').value=c.id;document.getElementById('m-cust-name').value=c.name;setSel('m-cust-type',c.type);document.getElementById('m-cust-color').value=c.color;openModal('customer-modal');}
 async function saveModalCustomer(){
   const id=v('m-cust-id'),name=v('m-cust-name'),type=v('m-cust-type'),color=document.getElementById('m-cust-color').value;
   if(!name){toast('Enter a customer name.','error');return;}
@@ -1140,7 +1200,7 @@ async function deleteProject(id){if(!confirm('Delete this project?'))return;try{
 /* ENTRY MODAL */
 function openAddEntry(){
   document.getElementById('m-entry-heading').textContent='Add Work Entry';
-  document.getElementById('m-id').value='';document.getElementById('m-title').value='';document.getElementById('m-hours').value='';setDate('m-date',today());document.getElementById('m-notes').value='';document.getElementById('m-status').value='completed';
+  document.getElementById('m-id').value='';document.getElementById('m-title').value='';document.getElementById('m-hours').value='';setDate('m-date',today());document.getElementById('m-notes').value='';setSel('m-status','completed');
   populateSel('m-project',db.projects,'Select project…','id','name');
   populateSel('m-customer',db.customers,'None','id','name');
   openModal('entry-modal');
@@ -1148,11 +1208,11 @@ function openAddEntry(){
 function editEntry(id){
   const e=db.entries.find(x=>x.id===id);if(!e)return;
   document.getElementById('m-entry-heading').textContent='Edit Work Entry';
-  document.getElementById('m-id').value=e.id;document.getElementById('m-title').value=e.title;document.getElementById('m-hours').value=e.hours;setDate('m-date',e.date||'');document.getElementById('m-notes').value=e.notes||'';document.getElementById('m-status').value=e.status;
+  document.getElementById('m-id').value=e.id;document.getElementById('m-title').value=e.title;document.getElementById('m-hours').value=e.hours;setDate('m-date',e.date||'');document.getElementById('m-notes').value=e.notes||'';setSel('m-status',e.status);
   populateSel('m-project',db.projects,'Select project…','id','name');
   populateSel('m-customer',db.customers,'None','id','name');
-  document.getElementById('m-project').value=getProjId(e)||'';
-  document.getElementById('m-customer').value=getCustId(e)||'';
+  setSel('m-project',getProjId(e)||'');
+  setSel('m-customer',getCustId(e)||'');
   openModal('entry-modal');
 }
 async function saveModalEntry(){
@@ -1178,7 +1238,7 @@ async function addEntityInline(type,selId,nameId,colorId,rowId,typeSelId){
     else item=await dbInsert('customers',DEMO_MODE?{id:uid(),name,type:etype,color}:{name,type:etype,color});
     document.getElementById(nameId).value='';document.getElementById(rowId).classList.remove('show');
     populateSel(selId,type==='project'?db.projects:db.customers,type==='project'?'Select project…':'None','id','name');
-    document.getElementById(selId).value=item.id;toast(name+' added!','success');
+    setSel(selId,item.id);toast(name+' added!','success');
   }catch(err){toast(err.message,'error');}
 }
 
@@ -1239,6 +1299,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
     await initAuth();
     initDatePickers();
+    initTomSelect();
   }catch(e){
     console.error('Boot error:',e);
     showLoading(false);showLogin();
