@@ -1,6 +1,6 @@
 # Work Effort Tracker
 
-A personal work effort tracker — log hours, manage tasks, and visualise productivity across projects and customers. Built as a single HTML file with a **PocketBase** backend (auth + database).
+A personal work effort tracker — log hours, manage tasks, and visualise productivity across projects and customers. Built as a single HTML file with an **Appwrite** backend (auth + database).
 
 ---
 
@@ -11,7 +11,7 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 - **Log Work** — form to add work entries, recent history table
 - **Customers** — internal 🏢 vs external 🤝 customer cards
 - **Projects** — project overview with total hours
-- **Auth** — email/password login, registration, Google OAuth via PocketBase
+- **Auth** — email/password, registration, Google OAuth via Appwrite
 
 ---
 
@@ -19,7 +19,7 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 
 ```bash
 node build.js          # generates config.js in DEMO mode
-# then open index.html in a browser  (or: npx serve . -p 3000)
+# open index.html in a browser  (or: npx serve . -p 3000)
 ```
 
 Data is stored in `localStorage` — no account, no internet required.
@@ -28,84 +28,76 @@ Data is stored in `localStorage` — no account, no internet required.
 
 ## Production Setup
 
-### 1 · Create a PocketHost instance (free)
+### 1 · Create an Appwrite Cloud project
 
-[PocketHost](https://pockethost.io) is free managed PocketBase hosting — no server required.
+1. Go to **[cloud.appwrite.io](https://cloud.appwrite.io)** → sign in (free tier available).
+2. Click **Create project** → give it a name (e.g. `WorkTracker`) → Create.
+3. Note your **Project ID** — shown in **Settings** → **General** → *Project ID*.
 
-1. Go to **[pockethost.io](https://pockethost.io)** → sign up for a free account.
-2. Click **New Instance** → give it a name (e.g. `work-tracker`).
-3. Your instance URL will be: `https://work-tracker.pockethost.io` *(yours will differ)*
-4. Click the instance → **Admin Dashboard** (opens `https://your-instance.pockethost.io/_/`)
-5. Create your first admin account when prompted.
+### 2 · Create a database and 3 collections
 
-### 2 · Create the collections
+In your project: **Databases** → **Create database** → name it (e.g. `WorkTracker`) → note the **Database ID**.
 
-In the PocketBase Admin UI, create three collections:
+Then create three collections inside it — use these **exact Collection IDs**:
 
-#### `projects` collection
-- Type: **Base**
-- Fields:
-  | Field | Type | Required |
-  |---|---|---|
-  | `name` | Text | ✅ |
-  | `color` | Text | |
-  | `description` | Text | |
-  | `user` | Relation → users | ✅ |
-- **API Rules** (all 5 rules):
-  ```
-  List/Search : @request.auth.id = user
-  View        : @request.auth.id = user
-  Create      : @request.auth.id != ""
-  Update      : @request.auth.id = user
-  Delete      : @request.auth.id = user
-  ```
-
-#### `customers` collection
-- Type: **Base**
-- Fields:
-  | Field | Type | Options | Required |
+#### Collection `projects`
+- **Settings** → enable **Document security**
+- **Attributes:**
+  | Attribute | Type | Required | Size |
   |---|---|---|---|
-  | `name` | Text | | ✅ |
-  | `type` | Select | `internal`, `external` | ✅ |
-  | `color` | Text | | |
-  | `user` | Relation → users | | ✅ |
-- **API Rules**: same as projects
+  | `name` | String | ✅ | 255 |
+  | `color` | String | | 20 |
+  | `description` | String | | 1000 |
+  | `user_id` | String | ✅ | 36 |
+- **Indexes:** Add key index on `user_id`
 
-#### `entries` collection
-- Type: **Base**
-- Fields:
-  | Field | Type | Options | Required |
+#### Collection `customers`
+- Enable **Document security**
+- **Attributes:**
+  | Attribute | Type | Required | Size |
   |---|---|---|---|
-  | `title` | Text | | ✅ |
-  | `project_id` | Text | | |
-  | `customer_id` | Text | | |
-  | `hours` | Number | Min: 0 | ✅ |
-  | `status` | Select | `pending`, `in-progress`, `completed` | |
-  | `date` | Date | | |
-  | `notes` | Text | | |
-  | `user` | Relation → users | | ✅ |
-- **API Rules**: same as projects
+  | `name` | String | ✅ | 255 |
+  | `type` | String | ✅ | 20 |
+  | `color` | String | | 20 |
+  | `user_id` | String | ✅ | 36 |
+- **Indexes:** Add key index on `user_id`
+
+#### Collection `entries`
+- Enable **Document security**
+- **Attributes:**
+  | Attribute | Type | Required | Size |
+  |---|---|---|---|
+  | `title` | String | ✅ | 500 |
+  | `project_id` | String | | 36 |
+  | `customer_id` | String | | 36 |
+  | `hours` | Float | ✅ | — |
+  | `status` | String | | 20 |
+  | `date` | String | | 20 |
+  | `notes` | String | | 2000 |
+  | `user_id` | String | ✅ | 36 |
+- **Indexes:** Add key indexes on `user_id` and `date`
+
+> **Note:** Collection IDs must be exactly `projects`, `customers`, `entries` — the app uses these strings directly.
 
 ### 3 · Enable Google OAuth (optional)
 
-1. PocketBase Admin → **Settings** → **Auth providers** → **Google** → enable it.
-2. Create a Google Cloud OAuth client: [console.cloud.google.com](https://console.cloud.google.com)
-   - **Authorized redirect URI**: `https://your-instance.pockethost.io/api/oauth2-redirect`
-3. Paste your **Client ID** and **Client Secret** into PocketBase.
+1. Your project → **Auth** → **Settings** → **OAuth2 Providers** → **Google** → enable.
+2. Create an OAuth client in [Google Cloud Console](https://console.cloud.google.com):
+   - Authorised redirect URI: `https://cloud.appwrite.io/v1/account/sessions/oauth2/callback/google/[your-project-id]`
+3. Paste **Client ID** and **Client Secret** into Appwrite.
 
 ### 4 · Configure your local environment
 
 ```bash
-# Edit .env.local — paste your PocketHost URL:
-#   POCKETBASE_URL=https://your-instance.pockethost.io
+# Edit .env.local:
+#   APPWRITE_PROJECT_ID=your-project-id
+#   APPWRITE_DATABASE_ID=your-database-id
 
-# Then generate config.js:
 node build.js
-# ✓ config.js generated  →  https://your-instance.pockethost.io
+# ✓ config.js generated  →  project=xxxx  db=yyyy
 ```
 
-Open `index.html` — you should see the login screen.  
-Register an account and your default data (projects, customers, entries) will be seeded automatically on first login.
+Open `index.html` → register an account → your default data seeds automatically on first login.
 
 ---
 
@@ -126,24 +118,22 @@ Register an account and your default data (projects, customers, entries) will be
 
    | Variable | Value |
    |---|---|
-   | `POCKETBASE_URL` | `https://your-instance.pockethost.io` |
+   | `APPWRITE_ENDPOINT` | `https://cloud.appwrite.io/v1` |
+   | `APPWRITE_PROJECT_ID` | your project ID |
+   | `APPWRITE_DATABASE_ID` | your database ID |
 
 5. **Save and Deploy** → live in ~1 minute.
-
-Every `git push` to `main` auto-deploys.
 
 ### Option B — Wrangler CLI
 
 ```bash
 npm install -g wrangler
 wrangler login
-
-node build.js     # builds config.js with DEMO values (Cloudflare will override at deploy time)
-
+node build.js
 wrangler pages deploy . --project-name work-effort-tracker
 ```
 
-Then set `POCKETBASE_URL` in Cloudflare Pages → **Settings** → **Environment variables**.
+Set the three environment variables in Cloudflare Pages → **Settings** → **Environment variables**.
 
 ---
 
@@ -152,10 +142,10 @@ Then set `POCKETBASE_URL` in Cloudflare Pages → **Settings** → **Environment
 | File | Purpose |
 |---|---|
 | `index.html` | Entire app — HTML + CSS + JS |
-| `schema.sql` | Collection structure reference (not SQL — see file for details) |
+| `schema.sql` | Collection attribute reference (not SQL — see file) |
 | `build.js` | Reads `.env.local` / CI env → writes `config.js` |
 | `config.js` | **Generated, gitignored** — never commit |
-| `.env.local` | **Gitignored** — your local PocketBase URL |
+| `.env.local` | **Gitignored** — your local Appwrite keys |
 | `.env.example` | Safe template |
 
 ---
@@ -163,9 +153,9 @@ Then set `POCKETBASE_URL` in Cloudflare Pages → **Settings** → **Environment
 ## Data Model
 
 ```
-projects   id · user · name · color · description
-customers  id · user · name · type (internal|external) · color
-entries    id · user · title · project_id · customer_id · hours · status · date · notes
+projects   $id · user_id · name · color · description
+customers  $id · user_id · name · type (internal|external) · color
+entries    $id · user_id · title · project_id · customer_id · hours · status · date · notes
 ```
 
-PocketBase API rules ensure each user sees only their own records.
+Document-level permissions ensure each user sees only their own records.

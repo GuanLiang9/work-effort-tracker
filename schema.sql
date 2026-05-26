@@ -1,49 +1,46 @@
 -- ============================================================
---  Work Effort Tracker — PocketBase Collections Reference
+--  Work Effort Tracker — Appwrite Collection Reference
 --
---  PocketBase uses a GUI to create collections, not SQL.
+--  Appwrite uses a GUI (or API) to create collections, not SQL.
 --  This file documents the required collection structure.
---  Use it as a reference when setting up your PocketBase instance.
---
---  Quick setup: Import collections/schema_pb.json instead
---  (PocketBase Admin UI → Settings → Import collections)
+--  Use it as a reference when setting up your Appwrite project.
 -- ============================================================
 
+-- DATABASE: create one database (e.g. "WorkTracker") in your Appwrite project.
+
 -- COLLECTION: projects
--- Base type: Base
--- Fields:
---   name        text       required
---   color       text       (hex colour, e.g. #3b82f6)
---   description text
---   user        relation   → users collection, required
---
--- API Rules (access control):
---   List/Search : @request.auth.id = user
---   View        : @request.auth.id = user
---   Create      : @request.auth.id != ""
---   Update      : @request.auth.id = user
---   Delete      : @request.auth.id = user
+-- Collection ID: projects  (set this exact ID when creating)
+-- Attributes:
+--   name       string   required  size:255
+--   color      string   size:20   (hex colour, e.g. #3b82f6)
+--   description string  size:1000
+--   user_id    string   required  size:36
+-- Indexes:
+--   user_id_idx  key  attribute: user_id
+-- Permissions:  Document-level security ON
+--   (permissions are set per-document on create — see app code)
 
 -- COLLECTION: customers
--- Base type: Base
--- Fields:
---   name   text    required
---   type   select  options: internal, external  (required)
---   color  text    (hex colour)
---   user   relation → users collection, required
---
--- API Rules: same as projects
+-- Collection ID: customers
+-- Attributes:
+--   name    string   required  size:255
+--   type    string   required  size:20   (internal | external)
+--   color   string   size:20
+--   user_id string   required  size:36
+-- Indexes:
+--   user_id_idx  key  attribute: user_id
 
 -- COLLECTION: entries
--- Base type: Base
--- Fields:
---   title       text    required
---   project_id  text    (stores PocketBase project record ID)
---   customer_id text    (stores PocketBase customer record ID)
---   hours       number  required, min: 0
---   status      select  options: pending, in-progress, completed
---   date        date
---   notes       text
---   user        relation → users collection, required
---
--- API Rules: same as projects
+-- Collection ID: entries
+-- Attributes:
+--   title       string   required  size:500
+--   project_id  string   size:36
+--   customer_id string   size:36
+--   hours       float    required  min:0
+--   status      string   size:20   (pending | in-progress | completed)
+--   date        string   size:20   (YYYY-MM-DD)
+--   notes       string   size:2000
+--   user_id     string   required  size:36
+-- Indexes:
+--   user_id_idx  key  attribute: user_id
+--   date_idx     key  attribute: date

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.3/dist/pocketbase.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0/dist/umd/sdk.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
 /* ── TOKENS ─────────────────────────────────────────────── */
@@ -524,13 +524,21 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 </div>
 <div id="toast-box"></div>
 
-<script>window.APP_CONFIG=window.APP_CONFIG||{pocketbaseUrl:'DEMO'};</script>
+<script>window.APP_CONFIG=window.APP_CONFIG||{appwriteProjectId:'DEMO',appwriteDatabaseId:'DEMO'};</script>
 <script src="config.js" onerror="console.warn('config.js not found')"></script>
 <script>
 const CFG=window.APP_CONFIG||{};
-const DEMO_MODE=!CFG.pocketbaseUrl||CFG.pocketbaseUrl==='DEMO';
-let pb=null;
-if(!DEMO_MODE) pb=new PocketBase(CFG.pocketbaseUrl);
+const DEMO_MODE=!CFG.appwriteProjectId||CFG.appwriteProjectId==='DEMO';
+let aw_account=null,aw_databases=null,AW_DB='';
+const COL={projects:'projects',customers:'customers',entries:'entries'};
+if(!DEMO_MODE){
+  const aw=new Appwrite.Client()
+    .setEndpoint(CFG.appwriteEndpoint||'https://cloud.appwrite.io/v1')
+    .setProject(CFG.appwriteProjectId);
+  aw_account=new Appwrite.Account(aw);
+  aw_databases=new Appwrite.Databases(aw);
+  AW_DB=CFG.appwriteDatabaseId||'';
+}
 
 /* SEED */
 const SP=[{id:'p1',name:'BMC',color:'#3b82f6'},{id:'p2',name:'OneApp',color:'#22c55e'},{id:'p3',name:'AI Engineering',color:'#a855f7'}];
@@ -564,38 +572,43 @@ function lsLoad(){try{const s=localStorage.getItem('wt_v3');if(s)return JSON.par
 function lsSave(){localStorage.setItem('wt_v3',JSON.stringify(db));}
 function lsInit(){const s=lsLoad();if(s){db=s;}else{db={projects:[...SP],customers:[...SC],entries:[...SE]};lsSave();}}
 
-/* POCKETBASE DATA */
+/* APPWRITE DATA */
+const norm=d=>({...d,id:d.$id});/* normalise $id → id */
+const perm=uid=>[Appwrite.Permission.read(Appwrite.Role.user(uid)),Appwrite.Permission.update(Appwrite.Role.user(uid)),Appwrite.Permission.delete(Appwrite.Role.user(uid))];
+const Q=Appwrite.Query;
 async function dbLoad(uid){
   showLoading(true);
   try{
     const[pr,cu,en]=await Promise.all([
-      pb.collection('projects').getFullList({filter:`user="${uid}"`,sort:'+created'}),
-      pb.collection('customers').getFullList({filter:`user="${uid}"`,sort:'+created'}),
-      pb.collection('entries').getFullList({filter:`user="${uid}"`,sort:'-date'}),
+      aw_databases.listDocuments(AW_DB,COL.projects,[Q.equal('user_id',uid),Q.limit(500)]),
+      aw_databases.listDocuments(AW_DB,COL.customers,[Q.equal('user_id',uid),Q.limit(500)]),
+      aw_databases.listDocuments(AW_DB,COL.entries,[Q.equal('user_id',uid),Q.limit(500),Q.orderDesc('date')]),
     ]);
-    db.projects=pr;db.customers=cu;db.entries=en;
+    db.projects=pr.documents.map(norm);
+    db.customers=cu.documents.map(norm);
+    db.entries=en.documents.map(norm);
     if(!db.projects.length&&!db.entries.length)await dbSeed(uid);
   }catch(e){toast('Failed to load: '+e.message,'error');}
   finally{showLoading(false);}
 }
 async function dbSeed(uid){
-  /* Create projects first, then customers, then entries — building ID maps along the way */
+  /* Create projects → customers → entries, building ID maps so entries point correctly */
   const projMap={};
   for(const p of SP){
-    const r=await pb.collection('projects').create({name:p.name,color:p.color,user:uid});
-    projMap[p.id]=r.id;db.projects.push(r);
+    const r=await aw_databases.createDocument(AW_DB,COL.projects,Appwrite.ID.unique(),{name:p.name,color:p.color,user_id:uid},perm(uid));
+    projMap[p.id]=r.$id;db.projects.push(norm(r));
   }
   const custMap={};
   for(const c of SC){
-    const r=await pb.collection('customers').create({name:c.name,type:c.type,color:c.color,user:uid});
-    custMap[c.id]=r.id;db.customers.push(r);
+    const r=await aw_databases.createDocument(AW_DB,COL.customers,Appwrite.ID.unique(),{name:c.name,type:c.type,color:c.color,user_id:uid},perm(uid));
+    custMap[c.id]=r.$id;db.customers.push(norm(r));
   }
   for(const e of SE){
-    const r=await pb.collection('entries').create({
+    const r=await aw_databases.createDocument(AW_DB,COL.entries,Appwrite.ID.unique(),{
       title:e.title,project_id:projMap[e.projectId]||'',customer_id:custMap[e.customerId]||'',
-      hours:e.hours,status:e.status,date:e.date,notes:e.notes,user:uid
-    });
-    db.entries.push(r);
+      hours:e.hours,status:e.status,date:e.date,notes:e.notes||'',user_id:uid
+    },perm(uid));
+    db.entries.push(norm(r));
   }
 }
 function getProjId(e){return e.project_id||e.projectId||null;}
@@ -608,15 +621,17 @@ async function dbInsert(table,row){
     else db.entries.unshift(row);
     lsSave();return row;
   }
-  const data=await pb.collection(table).create({...row,user:currentUser.id});
-  if(table==='projects')db.projects.push(data);
-  else if(table==='customers')db.customers.push(data);
-  else db.entries.unshift(data);
-  return data;
+  const uid_v=currentUser.id;
+  const data=await aw_databases.createDocument(AW_DB,COL[table],Appwrite.ID.unique(),{...row,user_id:uid_v},perm(uid_v));
+  const n=norm(data);
+  if(table==='projects')db.projects.push(n);
+  else if(table==='customers')db.customers.push(n);
+  else db.entries.unshift(n);
+  return n;
 }
 async function dbUpdate(table,id,patch){
   if(DEMO_MODE){const a=table==='projects'?db.projects:table==='customers'?db.customers:db.entries;const i=a.find(x=>x.id===id);if(i)Object.assign(i,patch);lsSave();return;}
-  await pb.collection(table).update(id,patch);
+  await aw_databases.updateDocument(AW_DB,COL[table],id,patch);
   const a=table==='projects'?db.projects:table==='customers'?db.customers:db.entries;
   const i=a.find(x=>x.id===id);if(i)Object.assign(i,patch);
 }
@@ -627,31 +642,38 @@ async function dbDelete(table,id){
     else db.entries=db.entries.filter(x=>x.id!==id);
     lsSave();return;
   }
-  await pb.collection(table).delete(id);
+  await aw_databases.deleteDocument(AW_DB,COL[table],id);
   if(table==='projects')db.projects=db.projects.filter(x=>x.id!==id);
   else if(table==='customers')db.customers=db.customers.filter(x=>x.id!==id);
   else db.entries=db.entries.filter(x=>x.id!==id);
 }
 
 /* AUTH */
-function initAuth(){
+async function initAuth(){
   if(DEMO_MODE){
     document.getElementById('dev-notice').classList.add('show');
     currentUser={id:'demo',email:'demo@local',name:'Demo User'};
     lsInit();showApp();return;
   }
-  pb.authStore.onChange(async(token,model)=>{
-    if(model){currentUser=model;await dbLoad(model.id);showApp();}
-    else{currentUser=null;showLogin();}
-  },true);
+  showLoading(true);
+  try{
+    const u=await aw_account.get();
+    currentUser={...u,id:u.$id};
+    await dbLoad(u.$id);showApp();
+  }catch{currentUser=null;showLogin();}
+  finally{showLoading(false);}
 }
 async function handleLogin(){
   const email=v('login-email'),password=v('login-password');
   if(!email||!password){showAuthError('Please enter email and password.');return;}
   const btn=document.getElementById('login-btn-text');
   btn.textContent='Signing in…';
-  try{await pb.collection('users').authWithPassword(email,password);}
-  catch(e){showAuthError(e.message||'Invalid email or password.');}
+  try{
+    await aw_account.createEmailPasswordSession(email,password);
+    const u=await aw_account.get();
+    currentUser={...u,id:u.$id};
+    await dbLoad(u.$id);showApp();
+  }catch(e){showAuthError(e.message||'Invalid email or password.');}
   finally{btn.textContent='Sign In';}
 }
 async function handleRegister(){
@@ -661,26 +683,28 @@ async function handleRegister(){
   const btn=document.getElementById('reg-btn-text');
   btn.textContent='Creating account…';
   try{
-    await pb.collection('users').create({name,email,password,passwordConfirm:password});
-    await pb.collection('users').authWithPassword(email,password);
+    await aw_account.create(Appwrite.ID.unique(),email,password,name);
+    await aw_account.createEmailPasswordSession(email,password);
+    const u=await aw_account.get();
+    currentUser={...u,id:u.$id};
+    await dbLoad(u.$id);showApp();
   }catch(e){showAuthError(e.message||'Registration failed.');}
   finally{btn.textContent='Create Account';}
 }
 async function handleGoogle(){
-  if(DEMO_MODE){toast('Google auth requires PocketBase config.','error');return;}
-  try{await pb.collection('users').authWithOAuth2({provider:'google'});}
-  catch(e){showAuthError(e.message);}
+  if(DEMO_MODE){toast('Google auth requires Appwrite config.','error');return;}
+  aw_account.createOAuth2Session('google',window.location.href,window.location.href);
 }
 async function handleForgot(){
   const email=v('forgot-email');
   if(!email){showAuthError('Enter your email.');return;}
   try{
-    await pb.collection('users').requestPasswordReset(email);
+    await aw_account.createRecovery(email,window.location.href);
     toast('Reset link sent! Check your email.','success');
   }catch(e){showAuthError(e.message);}
 }
 async function handleSignout(){
-  if(!DEMO_MODE)pb.authStore.clear();
+  if(!DEMO_MODE){try{await aw_account.deleteSession('current');}catch{}}
   db={projects:[],customers:[],entries:[]};currentUser=null;showLogin();
 }
 function showLogin(){document.getElementById('loading').style.display='none';document.getElementById('app').classList.remove('show');document.getElementById('auth-screen').classList.add('show');}
