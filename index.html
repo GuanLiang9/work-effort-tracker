@@ -249,26 +249,26 @@ input[type="date"],input[type="month"]{cursor:pointer;color-scheme:dark;}
 }
 .flatpickr-calendar.arrowTop:before,.flatpickr-calendar.arrowTop:after{border-bottom-color:var(--surface);}
 .flatpickr-calendar.arrowBottom:before,.flatpickr-calendar.arrowBottom:after{border-top-color:var(--surface);}
-.flatpickr-months{padding:8px 4px 6px;position:relative;}
-.flatpickr-month{color:var(--text);height:40px;background:transparent;overflow:visible;}
-.flatpickr-current-month{font-weight:700;font-size:14px;padding-top:8px;color:var(--text);height:34px;}
-/* Month is plain unclickable text — arrows navigate instead */
+.flatpickr-months{padding:4px 0;position:relative;}
+.flatpickr-month{color:var(--text);height:34px;background:transparent;}
+.flatpickr-current-month{font-weight:700;font-size:14px;padding-top:6px;color:var(--text);}
+/* Month shown as plain non-interactive text; arrows navigate instead */
 .flatpickr-current-month .flatpickr-monthDropdown-months{
-  color:var(--text);font-weight:700;background:transparent;border:none;
+  color:var(--text);font-weight:700;
+  background:transparent !important;background-image:none !important;border:none;
   -webkit-appearance:none;-moz-appearance:none;appearance:none;
-  pointer-events:none;cursor:default;padding-right:0;
+  pointer-events:none;cursor:default;padding:0;margin:0;
 }
 .flatpickr-current-month input.cur-year{color:var(--text);font-weight:700;background:transparent;border:none;}
 .flatpickr-monthDropdown-month{background:var(--surface);color:var(--text);}
 .flatpickr-weekdays{background:transparent;}
 span.flatpickr-weekday{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;background:transparent;}
-/* Prev / Next arrows — prominent, pill-shaped (keep flatpickr's default absolute positioning) */
+/* Prev / Next arrows — pill style, do NOT override height/top so flatpickr's own sizing stays intact */
 .flatpickr-prev-month,.flatpickr-next-month{
   fill:var(--text) !important;color:var(--text) !important;
   padding:6px 10px !important;border-radius:8px !important;
   background:var(--surface2) !important;border:1px solid var(--border2) !important;
-  transition:background .15s,border-color .15s,fill .15s !important;
-  height:30px !important;top:6px !important;
+  transition:background .15s,border-color .15s !important;
 }
 .flatpickr-prev-month:hover,.flatpickr-next-month:hover{
   background:var(--primary) !important;border-color:var(--primary) !important;
