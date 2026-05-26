@@ -5,3 +5,14 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Environment variables — never commit real keys
+.env.local
+.env
+
+# Generated config — rebuilt by build.js on each deploy
+config.js
+
+# Cleanup artifacts
+write_index.js
+index.html.bak

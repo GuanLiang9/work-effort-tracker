@@ -4,22 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A single-file, client-side work effort tracker (`index.html`). No build step, no dependencies to install, no server required — open the file directly in a browser.
+A single-file client-side work effort tracker (`index.html`) backed by **Supabase** (auth + Postgres). No framework, no bundler — one HTML file with inline CSS and JS.
 
-## Running the app
+## Running locally
 
-```
-# Just open in a browser:
-start index.html          # Windows
-open index.html           # macOS
-xdg-open index.html       # Linux
+```bash
+# 1. Fill in .env.local with your Supabase keys (see README)
+# 2. Generate config.js
+node build.js
+
+# 3. Open in browser
+npx serve . -p 3000
+# or just open index.html directly
 ```
 
-For live-reload during development, any static file server works:
-```
-npx serve .
-python -m http.server 8080
-```
+Without a `.env.local` the app runs in **DEMO mode** (localStorage only, no auth required).
 
 ## Architecture
 
@@ -27,46 +26,76 @@ Everything lives in `index.html` as three inline sections:
 
 | Section | Purpose |
 |---|---|
-| `<style>` | All CSS using CSS custom properties (`--bg`, `--primary`, etc.) defined on `:root` |
-| `<body>` | Four `.page` divs (`#page-dashboard`, `#page-tasks`, `#page-log`, `#page-projects`) plus two `.overlay` modals |
-| `<script>` | All app logic — no framework, vanilla JS |
+| `<style>` | All CSS — CSS custom properties on `:root`, dark theme |
+| `<body>` | `#login-screen` overlay + 5 `.page` divs (`dashboard`, `tasks`, `log`, `customers`, `projects`) |
+| `<script>` | App logic — Supabase init, auth flow, data layer, render functions |
 
-### Data model (localStorage key: `wt_db_v2`)
+### Config injection
 
+`build.js` reads `.env.local` (or CI env vars) and writes `config.js`:
 ```js
-{
-  projects: [{ id, name, color }],
-  entries:  [{ id, title, projectId, hours, status, date, notes }]
-}
+window.APP_CONFIG = { supabaseUrl: "...", supabaseAnonKey: "..." };
+```
+`index.html` loads `config.js` via `<script src="config.js">` before the app script. If the file is missing or values are `'DEMO'`, the app falls back to localStorage.
+
+### Auth flow
+
+```
+initAuth()
+  └─ supa.auth.onAuthStateChange
+        ├─ session present  → dbLoad(uid) → showApp()
+        └─ no session       → showLogin()
 ```
 
-`status` is one of: `"pending"` | `"in-progress"` | `"completed"`
+`DEMO_MODE = !CFG.supabaseUrl || CFG.supabaseUrl === 'DEMO'`
 
-The `SEED` constant at the top of the script holds the default data loaded when localStorage is empty.
+In DEMO mode all Supabase calls are skipped; data lives in `localStorage` under key `wt_v3`.
+
+### Data model (Supabase tables)
+
+```
+projects   id · user_id · name · color · description
+customers  id · user_id · name · type (internal|external) · color
+entries    id · user_id · title · project_id · customer_id · hours
+           status (pending|in-progress|completed) · date · notes
+```
+
+Full schema + RLS policies in `schema.sql`. Row Level Security ensures each user only sees their own rows.
 
 ### Key JS functions
 
-- `navigate(page)` — switches the active `.page` div and triggers the matching `render*()` call
-- `renderDashboard()` — computes stats, builds activity/overview HTML, then calls `buildChartHours()` / `buildChartStatus()` inside a `setTimeout(..., 60)` so Chart.js sees the visible canvas
-- `refresh()` — re-renders whichever page is currently active; call this after any mutation to `db`
-- `saveDB()` — persists `db` to `localStorage`; must be called after every mutation
-- `populateSel(id)` — rebuilds a `<select>` with the current project list; preserves the currently selected value
+| Function | Purpose |
+|---|---|
+| `dbLoad(uid)` | Fetches all rows from projects / customers / entries for the user |
+| `dbSeed(uid)` | Inserts default projects, customers, entries on first login |
+| `dbInsert(table, row)` | Insert row; in DEMO mode mutates `appData` + saves to localStorage |
+| `dbUpdate(table, id, patch)` | Update by id |
+| `dbDelete(table, id)` | Delete by id |
+| `getProjId(e)` | Returns `e.project_id \|\| e.projectId` — handles both Supabase and DEMO shapes |
+| `navigate(page)` | Switches active `.page` div, calls matching `render*()` |
+| `refresh()` | Re-renders current page after mutations |
 
-### Chart.js usage
+### Charts
 
-Charts are destroyed and recreated on every `renderDashboard()` call (stored in module-level `chartH` / `chartS`). This avoids the "Canvas already in use" error when navigating away and back.
+Chart.js 4.4.0 (CDN). Stored in module-level `chartH` / `chartS` / `chartP`. Each `renderDashboard()` call destroys and recreates them to avoid "Canvas already in use" errors on back-navigation.
 
 ### Adding a new page
 
-1. Add a `<div id="page-X" class="page">` block in `<body>`
-2. Add a `.nav-item` with `data-page="X"` in the sidebar
+1. Add `<div id="page-X" class="page">` in `<body>`
+2. Add a `.nav-item[data-page="X"]` in the sidebar
 3. Add `if (page === 'X') renderX();` in `navigate()`
 4. Write `renderX()` in the script block
 
-## External dependency
+## External dependencies (CDN)
 
-Chart.js 4.4.0 loaded from jsDelivr CDN:
-```
-https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js
-```
-The app will still render but charts will be blank if this CDN is unreachable.
+| Library | URL |
+|---|---|
+| Supabase JS v2 | `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js` |
+| Chart.js 4.4.0 | `https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js` |
+| Inter font | Google Fonts |
+
+## Deployment
+
+- **Build command** (Cloudflare Pages): `node build.js`
+- **Output directory**: `/` (root)
+- **Environment variables**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`
