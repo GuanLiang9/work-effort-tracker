@@ -244,6 +244,7 @@ input[type="date"],input[type="month"]{cursor:pointer;color-scheme:dark;}
 /* ── FLATPICKR DARK THEME ───────────────────────────────── */
 .flatpickr-calendar{
   background:var(--surface);border:1px solid var(--border2);border-radius:12px;
+  z-index:99999 !important;
   box-shadow:0 12px 36px rgba(0,0,0,.5);font-family:inherit;
 }
 .flatpickr-calendar.arrowTop:before,.flatpickr-calendar.arrowTop:after{border-bottom-color:var(--surface);}
@@ -281,20 +282,25 @@ span.flatpickr-weekday{color:var(--muted);font-weight:600;font-size:11px;text-tr
 /* ── TOM SELECT DARK THEME ──────────────────────────────── */
 .ts-wrapper{font-family:inherit;}
 .ts-wrapper.single .ts-control,.ts-wrapper.multi .ts-control{
-  background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
-  padding:10px 38px 10px 14px;color:var(--text);font-size:14px;font-weight:500;
+  background:var(--surface2) !important;border:1px solid var(--border2);border-radius:10px;
+  padding:10px 38px 10px 14px;color:var(--text) !important;font-size:14px;font-weight:500;
   min-height:42px;cursor:pointer;
   transition:border-color .18s,box-shadow .18s,background .18s;
   box-shadow:none;
-  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e");
-  background-repeat:no-repeat;background-position:right 14px center;background-size:10px;
+  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e") !important;
+  background-repeat:no-repeat !important;background-position:right 14px center !important;background-size:10px !important;
 }
 .ts-wrapper.single .ts-control:hover,.ts-wrapper.multi .ts-control:hover{border-color:var(--border);}
-.ts-wrapper.focus .ts-control{border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(99,102,241,.18) !important;background:var(--surface3);}
+.ts-wrapper.focus .ts-control,.ts-wrapper.single.input-active .ts-control,.ts-wrapper.multi.input-active .ts-control{
+  border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(99,102,241,.18) !important;
+  background:var(--surface3) !important;
+  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e") !important;
+  background-repeat:no-repeat !important;background-position:right 14px center !important;background-size:10px !important;
+}
 .ts-wrapper.disabled .ts-control{opacity:.5;cursor:not-allowed;}
-.ts-control>input{color:var(--text) !important;font-family:inherit;font-weight:500;}
+.ts-control>input{color:var(--text) !important;font-family:inherit;font-weight:500;background:transparent !important;}
 .ts-control>input::placeholder{color:var(--dim) !important;}
-.ts-control .item{color:var(--text);background:transparent;border:none;padding:0;}
+.ts-control .item{color:var(--text) !important;background:transparent !important;border:none;padding:0;}
 .ts-wrapper .ts-control:after{display:none !important;}
 /* Dropdown popup */
 .ts-dropdown{
