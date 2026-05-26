@@ -408,15 +408,78 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
   .charts-row,.charts-row2,.two-col{grid-template-columns:1fr;}
 }
 @media(max-width:768px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);}
+  /* Sidebar slides in on mobile */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);width:260px;}
   .sidebar.open{transform:translateX(0);}
   .sidebar-overlay.show{display:block;}
-  .hamburger{display:flex;}
+  .hamburger{display:flex;width:42px;height:42px;font-size:22px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;}
+
+  /* Main layout */
   .main{width:100%;}
   .cards-grid{grid-template-columns:1fr;}
-  .page-wrap{padding:18px;}
+  .page-wrap{padding:18px;max-width:none;}
   .form-grid,.modal-grid{grid-template-columns:1fr;}
   .fg.full{grid-column:unset;}
+
+  /* iOS Safari zooms in if input font-size < 16px — bump on mobile */
+  input,select,textarea,.auth-input{font-size:16px !important;}
+  .ts-wrapper.single .ts-control,.ts-wrapper.multi .ts-control{font-size:16px !important;}
+  .ts-control>input{font-size:16px !important;}
+
+  /* Touch-friendly icon buttons */
+  .icon-btn{width:36px;height:36px;font-size:15px;}
+
+  /* Tables: let user swipe horizontally */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:580px;}
+
+  /* Modal & form-card padding */
+  .modal{padding:20px;}
+  .form-card{padding:18px;}
+  .chart-card,.section-card{padding:16px;}
+  .auth-card{padding:28px 22px;border-radius:16px;}
+}
+@media(max-width:520px){
+  /* Stat cards: single column on small phones */
+  .stats{grid-template-columns:1fr;}
+  .stat-value{font-size:28px;}
+  .stat-card{padding:16px;}
+
+  /* Tighter page padding */
+  .page-wrap{padding:14px;}
+
+  /* Page header: stack title and action buttons */
+  .ph{flex-direction:column;align-items:stretch;gap:14px;}
+  .ph-title{font-size:20px;}
+  .ph .btn{width:100%;justify-content:center;}
+  .ph > div[style*="flex"]{flex-direction:column !important;}
+
+  /* Filter bars: each child takes full width */
+  .filter-bar,.dash-filter-bar{flex-direction:column;align-items:stretch;}
+  .filter-bar > *,.dash-filter-bar > *{width:100%;}
+  .filter-tabs{overflow-x:auto;justify-content:flex-start;}
+  .sel-filter,.date-filter{width:100%;min-width:0;}
+  .filter-group{width:100%;}
+  .filter-group .ts-wrapper,.filter-group input{flex:1;min-width:0;width:100%;}
+  #dash-period-summary{margin-left:0 !important;}
+
+  /* Form action buttons (Clear / Save Entry) stack vertically */
+  .form-card > div:last-child{flex-direction:column !important;}
+  .form-card > div:last-child .btn{width:100%;justify-content:center;}
+
+  /* Modal mobile-friendly footer */
+  .modal{padding:18px;border-radius:14px;}
+  .modal-footer{flex-direction:column;}
+  .modal-footer .btn{width:100%;justify-content:center;}
+
+  /* Task items: allow title to wrap */
+  .task-item{padding:12px;gap:10px;}
+  .task-title{white-space:normal;}
+
+  /* "+ New" inline row: keep + button compact next to select */
+  .sel-row{flex-wrap:nowrap;}
+  .sel-row select,.sel-row .ts-wrapper{flex:1;min-width:0;}
+  .sel-row .btn{flex-shrink:0;}
 }
   </style>
 </head>
