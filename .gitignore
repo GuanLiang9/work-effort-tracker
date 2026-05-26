@@ -16,3 +16,8 @@ config.js
 # Cleanup artifacts
 write_index.js
 index.html.bak
+
+# Node dependencies and one-time setup scripts
+node_modules/
+package-lock.json
+setup.js

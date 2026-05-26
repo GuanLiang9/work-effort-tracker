@@ -8,5 +8,8 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "node-appwrite": "^25.2.0"
   }
 }
