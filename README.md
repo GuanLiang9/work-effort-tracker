@@ -1,6 +1,6 @@
 # Work Effort Tracker
 
-A personal work effort tracker — log hours, manage tasks, and visualise productivity across projects and customers. Built as a single HTML file with a Supabase backend (auth + database).
+A personal work effort tracker — log hours, manage tasks, and visualise productivity across projects and customers. Built as a single HTML file with a **PocketBase** backend (auth + database).
 
 ---
 
@@ -11,112 +11,139 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 - **Log Work** — form to add work entries, recent history table
 - **Customers** — internal 🏢 vs external 🤝 customer cards
 - **Projects** — project overview with total hours
-- **Auth** — email/password login, registration, and Google OAuth via Supabase
+- **Auth** — email/password login, registration, Google OAuth via PocketBase
 
 ---
 
-## Quick Start (local dev — no Supabase needed)
+## Quick Start (local dev — no backend needed)
 
 ```bash
-node build.js          # generates config.js with DEMO values
+node build.js          # generates config.js in DEMO mode
 # then open index.html in a browser  (or: npx serve . -p 3000)
 ```
 
-Data is stored in `localStorage` in DEMO mode — no account needed.
+Data is stored in `localStorage` — no account, no internet required.
 
 ---
 
 ## Production Setup
 
-### 1 · Create a Supabase Project
+### 1 · Create a PocketHost instance (free)
 
-1. Go to [https://supabase.com](https://supabase.com) and sign in / create a free account.
-2. Click **New Project** → choose an organisation → fill in:
-   - **Name**: `work-effort-tracker` (or anything)
-   - **Database Password**: save it somewhere safe
-   - **Region**: closest to you (e.g. *Southeast Asia — Singapore*)
-3. Click **Create new project** and wait ~2 minutes.
+[PocketHost](https://pockethost.io) is free managed PocketBase hosting — no server required.
 
-### 2 · Get your API keys
+1. Go to **[pockethost.io](https://pockethost.io)** → sign up for a free account.
+2. Click **New Instance** → give it a name (e.g. `work-tracker`).
+3. Your instance URL will be: `https://work-tracker.pockethost.io` *(yours will differ)*
+4. Click the instance → **Admin Dashboard** (opens `https://your-instance.pockethost.io/_/`)
+5. Create your first admin account when prompted.
 
-1. Go to **Project Settings** (⚙ gear icon) → **API**.
-2. Copy two values:
-   - **Project URL** — looks like `https://xxxxxxxxxxxx.supabase.co`
-   - **anon public** key — long `eyJ…` JWT string
+### 2 · Create the collections
 
-### 3 · Create the database schema
+In the PocketBase Admin UI, create three collections:
 
-1. Go to **SQL Editor** → **New query**.
-2. Open `schema.sql` from this repo and paste the entire contents.
-3. Click **Run** (▶). You should see "Success. No rows returned."
+#### `projects` collection
+- Type: **Base**
+- Fields:
+  | Field | Type | Required |
+  |---|---|---|
+  | `name` | Text | ✅ |
+  | `color` | Text | |
+  | `description` | Text | |
+  | `user` | Relation → users | ✅ |
+- **API Rules** (all 5 rules):
+  ```
+  List/Search : @request.auth.id = user
+  View        : @request.auth.id = user
+  Create      : @request.auth.id != ""
+  Update      : @request.auth.id = user
+  Delete      : @request.auth.id = user
+  ```
 
-### 4 · Enable authentication providers
+#### `customers` collection
+- Type: **Base**
+- Fields:
+  | Field | Type | Options | Required |
+  |---|---|---|---|
+  | `name` | Text | | ✅ |
+  | `type` | Select | `internal`, `external` | ✅ |
+  | `color` | Text | | |
+  | `user` | Relation → users | | ✅ |
+- **API Rules**: same as projects
 
-**Email/Password** — enabled by default, nothing to do.
+#### `entries` collection
+- Type: **Base**
+- Fields:
+  | Field | Type | Options | Required |
+  |---|---|---|---|
+  | `title` | Text | | ✅ |
+  | `project_id` | Text | | |
+  | `customer_id` | Text | | |
+  | `hours` | Number | Min: 0 | ✅ |
+  | `status` | Select | `pending`, `in-progress`, `completed` | |
+  | `date` | Date | | |
+  | `notes` | Text | | |
+  | `user` | Relation → users | | ✅ |
+- **API Rules**: same as projects
 
-**Google OAuth** (optional):
-1. **Authentication** → **Providers** → **Google** → toggle on.
-2. Follow Supabase's guide: [https://supabase.com/docs/guides/auth/social-login/auth-google](https://supabase.com/docs/guides/auth/social-login/auth-google)
-3. Paste your **Google Client ID** and **Client Secret** into the form.
+### 3 · Enable Google OAuth (optional)
 
-**Redirect URL** (required for OAuth):
-- **Authentication** → **URL Configuration** → add your Cloudflare Pages URL (e.g. `https://your-project.pages.dev`) to *Redirect URLs*.
+1. PocketBase Admin → **Settings** → **Auth providers** → **Google** → enable it.
+2. Create a Google Cloud OAuth client: [console.cloud.google.com](https://console.cloud.google.com)
+   - **Authorized redirect URI**: `https://your-instance.pockethost.io/api/oauth2-redirect`
+3. Paste your **Client ID** and **Client Secret** into PocketBase.
 
-### 5 · Configure local environment
+### 4 · Configure your local environment
 
 ```bash
-# 1. Copy the template
-cp .env.example .env.local
+# Edit .env.local — paste your PocketHost URL:
+#   POCKETBASE_URL=https://your-instance.pockethost.io
 
-# 2. Edit .env.local and paste your keys:
-#    SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-#    SUPABASE_ANON_KEY=eyJ...
-
-# 3. Generate config.js
+# Then generate config.js:
 node build.js
-# ✓ config.js generated  →  https://xxxxxxxxxxxx.supabase.co
+# ✓ config.js generated  →  https://your-instance.pockethost.io
 ```
 
-Open `index.html` (or `npx serve . -p 3000`). You should see the login page.
+Open `index.html` — you should see the login screen.  
+Register an account and your default data (projects, customers, entries) will be seeded automatically on first login.
 
 ---
 
 ## Deploying to Cloudflare Pages
 
-### Option A — Connect GitHub (recommended — auto-deploys on every push)
+### Option A — Connect GitHub (auto-deploys on every push)
 
-1. [https://dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
-2. Authorise Cloudflare to access GitHub and select the `work-effort-tracker` repo.
-3. Set build configuration:
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
+2. Select the `work-effort-tracker` repo.
+3. Build settings:
 
    | Setting | Value |
    |---|---|
    | Build command | `node build.js` |
    | Build output directory | `/` *(root)* |
 
-4. Under **Environment variables (production)**, click **Add variable** for each:
+4. **Environment variables (production)**:
 
-   | Variable name | Value |
+   | Variable | Value |
    |---|---|
-   | `SUPABASE_URL` | `https://xxxxxxxxxxxx.supabase.co` |
-   | `SUPABASE_ANON_KEY` | `eyJ…` |
+   | `POCKETBASE_URL` | `https://your-instance.pockethost.io` |
 
-5. Click **Save and Deploy**. Your site goes live at `https://your-project.pages.dev` in ~1 minute.
+5. **Save and Deploy** → live in ~1 minute.
 
-Every `git push` to `main` triggers a new deploy automatically.
+Every `git push` to `main` auto-deploys.
 
-### Option B — Wrangler CLI (manual)
+### Option B — Wrangler CLI
 
 ```bash
 npm install -g wrangler
-wrangler login          # opens browser to authorise
+wrangler login
 
-node build.js           # build config.js first
+node build.js     # builds config.js with DEMO values (Cloudflare will override at deploy time)
 
 wrangler pages deploy . --project-name work-effort-tracker
 ```
 
-After first deploy, go to your Cloudflare Pages project → **Settings** → **Environment variables** and add `SUPABASE_URL` and `SUPABASE_ANON_KEY` so future CI deploys have them.
+Then set `POCKETBASE_URL` in Cloudflare Pages → **Settings** → **Environment variables**.
 
 ---
 
@@ -124,21 +151,21 @@ After first deploy, go to your Cloudflare Pages project → **Settings** → **E
 
 | File | Purpose |
 |---|---|
-| `index.html` | Entire app — HTML + CSS + JS in one file |
-| `schema.sql` | Supabase table definitions + RLS policies |
+| `index.html` | Entire app — HTML + CSS + JS |
+| `schema.sql` | Collection structure reference (not SQL — see file for details) |
 | `build.js` | Reads `.env.local` / CI env → writes `config.js` |
 | `config.js` | **Generated, gitignored** — never commit |
-| `.env.local` | **Gitignored** — your local Supabase keys |
-| `.env.example` | Safe template to commit |
+| `.env.local` | **Gitignored** — your local PocketBase URL |
+| `.env.example` | Safe template |
 
 ---
 
 ## Data Model
 
 ```
-projects   id · user_id · name · color · description
-customers  id · user_id · name · type (internal|external) · color
-entries    id · user_id · title · project_id · customer_id · hours · status · date · notes
+projects   id · user · name · color · description
+customers  id · user · name · type (internal|external) · color
+entries    id · user · title · project_id · customer_id · hours · status · date · notes
 ```
 
-All tables have Row Level Security — each user sees only their own rows.
+PocketBase API rules ensure each user sees only their own records.

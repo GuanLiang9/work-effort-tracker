@@ -1,54 +1,49 @@
 -- ============================================================
---  Work Effort Tracker — Supabase Schema
---  Run this in: Supabase Dashboard → SQL Editor → New query
+--  Work Effort Tracker — PocketBase Collections Reference
+--
+--  PocketBase uses a GUI to create collections, not SQL.
+--  This file documents the required collection structure.
+--  Use it as a reference when setting up your PocketBase instance.
+--
+--  Quick setup: Import collections/schema_pb.json instead
+--  (PocketBase Admin UI → Settings → Import collections)
 -- ============================================================
 
--- ── TABLES ───────────────────────────────────────────────────
+-- COLLECTION: projects
+-- Base type: Base
+-- Fields:
+--   name        text       required
+--   color       text       (hex colour, e.g. #3b82f6)
+--   description text
+--   user        relation   → users collection, required
+--
+-- API Rules (access control):
+--   List/Search : @request.auth.id = user
+--   View        : @request.auth.id = user
+--   Create      : @request.auth.id != ""
+--   Update      : @request.auth.id = user
+--   Delete      : @request.auth.id = user
 
-create table if not exists public.projects (
-  id          text        primary key default gen_random_uuid()::text,
-  user_id     uuid        references auth.users(id) on delete cascade not null,
-  name        text        not null,
-  color       text        not null default '#6366f1',
-  created_at  timestamptz default now()
-);
+-- COLLECTION: customers
+-- Base type: Base
+-- Fields:
+--   name   text    required
+--   type   select  options: internal, external  (required)
+--   color  text    (hex colour)
+--   user   relation → users collection, required
+--
+-- API Rules: same as projects
 
-create table if not exists public.customers (
-  id          text        primary key default gen_random_uuid()::text,
-  user_id     uuid        references auth.users(id) on delete cascade not null,
-  name        text        not null,
-  type        text        check (type in ('internal','external')) not null default 'internal',
-  color       text        not null default '#3b82f6',
-  created_at  timestamptz default now()
-);
-
-create table if not exists public.entries (
-  id          text        primary key default gen_random_uuid()::text,
-  user_id     uuid        references auth.users(id) on delete cascade not null,
-  title       text        not null,
-  project_id  text        references public.projects(id)  on delete set null,
-  customer_id text        references public.customers(id) on delete set null,
-  hours       numeric     not null default 0,
-  status      text        check (status in ('pending','in-progress','completed')) default 'pending',
-  date        date,
-  notes       text,
-  created_at  timestamptz default now()
-);
-
--- ── ROW LEVEL SECURITY ────────────────────────────────────────
-
-alter table public.projects  enable row level security;
-alter table public.customers enable row level security;
-alter table public.entries   enable row level security;
-
--- Each user can only read/write their own rows
-create policy "own projects"  on public.projects  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "own customers" on public.customers for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "own entries"   on public.entries   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
--- ── INDEXES (performance) ─────────────────────────────────────
-
-create index if not exists projects_user_idx  on public.projects  (user_id);
-create index if not exists customers_user_idx on public.customers (user_id);
-create index if not exists entries_user_idx   on public.entries   (user_id);
-create index if not exists entries_date_idx   on public.entries   (date desc);
+-- COLLECTION: entries
+-- Base type: Base
+-- Fields:
+--   title       text    required
+--   project_id  text    (stores PocketBase project record ID)
+--   customer_id text    (stores PocketBase customer record ID)
+--   hours       number  required, min: 0
+--   status      select  options: pending, in-progress, completed
+--   date        date
+--   notes       text
+--   user        relation → users collection, required
+--
+-- API Rules: same as projects

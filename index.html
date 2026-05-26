@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.3/dist/pocketbase.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
 /* ── TOKENS ─────────────────────────────────────────────── */
@@ -524,13 +524,13 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 </div>
 <div id="toast-box"></div>
 
-<script>window.APP_CONFIG=window.APP_CONFIG||{supabaseUrl:'DEMO',supabaseAnonKey:'DEMO'};</script>
+<script>window.APP_CONFIG=window.APP_CONFIG||{pocketbaseUrl:'DEMO'};</script>
 <script src="config.js" onerror="console.warn('config.js not found')"></script>
 <script>
 const CFG=window.APP_CONFIG||{};
-const DEMO_MODE=!CFG.supabaseUrl||CFG.supabaseUrl==='DEMO';
-let supa=null;
-if(!DEMO_MODE) supa=supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+const DEMO_MODE=!CFG.pocketbaseUrl||CFG.pocketbaseUrl==='DEMO';
+let pb=null;
+if(!DEMO_MODE) pb=new PocketBase(CFG.pocketbaseUrl);
 
 /* SEED */
 const SP=[{id:'p1',name:'BMC',color:'#3b82f6'},{id:'p2',name:'OneApp',color:'#22c55e'},{id:'p3',name:'AI Engineering',color:'#a855f7'}];
@@ -564,27 +564,39 @@ function lsLoad(){try{const s=localStorage.getItem('wt_v3');if(s)return JSON.par
 function lsSave(){localStorage.setItem('wt_v3',JSON.stringify(db));}
 function lsInit(){const s=lsLoad();if(s){db=s;}else{db={projects:[...SP],customers:[...SC],entries:[...SE]};lsSave();}}
 
-/* SUPABASE DATA */
+/* POCKETBASE DATA */
 async function dbLoad(uid){
   showLoading(true);
   try{
     const[pr,cu,en]=await Promise.all([
-      supa.from('projects').select('*').eq('user_id',uid).order('created_at'),
-      supa.from('customers').select('*').eq('user_id',uid).order('created_at'),
-      supa.from('entries').select('*').eq('user_id',uid).order('date',{ascending:false}),
+      pb.collection('projects').getFullList({filter:`user="${uid}"`,sort:'+created'}),
+      pb.collection('customers').getFullList({filter:`user="${uid}"`,sort:'+created'}),
+      pb.collection('entries').getFullList({filter:`user="${uid}"`,sort:'-date'}),
     ]);
-    if(pr.error)throw pr.error;if(cu.error)throw cu.error;if(en.error)throw en.error;
-    db.projects=pr.data||[];db.customers=cu.data||[];db.entries=en.data||[];
+    db.projects=pr;db.customers=cu;db.entries=en;
     if(!db.projects.length&&!db.entries.length)await dbSeed(uid);
   }catch(e){toast('Failed to load: '+e.message,'error');}
   finally{showLoading(false);}
 }
 async function dbSeed(uid){
-  const ps=SP.map(p=>({...p,user_id:uid}));
-  const cs=SC.map(c=>({...c,user_id:uid}));
-  const es=SE.map(e=>({...e,user_id:uid,project_id:e.projectId,customer_id:e.customerId,projectId:undefined,customerId:undefined}));
-  const[r1,r2,r3]=await Promise.all([supa.from('projects').insert(ps).select(),supa.from('customers').insert(cs).select(),supa.from('entries').insert(es).select()]);
-  db.projects=r1.data||[];db.customers=r2.data||[];db.entries=r3.data||[];
+  /* Create projects first, then customers, then entries — building ID maps along the way */
+  const projMap={};
+  for(const p of SP){
+    const r=await pb.collection('projects').create({name:p.name,color:p.color,user:uid});
+    projMap[p.id]=r.id;db.projects.push(r);
+  }
+  const custMap={};
+  for(const c of SC){
+    const r=await pb.collection('customers').create({name:c.name,type:c.type,color:c.color,user:uid});
+    custMap[c.id]=r.id;db.customers.push(r);
+  }
+  for(const e of SE){
+    const r=await pb.collection('entries').create({
+      title:e.title,project_id:projMap[e.projectId]||'',customer_id:custMap[e.customerId]||'',
+      hours:e.hours,status:e.status,date:e.date,notes:e.notes,user:uid
+    });
+    db.entries.push(r);
+  }
 }
 function getProjId(e){return e.project_id||e.projectId||null;}
 function getCustId(e){return e.customer_id||e.customerId||null;}
@@ -596,8 +608,7 @@ async function dbInsert(table,row){
     else db.entries.unshift(row);
     lsSave();return row;
   }
-  const{data,error}=await supa.from(table).insert({...row,user_id:currentUser.id}).select().single();
-  if(error)throw error;
+  const data=await pb.collection(table).create({...row,user:currentUser.id});
   if(table==='projects')db.projects.push(data);
   else if(table==='customers')db.customers.push(data);
   else db.entries.unshift(data);
@@ -605,8 +616,7 @@ async function dbInsert(table,row){
 }
 async function dbUpdate(table,id,patch){
   if(DEMO_MODE){const a=table==='projects'?db.projects:table==='customers'?db.customers:db.entries;const i=a.find(x=>x.id===id);if(i)Object.assign(i,patch);lsSave();return;}
-  const{error}=await supa.from(table).update(patch).eq('id',id).eq('user_id',currentUser.id);
-  if(error)throw error;
+  await pb.collection(table).update(id,patch);
   const a=table==='projects'?db.projects:table==='customers'?db.customers:db.entries;
   const i=a.find(x=>x.id===id);if(i)Object.assign(i,patch);
 }
@@ -617,8 +627,7 @@ async function dbDelete(table,id){
     else db.entries=db.entries.filter(x=>x.id!==id);
     lsSave();return;
   }
-  const{error}=await supa.from(table).delete().eq('id',id).eq('user_id',currentUser.id);
-  if(error)throw error;
+  await pb.collection(table).delete(id);
   if(table==='projects')db.projects=db.projects.filter(x=>x.id!==id);
   else if(table==='customers')db.customers=db.customers.filter(x=>x.id!==id);
   else db.entries=db.entries.filter(x=>x.id!==id);
@@ -628,46 +637,50 @@ async function dbDelete(table,id){
 function initAuth(){
   if(DEMO_MODE){
     document.getElementById('dev-notice').classList.add('show');
-    currentUser={id:'demo',email:'demo@local',user_metadata:{full_name:'Demo User'}};
+    currentUser={id:'demo',email:'demo@local',name:'Demo User'};
     lsInit();showApp();return;
   }
-  supa.auth.onAuthStateChange(async(_,session)=>{
-    if(session?.user){currentUser=session.user;await dbLoad(session.user.id);showApp();}
+  pb.authStore.onChange(async(token,model)=>{
+    if(model){currentUser=model;await dbLoad(model.id);showApp();}
     else{currentUser=null;showLogin();}
-  });
-  supa.auth.getSession();
+  },true);
 }
 async function handleLogin(){
   const email=v('login-email'),password=v('login-password');
   if(!email||!password){showAuthError('Please enter email and password.');return;}
-  document.getElementById('login-btn-text').textContent='Signing in…';
-  const{error}=await supa.auth.signInWithPassword({email,password});
-  document.getElementById('login-btn-text').textContent='Sign In';
-  if(error)showAuthError(error.message);
+  const btn=document.getElementById('login-btn-text');
+  btn.textContent='Signing in…';
+  try{await pb.collection('users').authWithPassword(email,password);}
+  catch(e){showAuthError(e.message||'Invalid email or password.');}
+  finally{btn.textContent='Sign In';}
 }
 async function handleRegister(){
   const name=v('reg-name'),email=v('reg-email'),password=v('reg-password');
   if(!name||!email||!password){showAuthError('Please fill all fields.');return;}
-  if(password.length<6){showAuthError('Password must be at least 6 characters.');return;}
-  document.getElementById('reg-btn-text').textContent='Creating account…';
-  const{error}=await supa.auth.signUp({email,password,options:{data:{full_name:name}}});
-  document.getElementById('reg-btn-text').textContent='Create Account';
-  if(error)showAuthError(error.message);
-  else toast('Account created! Check your email to confirm.','info');
+  if(password.length<8){showAuthError('Password must be at least 8 characters.');return;}
+  const btn=document.getElementById('reg-btn-text');
+  btn.textContent='Creating account…';
+  try{
+    await pb.collection('users').create({name,email,password,passwordConfirm:password});
+    await pb.collection('users').authWithPassword(email,password);
+  }catch(e){showAuthError(e.message||'Registration failed.');}
+  finally{btn.textContent='Create Account';}
 }
 async function handleGoogle(){
-  if(DEMO_MODE){toast('Google auth requires Supabase config.','error');return;}
-  const{error}=await supa.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});
-  if(error)showAuthError(error.message);
+  if(DEMO_MODE){toast('Google auth requires PocketBase config.','error');return;}
+  try{await pb.collection('users').authWithOAuth2({provider:'google'});}
+  catch(e){showAuthError(e.message);}
 }
 async function handleForgot(){
   const email=v('forgot-email');
   if(!email){showAuthError('Enter your email.');return;}
-  const{error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
-  if(error)showAuthError(error.message);else toast('Reset link sent!','success');
+  try{
+    await pb.collection('users').requestPasswordReset(email);
+    toast('Reset link sent! Check your email.','success');
+  }catch(e){showAuthError(e.message);}
 }
 async function handleSignout(){
-  if(!DEMO_MODE)await supa.auth.signOut();
+  if(!DEMO_MODE)pb.authStore.clear();
   db={projects:[],customers:[],entries:[]};currentUser=null;showLogin();
 }
 function showLogin(){document.getElementById('loading').style.display='none';document.getElementById('app').classList.remove('show');document.getElementById('auth-screen').classList.add('show');}
@@ -680,10 +693,10 @@ function showApp(){
 function showLoading(on){const l=document.getElementById('loading');if(on){l.style.display='flex';l.classList.remove('fade');}else{l.classList.add('fade');setTimeout(()=>l.style.display='none',300);}}
 function populateUserUI(){
   if(!currentUser)return;
-  const name=currentUser.user_metadata?.full_name||currentUser.email?.split('@')[0]||'User';
+  const name=currentUser.name||currentUser.email?.split('@')[0]||'User';
   document.getElementById('user-name').textContent=name;
   document.getElementById('user-email').textContent=currentUser.email||'';
-  const photo=currentUser.user_metadata?.avatar_url||currentUser.user_metadata?.picture||'';
+  const photo='';
   const av=document.getElementById('user-avatar');
   if(photo)av.innerHTML='<img src="'+photo+'" alt="">';
   else av.textContent=name.charAt(0).toUpperCase();
