@@ -528,16 +528,22 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 <script src="config.js" onerror="console.warn('config.js not found')"></script>
 <script>
 const CFG=window.APP_CONFIG||{};
-const DEMO_MODE=!CFG.appwriteProjectId||CFG.appwriteProjectId==='DEMO';
+let DEMO_MODE=!CFG.appwriteProjectId||CFG.appwriteProjectId==='DEMO';
 let aw_account=null,aw_databases=null,AW_DB='';
 const COL={projects:'projects',customers:'customers',entries:'entries'};
 if(!DEMO_MODE){
-  const aw=new Appwrite.Client()
-    .setEndpoint(CFG.appwriteEndpoint||'https://cloud.appwrite.io/v1')
-    .setProject(CFG.appwriteProjectId);
-  aw_account=new Appwrite.Account(aw);
-  aw_databases=new Appwrite.Databases(aw);
-  AW_DB=CFG.appwriteDatabaseId||'';
+  try{
+    if(typeof Appwrite==='undefined') throw new Error('Appwrite SDK not loaded');
+    const aw=new Appwrite.Client()
+      .setEndpoint(CFG.appwriteEndpoint||'https://cloud.appwrite.io/v1')
+      .setProject(CFG.appwriteProjectId);
+    aw_account=new Appwrite.Account(aw);
+    aw_databases=new Appwrite.Databases(aw);
+    AW_DB=CFG.appwriteDatabaseId||'';
+  }catch(e){
+    console.error('Appwrite init error:',e.message);
+    DEMO_MODE=true;
+  }
 }
 
 /* SEED */
@@ -656,12 +662,15 @@ async function initAuth(){
     lsInit();showApp();return;
   }
   showLoading(true);
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Auth timeout')),8000));
   try{
-    const u=await aw_account.get();
+    const u=await Promise.race([aw_account.get(),timeout]);
     currentUser={...u,id:u.$id};
     await dbLoad(u.$id);showApp();
-  }catch{currentUser=null;showLogin();}
-  finally{showLoading(false);}
+  }catch(e){
+    console.warn('Auth check:',e.message);
+    currentUser=null;showLogin();
+  }finally{showLoading(false);}
 }
 async function handleLogin(){
   const email=v('login-email'),password=v('login-password');
@@ -940,7 +949,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');}));
 
 /* BOOT */
-document.addEventListener('DOMContentLoaded',()=>{initResponsive();document.getElementById('lw-date').value=today();initAuth();});
+document.addEventListener('DOMContentLoaded',()=>{
+  initResponsive();
+  document.getElementById('lw-date').value=today();
+  initAuth();
+  /* Safety net — if loading screen is still up after 12s, force login */
+  setTimeout(()=>{
+    const l=document.getElementById('loading');
+    if(l&&l.style.display!=='none'){console.error('Safety net: forcing login');showLoading(false);showLogin();}
+  },12000);
+});
 </script>
 </body>
 </html>
