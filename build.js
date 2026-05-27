@@ -9,10 +9,14 @@
 const fs   = require('fs');
 const path = require('path');
 
-// ── Load .env.local (local dev only) ───────────────────────
-const envPath = path.join(__dirname, '.env.local');
-if (fs.existsSync(envPath)) {
-  fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+// ── Load env files (precedence: process.env > .env.local > .env.example) ───
+// .env.example is committed and holds the production Appwrite IDs (not secrets —
+// they're sent in every browser API call). This lets Cloudflare Pages build
+// correctly even without dashboard env vars configured.
+function loadEnvFile(file) {
+  const p = path.join(__dirname, file);
+  if (!fs.existsSync(p)) return;
+  fs.readFileSync(p, 'utf8').split('\n').forEach(line => {
     const t = line.trim();
     if (!t || t.startsWith('#')) return;
     const eq = t.indexOf('=');
@@ -22,6 +26,8 @@ if (fs.existsSync(envPath)) {
     if (!process.env[key]) process.env[key] = val;
   });
 }
+loadEnvFile('.env.local');
+loadEnvFile('.env.example');
 
 // ── Build config ────────────────────────────────────────────
 const config = {
