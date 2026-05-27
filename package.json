@@ -4,9 +4,13 @@
   "description": "Personal work effort tracker with Appwrite backend",
   "scripts": {
     "build": "node build.js",
-    "dev": "node build.js && npx serve dist -p 3000"
+    "dev": "node build.js && npx serve dist -p 3000",
+    "icons": "node scripts/gen-icons.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
