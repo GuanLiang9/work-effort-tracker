@@ -23,7 +23,10 @@ function loadEnvFile(file) {
     if (eq === -1) return;
     const key = t.slice(0, eq).trim();
     const val = t.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
-    if (!process.env[key]) process.env[key] = val;
+    const cur = process.env[key];
+    // Treat empty values and obvious placeholders (your-project-id, etc.) as
+    // unset so the next env file in precedence can supply a real value.
+    if (!cur || /^your-/i.test(cur)) process.env[key] = val;
   });
 }
 loadEnvFile('.env.local');
