@@ -142,7 +142,7 @@ Chart.js 4.4.0 (CDN). Stored in module-level `chartH` / `chartS` / `chartC`. Eac
 - **Build command** (Cloudflare Pages): `node build.js`
 - **Output directory**: `dist` — `build.js` writes `dist/config.js` and copies `index.html` → `dist/`
 - **Environment variables**: `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `APPWRITE_DATABASE_ID`
-- **Live URL**: https://work-effort-tracker.guanliang976.workers.dev/ (deployed as a Cloudflare Worker with static assets — see `wrangler.jsonc`. The older `work-effort-tracker.pages.dev` Pages project is orphaned/stale.)
+- **Live URL**: https://work-effort-tracker.pages.dev/ (Cloudflare Pages — auto-deploys from `master`. Build command: `node build.js`. Output dir: `dist`. Deploy command must be left **empty** in dashboard.)
 
 ## Domain logic worth knowing
 
