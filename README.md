@@ -2,6 +2,8 @@
 
 A personal work effort tracker — log hours, manage tasks, and visualise productivity across projects and customers. Built as a single HTML file with an **Appwrite** backend (auth + database).
 
+🌐 **Live app:** [work-effort-tracker.pages.dev](https://work-effort-tracker.pages.dev/)
+
 ---
 
 ## Features

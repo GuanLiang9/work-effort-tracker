@@ -13,12 +13,11 @@ A single-file client-side work effort tracker (`index.html`) backed by **Appwrit
 # 2. Generate config.js
 node build.js
 
-# 3. Open in browser
-npx serve . -p 3000
-# or just open index.html directly
+# 3. Serve the built output (config.js lives in dist/, not root)
+npx serve dist -p 3000
 ```
 
-Without a `.env.local` the app runs in **DEMO mode** (localStorage only, no auth required).
+Without a `.env.local` the app runs in **DEMO mode** (localStorage only, no auth required). Opening root `index.html` directly also falls into DEMO mode because `dist/config.js` isn't on that path — the silent 404 leaves `window.APP_CONFIG` undefined.
 
 ## Architecture
 
@@ -141,5 +140,26 @@ Chart.js 4.4.0 (CDN). Stored in module-level `chartH` / `chartS` / `chartC`. Eac
 ## Deployment
 
 - **Build command** (Cloudflare Pages): `node build.js`
-- **Output directory**: `/` (root)
+- **Output directory**: `dist` — `build.js` writes `dist/config.js` and copies `index.html` → `dist/`
 - **Environment variables**: `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `APPWRITE_DATABASE_ID`
+- **Live URL**: https://work-effort-tracker.pages.dev/
+
+## Domain logic worth knowing
+
+- **Recurring tasks** (Log Work → 🔁): creates N independent entries (2–36 months), one per month, same day-of-month as the original. Clamps to month-end when the day doesn't exist (Jan 31 → Feb 28). Each occurrence is independently editable/deletable.
+- **Export filenames** auto-encode the active filters, e.g. `worktracker_completed_BMC_Sentosa_2026-05-26.{csv,pdf}`.
+- **CSV export** writes UTF-8 with BOM so Excel renders emoji/accents correctly.
+- **PDF export** is landscape A4 with branded header, filter-summary block, alternating rows, TOTAL row.
+- **Dashboard "Period" filter** scopes all stat cards + 3 charts to a single month (or "All time").
+- **Tasks page** combines status tabs + project/customer/date-range filters; "Clear dates" resets the date range only.
+
+## Mobile-specific behaviour
+
+- Sliding sidebar (off-canvas on phones)
+- Inputs sized to avoid iOS auto-zoom on focus
+- Tables become horizontally swipeable; stacked layouts on narrow widths
+- Tap targets sized for fingers, not cursors
+
+When editing UI, test at a phone width — desktop-only changes regress these patterns easily.
+
+> `schema.sql` is **reference documentation**, not executable SQL. Appwrite collections are created via the dashboard; this file just lists attributes/sizes/required flags so you don't have to dig through the README tables.
