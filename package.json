@@ -10,7 +10,7 @@
   "engines": {
     "node": ">=18"
   },
-  "devDependencies": {
+  "optionalDependencies": {
     "sharp": "^0.34.5"
   }
 }
