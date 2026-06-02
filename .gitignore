@@ -1,6 +1,11 @@
 # Claude Code local settings
 .claude/settings.local.json
 
+# Skill installations (npx skills add) — these are agent tooling, not app code
+.agents/
+.claude/skills/
+skills-lock.json
+
 # OS files
 .DS_Store
 Thumbs.db

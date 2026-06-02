@@ -54,8 +54,12 @@ fs.writeFileSync(path.join(dist, 'config.js'), configOut);
   'manifest.json',
   'apple-touch-icon.png',
   'favicon-32.png',
+  'favicon.ico',
   'icon-192.png',
   'icon-512.png',
+  'robots.txt',
+  'sitemap.xml',
+  '_headers',
 ].forEach(f => {
   const src = path.join(__dirname, f);
   if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dist, f));

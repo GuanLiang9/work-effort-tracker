@@ -16,10 +16,39 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WorkTracker">
   <meta name="mobile-web-app-capable" content="yes">
+  <link rel="canonical" href="https://work-effort-tracker.pages.dev/">
   <meta property="og:title" content="WorkTracker — Effort & Productivity Dashboard">
   <meta property="og:description" content="Log hours, manage tasks, and visualise productivity across projects and customers.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://work-effort-tracker.pages.dev/">
+  <meta property="og:image" content="https://work-effort-tracker.pages.dev/icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="WorkTracker app icon">
+  <meta property="og:site_name" content="WorkTracker">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="WorkTracker — Effort & Productivity Dashboard">
+  <meta name="twitter:description" content="Log hours, manage tasks, and visualise productivity across projects and customers.">
+  <meta name="twitter:image" content="https://work-effort-tracker.pages.dev/icon-512.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "WorkTracker",
+    "alternateName": "WorkTracker — Effort & Productivity Dashboard",
+    "description": "Log hours, manage tasks, and visualise productivity across projects and customers.",
+    "url": "https://work-effort-tracker.pages.dev/",
+    "image": "https://work-effort-tracker.pages.dev/icon-512.png",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Any (web browser)",
+    "browserRequirements": "Requires JavaScript. Modern evergreen browser.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -592,8 +621,8 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
     <!-- Login -->
     <div id="login-form">
       <div class="auth-form">
-        <div class="auth-field"><label>Email</label><input type="email" id="login-email" class="auth-input" placeholder="you@example.com" autocomplete="email"></div>
-        <div class="auth-field"><label>Password</label><input type="password" id="login-password" class="auth-input" placeholder="••••••••" autocomplete="current-password"></div>
+        <div class="auth-field"><label for="login-email">Email</label><input type="email" id="login-email" class="auth-input" placeholder="you@example.com" autocomplete="email"></div>
+        <div class="auth-field"><label for="login-password">Password</label><input type="password" id="login-password" class="auth-input" placeholder="••••••••" autocomplete="current-password"></div>
         <div class="auth-forgot"><a href="#" onclick="showForgot();return false;">Forgot password?</a></div>
         <button class="auth-btn-primary" onclick="handleLogin()"><span id="login-btn-text">Sign In</span></button>
         <div class="auth-divider">or</div>
@@ -606,9 +635,9 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
     <!-- Register -->
     <div id="register-form" style="display:none">
       <div class="auth-form">
-        <div class="auth-field"><label>Full Name</label><input type="text" id="reg-name" class="auth-input" placeholder="Guan Liang Tan" autocomplete="name"></div>
-        <div class="auth-field"><label>Email</label><input type="email" id="reg-email" class="auth-input" placeholder="you@example.com" autocomplete="email"></div>
-        <div class="auth-field"><label>Password</label><input type="password" id="reg-password" class="auth-input" placeholder="Min. 6 characters" autocomplete="new-password"></div>
+        <div class="auth-field"><label for="reg-name">Full Name</label><input type="text" id="reg-name" class="auth-input" placeholder="Guan Liang Tan" autocomplete="name"></div>
+        <div class="auth-field"><label for="reg-email">Email</label><input type="email" id="reg-email" class="auth-input" placeholder="you@example.com" autocomplete="email"></div>
+        <div class="auth-field"><label for="reg-password">Password</label><input type="password" id="reg-password" class="auth-input" placeholder="Min. 6 characters" autocomplete="new-password"></div>
         <button class="auth-btn-primary" onclick="handleRegister()"><span id="reg-btn-text">Create Account</span></button>
         <div class="auth-divider">or</div>
         <button class="auth-btn-google" onclick="handleGoogle()">
@@ -621,7 +650,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
     <div id="forgot-panel">
       <button class="auth-back" onclick="hideForgot()">← Back to sign in</button>
       <div class="auth-form">
-        <div class="auth-field"><label>Email address</label><input type="email" id="forgot-email" class="auth-input" placeholder="you@example.com"></div>
+        <div class="auth-field"><label for="forgot-email">Email address</label><input type="email" id="forgot-email" class="auth-input" placeholder="you@example.com"></div>
         <button class="auth-btn-primary" onclick="handleForgot()">Send reset link</button>
       </div>
     </div>
@@ -638,7 +667,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
         <div class="brand-mark brand-icon"><img src="icon.svg" alt="WorkTracker" width="36" height="36"></div>
         <div><div class="brand-name">WorkTracker</div><div class="brand-sub">Effort &amp; Productivity</div></div>
       </div>
-      <button class="hamburger" onclick="closeSidebar()">✕</button>
+      <button class="hamburger" onclick="closeSidebar()" aria-label="Close sidebar menu">✕</button>
     </div>
     <div class="nav-section">
       <div class="nav-label">Main</div>
@@ -655,21 +684,21 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
       <div class="user-card">
         <div class="user-avatar" id="user-avatar">?</div>
         <div class="user-info"><div class="user-name" id="user-name">Loading…</div><div class="user-email" id="user-email"></div></div>
-        <button class="signout-btn" title="Sign out" onclick="handleSignout()">⎋</button>
+        <button class="signout-btn" title="Sign out" aria-label="Sign out" onclick="handleSignout()">⎋</button>
       </div>
     </div>
   </aside>
   <main class="main">
     <div class="page-wrap">
-      <button class="hamburger" id="mob-hamburger" style="display:none;margin-bottom:16px" onclick="openSidebar()">☰</button>
+      <button class="hamburger" id="mob-hamburger" style="display:none;margin-bottom:16px" onclick="openSidebar()" aria-label="Open navigation menu">☰</button>
 
       <!-- DASHBOARD -->
       <div id="page-dashboard" class="page active">
-        <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">Your work overview &amp; productivity insights</div></div><button class="btn btn-primary" onclick="openAddEntry()">+ Log Work</button></div>
+        <div class="ph"><div><h1 class="ph-title">Dashboard</h1><div class="ph-sub">Your work overview &amp; productivity insights</div></div><button class="btn btn-primary" onclick="openAddEntry()">+ Log Work</button></div>
         <div class="dash-filter-bar">
           <div class="filter-group">
-            <span class="filter-label">Period</span>
-            <select class="sel-filter" id="dash-month" onchange="setDashMonth()"><option value="">All time</option></select>
+            <label class="filter-label" for="dash-month">Period</label>
+            <select class="sel-filter" id="dash-month" onchange="setDashMonth()" aria-label="Filter by month"><option value="">All time</option></select>
           </div>
           <div id="dash-period-summary" style="margin-left:auto;font-size:13px;color:var(--muted)"></div>
         </div>
@@ -693,7 +722,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
       <!-- TASKS -->
       <div id="page-tasks" class="page">
-        <div class="ph"><div><div class="ph-title">Tasks</div><div class="ph-sub">Track pending and completed work items</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="exportCSV()" title="Export current view to CSV (opens in Excel)">📊 Export CSV</button><button class="btn btn-ghost" onclick="exportPDF()" title="Export current view to PDF">📄 Export PDF</button><button class="btn btn-primary" onclick="openAddEntry()">+ Add Task</button></div></div>
+        <div class="ph"><div><h1 class="ph-title">Tasks</h1><div class="ph-sub">Track pending and completed work items</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="exportCSV()" title="Export current view to CSV (opens in Excel)">📊 Export CSV</button><button class="btn btn-ghost" onclick="exportPDF()" title="Export current view to PDF">📄 Export PDF</button><button class="btn btn-primary" onclick="openAddEntry()">+ Add Task</button></div></div>
         <div class="filter-bar">
           <div class="filter-tabs" id="filter-tabs">
             <div class="tab active" onclick="setFilter('all')">All</div>
@@ -701,10 +730,10 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
             <div class="tab" onclick="setFilter('in-progress')">In Progress</div>
             <div class="tab" onclick="setFilter('completed')">Completed</div>
           </div>
-          <select class="sel-filter" id="proj-filter"  onchange="renderTasks()"><option value="">All Projects</option></select>
-          <select class="sel-filter" id="cust-filter"  onchange="renderTasks()"><option value="">All Customers</option></select>
-          <div class="filter-group"><span class="filter-label">From</span><input type="date" class="date-filter" id="date-from" onchange="renderTasks()"></div>
-          <div class="filter-group"><span class="filter-label">To</span><input type="date" class="date-filter" id="date-to" onchange="renderTasks()"></div>
+          <select class="sel-filter" id="proj-filter"  onchange="renderTasks()" aria-label="Filter by project"><option value="">All Projects</option></select>
+          <select class="sel-filter" id="cust-filter"  onchange="renderTasks()" aria-label="Filter by customer"><option value="">All Customers</option></select>
+          <div class="filter-group"><label class="filter-label" for="date-from">From</label><input type="date" class="date-filter" id="date-from" onchange="renderTasks()"></div>
+          <div class="filter-group"><label class="filter-label" for="date-to">To</label><input type="date" class="date-filter" id="date-to" onchange="renderTasks()"></div>
           <button class="btn btn-ghost btn-sm" onclick="clearDateRange()" title="Clear date range">Clear dates</button>
         </div>
         <div id="task-list" class="task-list"></div>
@@ -712,28 +741,28 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
       <!-- LOG WORK -->
       <div id="page-log" class="page">
-        <div class="ph"><div><div class="ph-title">Log Work</div><div class="ph-sub">Record tasks and hours spent</div></div></div>
+        <div class="ph"><div><h1 class="ph-title">Log Work</h1><div class="ph-sub">Record tasks and hours spent</div></div></div>
         <div class="form-card">
           <div class="form-title">New Work Entry</div>
           <div class="form-grid">
-            <div class="fg full"><label>Task / Work Description *</label><input type="text" id="lw-title" placeholder="What did you work on?"></div>
+            <div class="fg full"><label for="lw-title">Task / Work Description *</label><input type="text" id="lw-title" placeholder="What did you work on?"></div>
             <div class="fg">
-              <label>Project *</label>
+              <label for="lw-project">Project *</label>
               <div class="sel-row"><select id="lw-project"><option value="">Select project…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-np-row')">+ New</button></div>
-              <div class="new-row" id="lw-np-row"><input type="text" id="lw-np-name" placeholder="Project name"><input type="color" class="color-pick" id="lw-np-color" value="#6366f1"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('project','lw-project','lw-np-name','lw-np-color','lw-np-row')">Add</button></div>
+              <div class="new-row" id="lw-np-row"><input type="text" id="lw-np-name" placeholder="Project name" aria-label="New project name"><input type="color" class="color-pick" id="lw-np-color" value="#6366f1" aria-label="New project colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('project','lw-project','lw-np-name','lw-np-color','lw-np-row')">Add</button></div>
             </div>
             <div class="fg">
-              <label>Customer</label>
+              <label for="lw-customer">Customer</label>
               <div class="sel-row"><select id="lw-customer"><option value="">None</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-nc-row')">+ New</button></div>
-              <div class="new-row" id="lw-nc-row"><input type="text" id="lw-nc-name" placeholder="Customer name"><select id="lw-nc-type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="lw-nc-color" value="#f59e0b"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('customer','lw-customer','lw-nc-name','lw-nc-color','lw-nc-row','lw-nc-type')">Add</button></div>
+              <div class="new-row" id="lw-nc-row"><input type="text" id="lw-nc-name" placeholder="Customer name" aria-label="New customer name"><select id="lw-nc-type" aria-label="Customer type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="lw-nc-color" value="#f59e0b" aria-label="New customer colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('customer','lw-customer','lw-nc-name','lw-nc-color','lw-nc-row','lw-nc-type')">Add</button></div>
             </div>
-            <div class="fg"><label>Hours Spent *</label><input type="number" id="lw-hours" min="0" step="0.5" placeholder="0"></div>
-            <div class="fg"><label>Date</label><input type="date" id="lw-date"></div>
-            <div class="fg"><label>Status</label><select id="lw-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed" selected>Completed</option></select></div>
+            <div class="fg"><label for="lw-hours">Hours Spent *</label><input type="number" id="lw-hours" min="0" step="0.5" placeholder="0"></div>
+            <div class="fg"><label for="lw-date">Date</label><input type="date" id="lw-date"></div>
+            <div class="fg"><label for="lw-status">Status</label><select id="lw-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed" selected>Completed</option></select></div>
             <div class="fg full">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:normal;font-size:13px;color:var(--text);font-weight:500"><input type="checkbox" id="lw-recurring" style="width:18px;height:18px;cursor:pointer;flex:none" onchange="toggleRecurring()">🔁 Recurring task — repeat monthly for <input type="number" id="lw-recurring-months" min="2" max="36" value="12" style="width:64px;padding:6px 8px;font-size:14px;display:inline-block" disabled> months</label>
             </div>
-            <div class="fg full"><label>Notes</label><textarea id="lw-notes" placeholder="Additional notes…"></textarea></div>
+            <div class="fg full"><label for="lw-notes">Notes</label><textarea id="lw-notes" placeholder="Additional notes…"></textarea></div>
           </div>
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button class="btn btn-ghost" onclick="clearLogForm()">Clear</button><button class="btn btn-primary" onclick="saveLogEntry()">Save Entry</button></div>
         </div>
@@ -743,13 +772,13 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
       <!-- CUSTOMERS -->
       <div id="page-customers" class="page">
-        <div class="ph"><div><div class="ph-title">Customers</div><div class="ph-sub">Manage internal and external clients</div></div><button class="btn btn-primary" onclick="openAddCustomer()">+ New Customer</button></div>
+        <div class="ph"><div><h1 class="ph-title">Customers</h1><div class="ph-sub">Manage internal and external clients</div></div><button class="btn btn-primary" onclick="openAddCustomer()">+ New Customer</button></div>
         <div class="cards-grid" id="customers-grid"></div>
       </div>
 
       <!-- PROJECTS -->
       <div id="page-projects" class="page">
-        <div class="ph"><div><div class="ph-title">Projects</div><div class="ph-sub">Manage your work projects</div></div><button class="btn btn-primary" onclick="openAddProject()">+ New Project</button></div>
+        <div class="ph"><div><h1 class="ph-title">Projects</h1><div class="ph-sub">Manage your work projects</div></div><button class="btn btn-primary" onclick="openAddProject()">+ New Project</button></div>
         <div class="cards-grid" id="projects-grid"></div>
       </div>
     </div>
@@ -759,49 +788,49 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 <!-- MODALS -->
 <div class="overlay" id="entry-modal">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title" id="m-entry-heading">Add Work Entry</div><button class="modal-close" onclick="closeModal('entry-modal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title" id="m-entry-heading">Add Work Entry</div><button class="modal-close" onclick="closeModal('entry-modal')" aria-label="Close dialog">✕</button></div>
     <div class="modal-form">
       <input type="hidden" id="m-id">
-      <div class="fg"><label>Task / Work Description *</label><input type="text" id="m-title" placeholder="What did you work on?"></div>
+      <div class="fg"><label for="m-title">Task / Work Description *</label><input type="text" id="m-title" placeholder="What did you work on?"></div>
       <div class="modal-grid">
         <div class="fg">
-          <label>Project *</label>
+          <label for="m-project">Project *</label>
           <div class="sel-row"><select id="m-project"><option value="">Select project…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-np-row')">+</button></div>
-          <div class="new-row" id="m-np-row"><input type="text" id="m-np-name" placeholder="Project name"><input type="color" class="color-pick" id="m-np-color" value="#6366f1"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('project','m-project','m-np-name','m-np-color','m-np-row')">Add</button></div>
+          <div class="new-row" id="m-np-row"><input type="text" id="m-np-name" placeholder="Project name" aria-label="New project name"><input type="color" class="color-pick" id="m-np-color" value="#6366f1" aria-label="New project colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('project','m-project','m-np-name','m-np-color','m-np-row')">Add</button></div>
         </div>
         <div class="fg">
-          <label>Customer</label>
+          <label for="m-customer">Customer</label>
           <div class="sel-row"><select id="m-customer"><option value="">None</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-nc-row')">+</button></div>
-          <div class="new-row" id="m-nc-row"><input type="text" id="m-nc-name" placeholder="Customer name"><select id="m-nc-type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="m-nc-color" value="#f59e0b"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('customer','m-customer','m-nc-name','m-nc-color','m-nc-row','m-nc-type')">Add</button></div>
+          <div class="new-row" id="m-nc-row"><input type="text" id="m-nc-name" placeholder="Customer name" aria-label="New customer name"><select id="m-nc-type" aria-label="Customer type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="m-nc-color" value="#f59e0b" aria-label="New customer colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('customer','m-customer','m-nc-name','m-nc-color','m-nc-row','m-nc-type')">Add</button></div>
         </div>
-        <div class="fg"><label>Hours *</label><input type="number" id="m-hours" min="0" step="0.5" placeholder="0"></div>
-        <div class="fg"><label>Date</label><input type="date" id="m-date"></div>
+        <div class="fg"><label for="m-hours">Hours *</label><input type="number" id="m-hours" min="0" step="0.5" placeholder="0"></div>
+        <div class="fg"><label for="m-date">Date</label><input type="date" id="m-date"></div>
       </div>
-      <div class="fg"><label>Status</label><select id="m-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>
-      <div class="fg"><label>Notes</label><textarea id="m-notes" placeholder="Additional notes…"></textarea></div>
+      <div class="fg"><label for="m-status">Status</label><select id="m-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>
+      <div class="fg"><label for="m-notes">Notes</label><textarea id="m-notes" placeholder="Additional notes…"></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('entry-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalEntry()">Save</button></div>
   </div>
 </div>
 <div class="overlay" id="project-modal">
   <div class="modal" style="max-width:380px">
-    <div class="modal-hdr"><div class="modal-title" id="m-proj-heading">New Project</div><button class="modal-close" onclick="closeModal('project-modal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title" id="m-proj-heading">New Project</div><button class="modal-close" onclick="closeModal('project-modal')" aria-label="Close dialog">✕</button></div>
     <div class="modal-form">
       <input type="hidden" id="m-proj-id">
-      <div class="fg"><label>Project Name *</label><input type="text" id="m-proj-name" placeholder="e.g. BMC, OneApp…"></div>
-      <div class="fg"><label>Colour</label><input type="color" id="m-proj-color" value="#6366f1" style="height:42px;padding:4px"></div>
+      <div class="fg"><label for="m-proj-name">Project Name *</label><input type="text" id="m-proj-name" placeholder="e.g. BMC, OneApp…"></div>
+      <div class="fg"><label for="m-proj-color">Colour</label><input type="color" id="m-proj-color" value="#6366f1" style="height:42px;padding:4px"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('project-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalProject()">Save</button></div>
   </div>
 </div>
 <div class="overlay" id="customer-modal">
   <div class="modal" style="max-width:400px">
-    <div class="modal-hdr"><div class="modal-title" id="m-cust-heading">New Customer</div><button class="modal-close" onclick="closeModal('customer-modal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title" id="m-cust-heading">New Customer</div><button class="modal-close" onclick="closeModal('customer-modal')" aria-label="Close dialog">✕</button></div>
     <div class="modal-form">
       <input type="hidden" id="m-cust-id">
-      <div class="fg"><label>Name *</label><input type="text" id="m-cust-name" placeholder="e.g. Sentosa, NCC…"></div>
-      <div class="fg"><label>Type</label><select id="m-cust-type"><option value="internal">🏢 Internal</option><option value="external">🤝 External</option></select></div>
-      <div class="fg"><label>Colour</label><input type="color" id="m-cust-color" value="#f59e0b" style="height:42px;padding:4px"></div>
+      <div class="fg"><label for="m-cust-name">Name *</label><input type="text" id="m-cust-name" placeholder="e.g. Sentosa, NCC…"></div>
+      <div class="fg"><label for="m-cust-type">Type</label><select id="m-cust-type"><option value="internal">🏢 Internal</option><option value="external">🤝 External</option></select></div>
+      <div class="fg"><label for="m-cust-color">Colour</label><input type="color" id="m-cust-color" value="#f59e0b" style="height:42px;padding:4px"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('customer-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalCustomer()">Save</button></div>
   </div>
@@ -1242,7 +1271,7 @@ function renderTasks(){
   const list=getFilteredEntries();
   const el=document.getElementById('task-list');
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No tasks found</div><div class="empty-sub">Change filters or add a task</div></div>';return;}
-  el.innerHTML=list.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e)),done=e.status==='completed';return'<div class="task-item"><div class="task-cb '+(done?'done':'')+'" onclick="toggleStatus(\''+e.id+'\')">'+(done?'✓':'')+'</div><div class="task-body"><div class="task-title '+(done?'done':'')+'">'+e.title+'</div><div class="task-meta">'+pBadge(p)+(c?cBadge(c):'')+' <span class="hrs-badge">⏱ '+e.hours+'h</span> <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span>'+(e.date?' <span>📅 '+fmtDate(e.date)+'</span>'+weekendBadge(e.date):'')+'</div></div><div class="task-actions"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')">🗑️</button></div></div>';}).join('');
+  el.innerHTML=list.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e)),done=e.status==='completed';return'<div class="task-item"><div class="task-cb '+(done?'done':'')+'" onclick="toggleStatus(\''+e.id+'\')">'+(done?'✓':'')+'</div><div class="task-body"><div class="task-title '+(done?'done':'')+'">'+e.title+'</div><div class="task-meta">'+pBadge(p)+(c?cBadge(c):'')+' <span class="hrs-badge">⏱ '+e.hours+'h</span> <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span>'+(e.date?' <span>📅 '+fmtDate(e.date)+'</span>'+weekendBadge(e.date):'')+'</div></div><div class="task-actions"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit task" title="Edit task">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete task" title="Delete task">🗑️</button></div></div>';}).join('');
 }
 async function toggleStatus(id){const e=db.entries.find(x=>x.id===id);if(!e)return;const ns=e.status==='completed'?'pending':'completed';try{await dbUpdate('entries',id,{status:ns});refresh();updatePendingBadge();}catch(err){toast('Update failed: '+err.message,'error');}}
 async function deleteEntry(id){if(!confirm('Delete this entry?'))return;try{await dbDelete('entries',id);refresh();updatePendingBadge();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
@@ -1386,7 +1415,7 @@ function renderLog(){
   const rows=[...db.entries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const tb=document.getElementById('log-tbody');
   if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No entries yet</td></tr>';return;}
-  tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+weekendBadge(e.date)+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')">🗑️</button></td></tr>';}).join('');
+  tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+weekendBadge(e.date)+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit entry" title="Edit entry">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete entry" title="Delete entry">🗑️</button></td></tr>';}).join('');
 }
 function toggleRecurring(){
   const cb=document.getElementById('lw-recurring');
