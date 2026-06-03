@@ -253,8 +253,11 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .resume-bullet{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:8px;transition:background .12s;line-height:1.5;}
 .resume-bullet:hover{background:rgba(255,255,255,.025);}
 .resume-bullet-dot{color:var(--primary);font-weight:700;line-height:1.5;flex-shrink:0;}
-.resume-bullet-text{flex:1;color:var(--text);font-size:13.5px;}
-.resume-bullet.auto .resume-bullet-text{color:var(--muted);font-style:italic;}
+/* All bullets use the same font, size and colour for a uniform 'resume' look —
+   auto-derived ones still get a subtle 'needs your wording' tag rendered inline by JS. */
+.resume-bullet-text{flex:1;color:var(--text);font-size:13.5px;font-family:inherit;font-weight:400;font-style:normal;line-height:1.5;}
+.resume-bullet.auto .resume-bullet-text{color:var(--text);font-style:normal;}
+.resume-bullet-auto-tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);background:var(--surface3);padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
 .resume-bullet-edit{opacity:0;transition:opacity .15s,background .15s;background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 6px;border-radius:6px;flex-shrink:0;align-self:flex-start;}
 .resume-bullet:hover .resume-bullet-edit{opacity:1;}
 .resume-bullet-edit:hover{background:var(--surface3);color:var(--text);}
@@ -2074,13 +2077,14 @@ function renderSkills(){
           const p=getProj(pid);
           const isCustom=!!p.description;
           const text=isCustom?p.description:autoProjectBullet(p,t);
+          const tag=isCustom?'':' <span class="resume-bullet-auto-tag" title="Click ✏️ to write your own polished version">Auto</span>';
           return `<div class="resume-bullet ${isCustom?'custom':'auto'}">
             <span class="resume-bullet-dot">•</span>
-            <span class="resume-bullet-text">${htmlEsc(text)}</span>
+            <span class="resume-bullet-text">${htmlEsc(text)}${tag}</span>
             <button class="resume-bullet-edit" onclick="editProject('${pid}')" title="${isCustom?'Edit this bullet':'Replace this auto-derived bullet with your own wording'}" aria-label="Edit bullet">✏️</button>
           </div>`;
         }).join('')}
-        ${certsObtained.map(c=>`<div class="resume-bullet auto">
+        ${certsObtained.map(c=>`<div class="resume-bullet custom">
           <span class="resume-bullet-dot">•</span>
           <span class="resume-bullet-text">Earned ${htmlEsc(c.name)}${c.issuer?' ('+htmlEsc(c.issuer)+')':''}${c.issue_date?' — '+fmtMonthYear(c.issue_date):''}</span>
           <button class="resume-bullet-edit" onclick="editCert('${c.id}')" title="Edit certification" aria-label="Edit cert">✏️</button>
