@@ -246,7 +246,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .resume-edit-btn:hover{background:var(--surface3);color:var(--text);border-color:var(--primary);}
 .resume-role{font-size:14.5px;font-weight:600;color:var(--text);margin-top:6px;}
 .resume-meta{font-size:12.5px;color:var(--muted);line-height:1.55;}
-.resume-summary{margin:14px 0 10px;color:var(--text);font-size:13.5px;line-height:1.55;padding:10px 14px;border-radius:8px;background:rgba(99,102,241,.04);border-left:3px solid rgba(99,102,241,.25);position:relative;}
+.resume-summary{margin:14px 0 10px;color:var(--text);font-size:13.5px;line-height:1.6;padding:10px 14px;border-radius:8px;background:rgba(99,102,241,.04);border-left:3px solid rgba(99,102,241,.25);position:relative;white-space:pre-wrap;}
 .resume-summary.empty{color:var(--muted);background:transparent;border-left-style:dashed;border-left-color:var(--border2);}
 .resume-summary em{font-style:italic;}
 .resume-bullets{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
@@ -1997,10 +1997,11 @@ function renderSkills(){
   summary.textContent=scopedEntries.length+' completed · '+pendingCount+' in progress · '+uniqSkills.size+' unique skills · '+sumHours(scopedEntries)+' hrs';
 
   // === Build interactive resume HTML (with inline edit affordances) ===
+  // Always render every company in scope — even those without logged tasks
+  // (past roles where you only have a written summary).
   const companies=filterId?db.companies.filter(c=>c.id===filterId):[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
   const sections=companies.map(co=>{
     const {coAll,projRanked}=buildCompanyTally(co);
-    if(!coAll.length)return'';
     const empLine=[];
     if(co.employment_type)empLine.push(htmlEsc(co.employment_type));
     const totalDur=durationLabel(co.start_date,co.end_date);
@@ -2010,6 +2011,7 @@ function renderSkills(){
     if(totalDur)dateLine.push(totalDur);
     const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id);
     const certsObtained=cocerts.filter(c=>certStatus(c).kind!=='planned');
+    const hasContent=projRanked.length||certsObtained.length;
     return `<div class="resume-co">
       <div class="resume-co-head">
         <div class="resume-co-name">${htmlEsc(co.name)}</div>
@@ -2020,9 +2022,9 @@ function renderSkills(){
       ${dateLine.length?'<div class="resume-meta">'+dateLine.join(' · ')+'</div>':''}
       ${co.location?'<div class="resume-meta">'+htmlEsc(co.location)+'</div>':''}
       <div class="resume-summary ${co.description?'':'empty'}">
-        ${co.description?htmlEsc(co.description):'<em>Add a one-paragraph summary describing your overall role &mdash; click ✏️ Edit above.</em>'}
+        ${co.description?htmlEsc(co.description):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary and accomplishments here — supports bullet lists (start a line with • or -).')+'</em>'}
       </div>
-      <div class="resume-bullets">
+      ${hasContent?`<div class="resume-bullets">
         ${projRanked.map(([pid,t])=>{
           const p=getProj(pid);
           const isCustom=!!p.description;
@@ -2038,10 +2040,10 @@ function renderSkills(){
           <span class="resume-bullet-text">Earned ${htmlEsc(c.name)}${c.issuer?' ('+htmlEsc(c.issuer)+')':''}${c.issue_date?' — '+fmtMonthYear(c.issue_date):''}</span>
           <button class="resume-bullet-edit" onclick="editCert('${c.id}')" title="Edit certification" aria-label="Edit cert">✏️</button>
         </div>`).join('')}
-      </div>
+      </div>`:''}
     </div>`;
   }).filter(Boolean).join('');
-  document.getElementById('skills-resume').innerHTML=sections||'<div class="empty" style="padding:32px"><div class="empty-icon">⭐</div><div class="empty-title">No completed work for the selected scope</div><div class="empty-sub">Log some work in <strong>Log Work</strong> with skills tagged, then come back here.</div></div>';
+  document.getElementById('skills-resume').innerHTML=sections||'<div class="empty" style="padding:32px"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add a company / role on the <strong>🏢 Companies</strong> page to start building your resume.</div></div>';
 
   // Top skills list
   // === Top Skills — full visual bar list, sorted by hours invested (best 'depth' signal) ===
@@ -2075,7 +2077,7 @@ function buildResumeMarkdown(filterId){
   let md='';
   companies.forEach(co=>{
     const {coAll,projRanked}=buildCompanyTally(co);
-    if(!coAll.length)return;
+    // Include every company — past roles often have no task data but still belong on the resume
     md+=co.name+'\n';
     const empLine=[];if(co.employment_type)empLine.push(co.employment_type);
     const totalDur=durationLabel(co.start_date,co.end_date);if(totalDur)empLine.push(totalDur);
