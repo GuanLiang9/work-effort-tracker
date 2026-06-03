@@ -1656,7 +1656,7 @@ async function saveLogEntry(){
     const dates=[];
     for(let i=0;i<months;i++)dates.push(addMonthsToDate(date,i));
     await Promise.all(dates.map(d=>dbInsert('entries',DEMO_MODE?{id:uid(),...baseRow,date:d}:{...baseRow,date:d})));
-    clearLogForm();renderLog();updatePendingBadge();
+    clearLogForm();refresh();
     toast(recurring?'Saved '+months+' recurring entries!':'Entry saved!','success');
   }catch(err){toast('Save failed: '+err.message,'error');}
 }
@@ -1675,7 +1675,7 @@ async function saveModalCustomer(){
   if(!name){toast('Enter a customer name.','error');return;}
   try{if(id)await dbUpdate('customers',id,{name,type,color});else await dbInsert('customers',DEMO_MODE?{id:uid(),name,type,color}:{name,type,color});closeModal('customer-modal');refresh();toast('Customer saved!','success');}catch(err){toast(err.message,'error');}
 }
-async function deleteCustomer(id){const t=db.entries.filter(e=>getCustId(e)===id).length;if(!confirm(t>0?'This customer has '+t+' entries. Delete anyway?':'Delete this customer?'))return;try{await dbDelete('customers',id);renderCustomers();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
+async function deleteCustomer(id){const t=db.entries.filter(e=>getCustId(e)===id).length;if(!confirm(t>0?'This customer has '+t+' entries. Delete anyway?':'Delete this customer?'))return;try{await dbDelete('customers',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
 
 /* PROJECTS */
 function renderProjects(){
@@ -1690,7 +1690,7 @@ async function saveModalProject(){
   if(!name){toast('Enter a project name.','error');return;}
   try{if(id)await dbUpdate('projects',id,{name,color});else await dbInsert('projects',DEMO_MODE?{id:uid(),name,color}:{name,color});closeModal('project-modal');refresh();toast('Project saved!','success');}catch(err){toast(err.message,'error');}
 }
-async function deleteProject(id){if(!confirm('Delete this project?'))return;try{await dbDelete('projects',id);renderProjects();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
+async function deleteProject(id){if(!confirm('Delete this project?'))return;try{await dbDelete('projects',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
 
 /* COMPANIES */
 function fmtDateShort(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-SG',{month:'short',year:'numeric'});}
@@ -1852,7 +1852,7 @@ async function saveModalCert(){
     closeModal('cert-modal');refresh();toast('Saved!','success');
   }catch(err){toast('Save failed: '+err.message+(err.message.includes('not found')?' — make sure the "certifications" Appwrite collection exists.':''),'error');}
 }
-async function deleteCert(id){if(!confirm('Delete this certification?'))return;try{await dbDelete('certifications',id);renderCertifications();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
+async function deleteCert(id){if(!confirm('Delete this certification?'))return;try{await dbDelete('certifications',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
 
 /* SKILLS PAGE */
 function renderSkills(){
@@ -2013,6 +2013,10 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 /* REFRESH */
 function refresh(){
+  // Always-on sidebar updates so the pending count + active-company chip
+  // never go stale, regardless of which page is visible.
+  updatePendingBadge();
+  updateCompanyChip();
   if(currentPage==='dashboard')renderDashboard();
   else if(currentPage==='tasks')renderTasks();
   else if(currentPage==='log')renderLog();
