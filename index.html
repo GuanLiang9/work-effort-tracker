@@ -1717,11 +1717,15 @@ function renderCompanies(){
   const sorted=[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
   g.innerHTML=sorted.map(c=>{
     const ents=db.entries.filter(e=>getCompanyId(e)===c.id);
-    const hours=sumHours(completedOf(ents));
+    const completed=completedOf(ents);
+    const pending=ents.filter(e=>e.status!=='completed');
+    const completedHrs=sumHours(completed);
+    const pendingHrs=sumHours(pending);
     const skills=new Set();ents.forEach(e=>(e.skills||'').split(',').forEach(s=>{const t=s.trim();if(t)skills.add(t);}));
+    const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===c.id);
     const current=!c.end_date;
     const active=c.id===activeCompanyId;
-    return '<div class="co-card '+(active?'active':'')+'" style="--c:'+(c.color||'#6366f1')+'"><div class="co-card-name">'+c.name+(current?'<span class="co-card-current">Current</span>':'')+'</div><div class="co-card-role">'+(c.role||'—')+'</div><div class="co-card-dates">📅 '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div>'+(c.notes?'<div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+c.notes+'</div>':'')+'<div class="co-card-stats"><div><div class="co-card-stat-val">'+ents.length+'</div><div class="co-card-stat-lbl">tasks</div></div><div><div class="co-card-stat-val">'+hours+'</div><div class="co-card-stat-lbl">hours</div></div><div><div class="co-card-stat-val">'+skills.size+'</div><div class="co-card-stat-lbl">skills</div></div></div><div class="co-card-foot">'+(active?'':'<button class="btn btn-ghost btn-sm" onclick="setActiveCompany(\''+c.id+'\')">Set Active</button>')+'<button class="btn btn-ghost btn-sm" onclick="editCompany(\''+c.id+'\')">Edit</button></div></div>';
+    return '<div class="co-card '+(active?'active':'')+'" style="--c:'+(c.color||'#6366f1')+'"><div class="co-card-name">'+c.name+(current?'<span class="co-card-current">Current</span>':'')+'</div><div class="co-card-role">'+(c.role||'—')+'</div><div class="co-card-dates">📅 '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div>'+(c.notes?'<div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+c.notes+'</div>':'')+'<div class="co-card-stats"><div><div class="co-card-stat-val">'+completed.length+'<span style="font-size:12px;color:var(--muted);font-weight:500"> / '+ents.length+'</span></div><div class="co-card-stat-lbl">tasks done</div></div><div><div class="co-card-stat-val">'+completedHrs+'<span style="font-size:12px;color:var(--muted);font-weight:500">'+(pendingHrs?' (+'+pendingHrs+' pending)':'')+'</span></div><div class="co-card-stat-lbl">hours</div></div><div><div class="co-card-stat-val">'+skills.size+'</div><div class="co-card-stat-lbl">skills</div></div><div><div class="co-card-stat-val">'+cocerts.length+'</div><div class="co-card-stat-lbl">certs</div></div></div><div class="co-card-foot">'+(active?'':'<button class="btn btn-ghost btn-sm" onclick="setActiveCompany(\''+c.id+'\')">Set Active</button>')+'<button class="btn btn-ghost btn-sm" onclick="editCompany(\''+c.id+'\')">Edit</button></div></div>';
   }).join('');
   // Make ::before pick up the company color via CSS var
   document.querySelectorAll('.co-card').forEach(el=>{el.style.setProperty('--c',el.style.getPropertyValue('--c'));});
@@ -1855,45 +1859,74 @@ function renderSkills(){
   // Populate company filter
   populateSel('skills-company',db.companies,'All companies','id','name',true);
   const filterId=v('skills-company')||'';
-  const scopedEntries=completedOf(db.entries).filter(e=>!filterId||getCompanyId(e)===filterId);
+  const allInScope=db.entries.filter(e=>!filterId||getCompanyId(e)===filterId);
+  const scopedEntries=completedOf(allInScope);   // resume metrics use completed
   const summary=document.getElementById('skills-summary');
   const uniqSkills=new Set();
-  scopedEntries.forEach(e=>(e.skills||'').split(',').forEach(s=>{const t=s.trim();if(t)uniqSkills.add(t);}));
-  summary.textContent=scopedEntries.length+' completed tasks · '+uniqSkills.size+' unique skills · '+sumHours(scopedEntries)+' hrs';
+  allInScope.forEach(e=>(e.skills||'').split(',').forEach(s=>{const t=s.trim();if(t)uniqSkills.add(t);}));
+  const pendingCount=allInScope.filter(e=>e.status!=='completed').length;
+  summary.textContent=scopedEntries.length+' completed · '+pendingCount+' in progress · '+uniqSkills.size+' unique skills · '+sumHours(scopedEntries)+' hrs';
 
   // Resume bullets — grouped by company
   const companies=filterId?db.companies.filter(c=>c.id===filterId):[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
   let md='';
   companies.forEach(co=>{
-    const coEntries=completedOf(db.entries).filter(e=>getCompanyId(e)===co.id);
-    if(!coEntries.length)return;
+    const coAll=db.entries.filter(e=>getCompanyId(e)===co.id);
+    const coDone=completedOf(coAll);
+    const coPending=coAll.filter(e=>e.status!=='completed');
+    if(!coAll.length)return;
     const dateRange=(fmtDateShort(co.start_date)||'?')+' – '+(co.end_date?fmtDateShort(co.end_date):'Present');
     md+='## '+(co.role?co.role+' · ':'')+co.name+' · '+dateRange+'\n\n';
-    // Tally skills
+    // Tally skills (from completed only — resume worthy)
     const skillTally={};
-    coEntries.forEach(e=>(e.skills||'').split(',').forEach(s=>{
+    coDone.forEach(e=>(e.skills||'').split(',').forEach(s=>{
       const t=s.trim();if(!t)return;
       if(!skillTally[t])skillTally[t]={tasks:0,hours:0};
       skillTally[t].tasks++;skillTally[t].hours+=parseFloat(e.hours)||0;
     }));
     const ranked=Object.entries(skillTally).sort((a,b)=>b[1].tasks-a[1].tasks);
     if(ranked.length){
-      md+='### Skills\n';
+      md+='### Skills Demonstrated\n';
       ranked.forEach(([s,t])=>{md+='- **'+s+'** — '+t.tasks+' task'+(t.tasks===1?'':'s')+', '+t.hours+' hrs\n';});
       md+='\n';
     }
-    // Notable projects (top 5 by hours)
+    // Notable projects (top 6 by completed hours)
     const projTally={};
-    coEntries.forEach(e=>{const pid=getProjId(e);if(!pid)return;if(!projTally[pid])projTally[pid]={tasks:0,hours:0,customers:new Set()};projTally[pid].tasks++;projTally[pid].hours+=parseFloat(e.hours)||0;const cid=getCustId(e);if(cid){const c=getCust(cid);if(c)projTally[pid].customers.add(c.name);}});
+    coDone.forEach(e=>{const pid=getProjId(e);if(!pid)return;if(!projTally[pid])projTally[pid]={tasks:0,hours:0,customers:new Set()};projTally[pid].tasks++;projTally[pid].hours+=parseFloat(e.hours)||0;const cid=getCustId(e);if(cid){const c=getCust(cid);if(c)projTally[pid].customers.add(c.name);}});
     const projRanked=Object.entries(projTally).sort((a,b)=>b[1].hours-a[1].hours).slice(0,6);
     if(projRanked.length){
       md+='### Notable Projects\n';
       projRanked.forEach(([pid,t])=>{const p=getProj(pid);const custs=[...t.customers].slice(0,4).join(', ');md+='- **'+p.name+'** — '+t.tasks+' task'+(t.tasks===1?'':'s')+', '+t.hours+' hrs'+(custs?' (customers: '+custs+')':'')+'\n';});
       md+='\n';
     }
+    // Certifications obtained while at this company
+    const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id);
+    const certsObtained=cocerts.filter(c=>{const s=certStatus(c);return s.kind!=='planned';});
+    if(certsObtained.length){
+      md+='### Certifications\n';
+      certsObtained.forEach(c=>{md+='- **'+c.name+'** ('+c.issuer+')'+(c.issue_date?' — issued '+fmtDateShort(c.issue_date):'')+'\n';});
+      md+='\n';
+    }
+    // Currently in progress — pending/in-progress tasks (achievement-in-flight section)
+    if(coPending.length){
+      md+='### Currently In Progress\n';
+      // Group pending by project for tidier output
+      const pendByProj={};
+      coPending.forEach(e=>{const pid=getProjId(e);const k=pid||'__none__';if(!pendByProj[k])pendByProj[k]=[];pendByProj[k].push(e);});
+      Object.entries(pendByProj).forEach(([pid,arr])=>{
+        const pname=pid==='__none__'?'(no project)':getProj(pid).name;
+        md+='- **'+pname+':** ';
+        md+=arr.slice(0,5).map(e=>e.title).join('; ');
+        md+='\n';
+      });
+      // Planned certs while at this company
+      const certsPlanned=cocerts.filter(c=>certStatus(c).kind==='planned');
+      certsPlanned.forEach(c=>{md+='- **'+c.name+'** — planned for '+(c.issue_date?fmtDateShort(c.issue_date):'TBD')+'\n';});
+      md+='\n';
+    }
     md+='\n';
   });
-  if(!md)md='_No completed tasks with skills yet for the selected scope._\n\nAdd skills to your completed tasks in **Log Work** to start building this list.';
+  if(!md)md='_No tasks yet for the selected scope._\n\nLog some work in **Log Work** with skills tagged to start building this list.';
   document.getElementById('skills-resume').textContent=md;
 
   // Top skills list

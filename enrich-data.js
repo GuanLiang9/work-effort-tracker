@@ -178,7 +178,35 @@ async function main() {
   }
   if (certsAdded === 0) console.log('  (none to add)');
 
-  console.log('\n✓ Done. Hard-refresh the app to see the skills + certs appear.');
+  // 4. Back-fill company_id on every entry that doesn't have one yet.
+  //    Match by date: pick the company whose [start_date, end_date] window
+  //    contains the task date. Falls back to the most recent company if no
+  //    range matches.
+  console.log('\n— back-filling company_id on entries —');
+  const cos = (await dbs.listDocuments(DB_ID, 'companies', [Query.limit(100)])).documents;
+  if (!cos.length) {
+    console.log('  ! No companies exist yet. Open the app once so the default company gets created, then re-run.');
+  } else {
+    const sortedCos = [...cos].sort((a, b) => (b.start_date || '').localeCompare(a.start_date || ''));
+    let backfilled = 0, alreadyTagged = 0;
+    for (const e of entries) {
+      if (e.company_id) { alreadyTagged++; continue; }
+      const taskDate = e.date || '';
+      let match = null;
+      for (const c of sortedCos) {
+        const startsOk = !c.start_date || !taskDate || taskDate >= c.start_date;
+        const endsOk   = !c.end_date   || !taskDate || taskDate <= c.end_date;
+        if (startsOk && endsOk) { match = c; break; }
+      }
+      if (!match) match = sortedCos[0];
+      await dbs.updateDocument(DB_ID, 'entries', e.$id, { company_id: match.$id });
+      console.log(`  + "${truncate(e.title, 45)}"  · ${e.date || '?'} → ${match.name}`);
+      backfilled++;
+    }
+    console.log(`  Back-filled ${backfilled} entries, ${alreadyTagged} already tagged.`);
+  }
+
+  console.log('\n✓ Done. Hard-refresh the app to see the skills + certs + company stats appear.');
   console.log('  Once you\'re happy, revoke the API key in Appwrite Console → Settings → API Keys.\n');
 }
 
