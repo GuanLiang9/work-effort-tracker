@@ -11,9 +11,12 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 - **Dashboard** — stat cards + 3 charts, with a **month-period filter** so you can drill into hours by month
 - **Tasks** — filterable list with status tabs, project/customer filters, and a **date-range filter** (From / To)
 - **Export** — one-click **CSV** (Excel) and **PDF** export of the current filtered task view, with totals and active-filter summary
-- **Log Work** — form to add work entries with a **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable)
+- **Log Work** — form to add work entries with a **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable), plus a **Skills Gained** tag field
 - **Customers** — internal 🏢 vs external 🤝 customer cards
 - **Projects** — project overview with total hours
+- **🏢 Companies / Roles** — every job you've held, with start/end dates. Active-company switcher in the sidebar; entries default to the active company
+- **⭐ Skills** — resume-ready markdown extracted from your completed tasks, grouped by company + role + dates. One-click "Copy as Markdown" for direct paste into your CV or LinkedIn
+- **🎓 Certifications** — track active credentials with renewal-date alerts. Status auto-derives: Active / Expiring &lt; 90 days / Expired
 - **Auth** — email/password, registration, Google OAuth via Appwrite
 - **Mobile-friendly** — sliding sidebar, finger-sized tap targets, no iOS zoom on input focus, swipeable tables, stacked layouts on phones
 
@@ -95,10 +98,43 @@ Then create three collections inside it — use these **exact Collection IDs**:
   | `status` | String | | 20 |
   | `date` | String | | 20 |
   | `notes` | String | | 2000 |
+  | `skills` | String | | 1000 |
+  | `company_id` | String | | 36 |
   | `user_id` | String | ✅ | 36 |
 - **Indexes:** Add key indexes on `user_id` and `date`
 
-> **Note:** Collection IDs must be exactly `projects`, `customers`, `entries` — the app uses these strings directly.
+#### Collection `companies`
+- Enable **Document security**
+- **Attributes:**
+  | Attribute | Type | Required | Size |
+  |---|---|---|---|
+  | `name` | String | ✅ | 255 |
+  | `role` | String | | 255 |
+  | `start_date` | String | | 20 |
+  | `end_date` | String | | 20 |
+  | `color` | String | | 20 |
+  | `notes` | String | | 2000 |
+  | `user_id` | String | ✅ | 36 |
+- **Indexes:** Add key index on `user_id`
+
+#### Collection `certifications`
+- Enable **Document security**
+- **Attributes:**
+  | Attribute | Type | Required | Size |
+  |---|---|---|---|
+  | `name` | String | ✅ | 255 |
+  | `issuer` | String | | 255 |
+  | `issue_date` | String | | 20 |
+  | `expiry_date` | String | | 20 |
+  | `credential_url` | String | | 500 |
+  | `notes` | String | | 2000 |
+  | `company_id` | String | | 36 |
+  | `user_id` | String | ✅ | 36 |
+- **Indexes:** Add key index on `user_id`
+
+> **Note:** Collection IDs must be exactly `projects`, `customers`, `entries`, `companies`, `certifications` — the app uses these strings directly.
+>
+> **Migrating from an older version?** Just add the two new collections + the two new `entries` attributes (`skills`, `company_id`). The app will auto-create a default `Keppel Technology Solutions` company on first load after migration and back-fill every existing entry with its id, so nothing is lost.
 
 ### 3 · Enable Google OAuth (optional)
 
