@@ -12,5 +12,8 @@
   },
   "optionalDependencies": {
     "sharp": "^0.34.5"
+  },
+  "dependencies": {
+    "node-appwrite": "^26.0.0"
   }
 }

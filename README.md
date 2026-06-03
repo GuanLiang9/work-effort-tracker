@@ -134,7 +134,24 @@ Then create three collections inside it — use these **exact Collection IDs**:
 
 > **Note:** Collection IDs must be exactly `projects`, `customers`, `entries`, `companies`, `certifications` — the app uses these strings directly.
 >
-> **Migrating from an older version?** Just add the two new collections + the two new `entries` attributes (`skills`, `company_id`). The app will auto-create a default `Keppel Technology Solutions` company on first load after migration and back-fill every existing entry with its id, so nothing is lost.
+> **Migrating from an older version?** Either add the two new collections + the two new `entries` attributes (`skills`, `company_id`) manually via the dashboard, **or** run the included migration script — see below. The app will auto-create a default `Keppel Technology Solutions` company on first load after migration and back-fill every existing entry with its id, so nothing is lost.
+
+### 2b · Automated migration (one command)
+
+If you'd rather not click through the dashboard, run the included `setup-appwrite.js` — it creates the two new collections, all 15 attributes and 2 indexes, idempotently.
+
+```bash
+# 1. Get a temporary API key from Appwrite Console → Settings → API Keys → Create API Key
+#    Scopes: databases.read + databases.write   ·   Expiry: 1 day is enough
+#    Add it to .env.local:
+#      APPWRITE_API_KEY=your-key-here
+
+# 2. Install the SDK and run:
+npm install node-appwrite
+node setup-appwrite.js
+
+# 3. Revoke the API key when done (Settings → API Keys → delete).
+```
 
 ### 3 · Enable Google OAuth (optional)
 
