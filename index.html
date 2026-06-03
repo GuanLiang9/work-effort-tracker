@@ -469,26 +469,39 @@ span.flatpickr-weekday{color:var(--muted);font-weight:600;font-size:11px;text-tr
   background-repeat:no-repeat !important;background-position:right 14px center !important;background-size:10px !important;
 }
 .ts-wrapper.disabled .ts-control{opacity:.5;cursor:not-allowed;}
-.ts-control>input{color:var(--text) !important;font-family:inherit;font-weight:500;background:transparent !important;}
-.ts-control>input::placeholder{color:var(--dim) !important;}
-.ts-control .item{color:var(--text) !important;background:transparent !important;border:none;padding:0;}
+/* Hide any leftover search input that Tom Select adds — we use controlInput:null but be defensive */
+.ts-control>input{display:none !important;}
+/* Selected item label: single-line, truncated with ellipsis so long company / project names never spill */
+.ts-control .item{
+  color:var(--text) !important;background:transparent !important;border:none;padding:0;
+  display:block !important;width:100% !important;
+  white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
+  line-height:1.4;
+  pointer-events:none;   /* never receives a caret */
+}
 .ts-wrapper .ts-control:after{display:none !important;}
+/* The whole control should not show an I-beam — only the chevron-pointer */
+.ts-wrapper .ts-control{cursor:pointer !important;user-select:none;-webkit-user-select:none;}
 /* Dropdown popup */
 .ts-dropdown{
   background:var(--surface) !important;border:1px solid var(--border2) !important;border-radius:12px !important;
   box-shadow:0 12px 36px rgba(0,0,0,.5);margin-top:6px;padding:6px;
   color:var(--text);overflow:hidden;
+  /* Match the trigger width but cap at a sensible max so very long labels wrap-or-truncate inside */
+  min-width:100%;max-width:min(520px, 92vw);
 }
 .ts-dropdown .option{
   padding:10px 14px;color:var(--text);background:transparent;border-radius:8px;
   font-size:14px;font-weight:500;cursor:pointer;transition:background .12s,color .12s;
+  /* Show full text; wrap rather than ellipsis since dropdown has more room than the trigger */
+  white-space:normal;word-break:break-word;line-height:1.35;
 }
 .ts-dropdown .option:hover,.ts-dropdown .active{background:var(--surface2) !important;color:var(--text) !important;}
 .ts-dropdown .option.selected{background:var(--pri-bg) !important;color:var(--pri-h) !important;font-weight:600;}
 .ts-dropdown .option.active.selected{background:var(--primary) !important;color:#fff !important;}
 .ts-dropdown .no-results{color:var(--muted);padding:14px;text-align:center;font-size:13px;}
 .ts-dropdown .create{color:var(--pri-h);}
-.ts-dropdown-content{max-height:280px;}
+.ts-dropdown-content{max-height:320px;}
 .ts-dropdown [data-selectable]{cursor:pointer;}
 .ts-dropdown [data-selectable].option{opacity:1;}
 .ts-wrapper.has-items .ts-control>input{display:none;}
@@ -1376,7 +1389,15 @@ function initTomSelect(){
     // Skip flatpickr's internal month/year selects — wrapping them breaks the calendar
     if(s.closest('.flatpickr-calendar'))return;
     if(s.classList.contains('flatpickr-monthDropdown-months'))return;
-    new TomSelect(s,{create:false,allowEmptyOption:true,maxOptions:500});
+    new TomSelect(s,{
+      create:false,
+      allowEmptyOption:true,
+      maxOptions:500,
+      controlInput:null,        // ← removes the search input so users can ONLY select, never type
+      hidePlaceholder:false,
+      openOnFocus:true,
+      selectOnTab:true,
+    });
   });
 }
 function setSel(id,val){
