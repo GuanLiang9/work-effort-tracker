@@ -235,6 +235,43 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px;}
 .weekend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.25);margin-left:6px;}
 
+/* ── RESUME PREVIEW (Skills page) ────────────────────────── */
+.resume-box{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:22px 26px;max-height:640px;overflow:auto;color:var(--text);font-size:14px;line-height:1.55;}
+.resume-box .empty{padding:40px 20px;}
+.resume-co{padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--border);}
+.resume-co:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.resume-co-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px;}
+.resume-co-name{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.resume-edit-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;}
+.resume-edit-btn:hover{background:var(--surface3);color:var(--text);border-color:var(--primary);}
+.resume-role{font-size:14.5px;font-weight:600;color:var(--text);margin-top:6px;}
+.resume-meta{font-size:12.5px;color:var(--muted);line-height:1.55;}
+.resume-summary{margin:14px 0 10px;color:var(--text);font-size:13.5px;line-height:1.55;padding:10px 14px;border-radius:8px;background:rgba(99,102,241,.04);border-left:3px solid rgba(99,102,241,.25);position:relative;}
+.resume-summary.empty{color:var(--muted);background:transparent;border-left-style:dashed;border-left-color:var(--border2);}
+.resume-summary em{font-style:italic;}
+.resume-bullets{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
+.resume-bullet{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:8px;transition:background .12s;line-height:1.5;}
+.resume-bullet:hover{background:rgba(255,255,255,.025);}
+.resume-bullet-dot{color:var(--primary);font-weight:700;line-height:1.5;flex-shrink:0;}
+.resume-bullet-text{flex:1;color:var(--text);font-size:13.5px;}
+.resume-bullet.auto .resume-bullet-text{color:var(--muted);font-style:italic;}
+.resume-bullet-edit{opacity:0;transition:opacity .15s,background .15s;background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 6px;border-radius:6px;flex-shrink:0;align-self:flex-start;}
+.resume-bullet:hover .resume-bullet-edit{opacity:1;}
+.resume-bullet-edit:hover{background:var(--surface3);color:var(--text);}
+
+/* ── SKILL BARS (Top Skills + Project Hours) ────────────── */
+.skill-bars{display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;padding-right:4px;}
+.skill-bar-row{display:flex;flex-direction:column;gap:5px;}
+.skill-bar-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;}
+.skill-bar-name{font-weight:600;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+.skill-bar-meta{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0;}
+.skill-bar-track{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border2);}
+.skill-bar-fill{height:100%;background:var(--brand-grad);border-radius:4px;transition:width .6s cubic-bezier(.22,.61,.36,1);}
+.skill-rank{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:5px;font-size:10px;font-weight:800;flex-shrink:0;}
+.skill-rank.rank-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a2235;}
+.skill-rank.rank-2{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1a2235;}
+.skill-rank.rank-3{background:linear-gradient(135deg,#fb923c,#c2410c);color:#fff;}
+
 /* ── COMPANY CHIP (sidebar switcher) ─────────────────────── */
 .company-chip{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background .15s,border-color .15s;}
 .company-chip:hover{background:var(--surface3);border-color:var(--primary);}
@@ -875,10 +912,10 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
           <div class="filter-group"><label class="filter-label" for="skills-company">Company</label><select class="sel-filter" id="skills-company" onchange="renderSkills()"><option value="">All companies</option></select></div>
           <div style="margin-left:auto;font-size:13px;color:var(--muted)" id="skills-summary"></div>
         </div>
-        <div class="section-card" style="margin-bottom:14px"><div class="section-title">Resume Bullets <span style="font-size:11px;color:var(--muted);font-weight:400">(grouped by company &amp; role)</span></div><div id="skills-resume" style="font-family:'Menlo','Consolas',monospace;font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text);background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:18px;max-height:520px;overflow:auto"></div></div>
+        <div class="section-card" style="margin-bottom:14px"><div class="section-title">Resume Preview <span style="font-size:11px;color:var(--muted);font-weight:400">— click ✏️ next to any line to edit, or 📋 Copy as Markdown to paste into LinkedIn / CV</span></div><div id="skills-resume" class="resume-box"></div></div>
         <div class="two-col">
-          <div class="section-card"><div class="section-title">Top Skills <span style="font-size:11px;color:var(--muted);font-weight:400">(by tasks completed)</span></div><div id="skills-top"></div></div>
-          <div class="section-card"><div class="section-title">Project Highlights</div><div id="skills-projects"></div></div>
+          <div class="section-card"><div class="section-title">Top Skills <span style="font-size:11px;color:var(--muted);font-weight:400">— sorted by hours invested (your depth signal)</span></div><div id="skills-top"></div></div>
+          <div class="section-card"><div class="section-title">Project Hours</div><div id="skills-projects"></div></div>
         </div>
       </div>
 
@@ -1907,6 +1944,46 @@ function durationLabel(startDate,endDate){
   if(years)return years+' yr'+(years>1?'s':'');
   return mos+' mo'+(mos>1?'s':'');
 }
+// Lightweight context for known project keywords — turns 'BMC' into 'BMC Helix ITSM platform' etc.
+const PROJECT_CONTEXT=[
+  [/^bmc$/i,            'BMC Helix ITSM platform — enterprise IT service management'],
+  [/oneapp/i,           'OneApp customer-facing application — environment & domain administration'],
+  [/^ai\s*engineering/i,'AI/ML solution engineering — proof-of-concepts, certifications and AIOps initiatives'],
+  [/aiops/i,            'AIOps — ML-driven incident forecasting and operations intelligence'],
+  [/data\s+platform/i,  'Data platform engineering'],
+  [/cloud/i,            'Cloud infrastructure'],
+];
+function projectContext(name){
+  for(const [re,ctx] of PROJECT_CONTEXT){if(re.test(name))return ctx;}
+  return name;
+}
+function autoProjectBullet(project,t){
+  const ctx=projectContext(project.name);
+  const custs=[...t.customers].slice(0,5).join(', ');
+  const more=t.customers.size>5?', and others':'';
+  const skills=[...t.skills].slice(0,6).join(', ');
+  let bullet=ctx;
+  if(t.customers.size)bullet+=' — delivered across '+t.customers.size+' customer'+(t.customers.size>1?'s':'')+' ('+custs+more+')';
+  if(skills)bullet+='. Key skills: '+skills+'.';
+  bullet+=' ('+t.tasks+' task'+(t.tasks===1?'':'s')+' · '+t.hours+' hrs)';
+  return bullet;
+}
+function htmlEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function buildCompanyTally(co){
+  const coAll=db.entries.filter(e=>getCompanyId(e)===co.id);
+  const coDone=completedOf(coAll);
+  const projTally={};
+  coDone.forEach(e=>{
+    const pid=getProjId(e);if(!pid)return;
+    if(!projTally[pid])projTally[pid]={tasks:0,hours:0,customers:new Set(),skills:new Set()};
+    projTally[pid].tasks++;
+    projTally[pid].hours+=parseFloat(e.hours)||0;
+    const cid=getCustId(e);if(cid){const c=getCust(cid);if(c)projTally[pid].customers.add(c.name);}
+    (e.skills||'').split(',').forEach(s=>{const t=s.trim();if(t)projTally[pid].skills.add(t);});
+  });
+  const projRanked=Object.entries(projTally).sort((a,b)=>b[1].hours-a[1].hours);
+  return{coAll,coDone,projRanked};
+}
 function renderSkills(){
   // Populate company filter
   populateSel('skills-company',db.companies,'All companies','id','name',true);
@@ -1919,20 +1996,89 @@ function renderSkills(){
   const pendingCount=allInScope.filter(e=>e.status!=='completed').length;
   summary.textContent=scopedEntries.length+' completed · '+pendingCount+' in progress · '+uniqSkills.size+' unique skills · '+sumHours(scopedEntries)+' hrs';
 
-  // Resume bullets — LinkedIn-style company / role layout
+  // === Build interactive resume HTML (with inline edit affordances) ===
+  const companies=filterId?db.companies.filter(c=>c.id===filterId):[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
+  const sections=companies.map(co=>{
+    const {coAll,projRanked}=buildCompanyTally(co);
+    if(!coAll.length)return'';
+    const empLine=[];
+    if(co.employment_type)empLine.push(htmlEsc(co.employment_type));
+    const totalDur=durationLabel(co.start_date,co.end_date);
+    if(totalDur)empLine.push(totalDur);
+    const dateLine=[];
+    if(co.start_date)dateLine.push(fmtMonthYear(co.start_date)+' - '+(co.end_date?fmtMonthYear(co.end_date):'Present'));
+    if(totalDur)dateLine.push(totalDur);
+    const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id);
+    const certsObtained=cocerts.filter(c=>certStatus(c).kind!=='planned');
+    return `<div class="resume-co">
+      <div class="resume-co-head">
+        <div class="resume-co-name">${htmlEsc(co.name)}</div>
+        <button class="resume-edit-btn" onclick="editCompany('${co.id}')" title="Edit company / role" aria-label="Edit company">✏️ Edit</button>
+      </div>
+      ${empLine.length?'<div class="resume-meta">'+empLine.join(' · ')+'</div>':''}
+      ${co.role?'<div class="resume-role">'+htmlEsc(co.role)+'</div>':''}
+      ${dateLine.length?'<div class="resume-meta">'+dateLine.join(' · ')+'</div>':''}
+      ${co.location?'<div class="resume-meta">'+htmlEsc(co.location)+'</div>':''}
+      <div class="resume-summary ${co.description?'':'empty'}">
+        ${co.description?htmlEsc(co.description):'<em>Add a one-paragraph summary describing your overall role &mdash; click ✏️ Edit above.</em>'}
+      </div>
+      <div class="resume-bullets">
+        ${projRanked.map(([pid,t])=>{
+          const p=getProj(pid);
+          const isCustom=!!p.description;
+          const text=isCustom?p.description:autoProjectBullet(p,t);
+          return `<div class="resume-bullet ${isCustom?'custom':'auto'}">
+            <span class="resume-bullet-dot">•</span>
+            <span class="resume-bullet-text">${htmlEsc(text)}</span>
+            <button class="resume-bullet-edit" onclick="editProject('${pid}')" title="${isCustom?'Edit this bullet':'Replace this auto-derived bullet with your own wording'}" aria-label="Edit bullet">✏️</button>
+          </div>`;
+        }).join('')}
+        ${certsObtained.map(c=>`<div class="resume-bullet auto">
+          <span class="resume-bullet-dot">•</span>
+          <span class="resume-bullet-text">Earned ${htmlEsc(c.name)}${c.issuer?' ('+htmlEsc(c.issuer)+')':''}${c.issue_date?' — '+fmtMonthYear(c.issue_date):''}</span>
+          <button class="resume-bullet-edit" onclick="editCert('${c.id}')" title="Edit certification" aria-label="Edit cert">✏️</button>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+  document.getElementById('skills-resume').innerHTML=sections||'<div class="empty" style="padding:32px"><div class="empty-icon">⭐</div><div class="empty-title">No completed work for the selected scope</div><div class="empty-sub">Log some work in <strong>Log Work</strong> with skills tagged, then come back here.</div></div>';
+
+  // Top skills list
+  // === Top Skills — full visual bar list, sorted by hours invested (best 'depth' signal) ===
+  const topTally={};
+  scopedEntries.forEach(e=>(e.skills||'').split(',').forEach(s=>{const t=s.trim();if(!t)return;if(!topTally[t])topTally[t]={tasks:0,hours:0};topTally[t].tasks++;topTally[t].hours+=parseFloat(e.hours)||0;}));
+  const topRanked=Object.entries(topTally).sort((a,b)=>(b[1].hours-a[1].hours)||(b[1].tasks-a[1].tasks));
+  const maxHrs=topRanked[0]?topRanked[0][1].hours:1;
+  document.getElementById('skills-top').innerHTML=topRanked.length
+    ?'<div class="skill-bars">'+topRanked.map(([s,t],i)=>{
+      const pct=Math.max(4,Math.round(t.hours/maxHrs*100));
+      const rank=i<3?'<span class="skill-rank rank-'+(i+1)+'">'+(i+1)+'</span>':'';
+      return '<div class="skill-bar-row"><div class="skill-bar-head">'+rank+'<span class="skill-bar-name">'+htmlEsc(s)+'</span><span class="skill-bar-meta">'+t.hours+' hrs · '+t.tasks+' task'+(t.tasks===1?'':'s')+'</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:'+pct+'%"></div></div></div>';
+    }).join('')+'</div>'
+    :'<div class="empty" style="padding:24px"><div class="empty-title">No skills tagged yet</div><div class="empty-sub">Add comma-separated skills when logging completed work</div></div>';
+
+  // === Project Highlights — colour-coded bars by hours ===
+  const projTallyAll={};
+  scopedEntries.forEach(e=>{const pid=getProjId(e);if(!pid)return;if(!projTallyAll[pid])projTallyAll[pid]={tasks:0,hours:0};projTallyAll[pid].tasks++;projTallyAll[pid].hours+=parseFloat(e.hours)||0;});
+  const projRanked=Object.entries(projTallyAll).sort((a,b)=>b[1].hours-a[1].hours);
+  const maxProjHrs=projRanked[0]?projRanked[0][1].hours:1;
+  document.getElementById('skills-projects').innerHTML=projRanked.length
+    ?'<div class="skill-bars">'+projRanked.map(([pid,t])=>{
+      const p=getProj(pid);const pct=Math.max(4,Math.round(t.hours/maxProjHrs*100));
+      return '<div class="skill-bar-row"><div class="skill-bar-head"><span class="skill-bar-name" style="color:'+p.color+'">'+htmlEsc(p.name)+'</span><span class="skill-bar-meta">'+t.hours+' hrs · '+t.tasks+' task'+(t.tasks===1?'':'s')+'</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:'+pct+'%;background:'+p.color+'"></div></div></div>';
+    }).join('')+'</div>'
+    :'<div class="empty" style="padding:24px"><div class="empty-title">No projects</div></div>';
+}
+// Build clean markdown from the same data the HTML uses — works regardless of DOM state
+function buildResumeMarkdown(filterId){
   const companies=filterId?db.companies.filter(c=>c.id===filterId):[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
   let md='';
   companies.forEach(co=>{
-    const coAll=db.entries.filter(e=>getCompanyId(e)===co.id);
-    const coDone=completedOf(coAll);
+    const {coAll,projRanked}=buildCompanyTally(co);
     if(!coAll.length)return;
-
-    // === Header block (matches LinkedIn experience entry) ===
     md+=co.name+'\n';
-    const empLine=[];
-    if(co.employment_type)empLine.push(co.employment_type);
-    const totalDur=durationLabel(co.start_date,co.end_date);
-    if(totalDur)empLine.push(totalDur);
+    const empLine=[];if(co.employment_type)empLine.push(co.employment_type);
+    const totalDur=durationLabel(co.start_date,co.end_date);if(totalDur)empLine.push(totalDur);
     if(empLine.length)md+=empLine.join(' · ')+'\n';
     if(co.role)md+=co.role+'\n';
     const dateLine=[];
@@ -1940,69 +2086,21 @@ function renderSkills(){
     if(totalDur)dateLine.push(totalDur);
     if(dateLine.length)md+=dateLine.join(' · ')+'\n';
     if(co.location)md+=co.location+'\n';
-
-    // === Role summary paragraph (from company description) ===
-    if(co.description){md+='\n'+co.description+'\n';}
-
-    // === Project bullets (one per project, generalised) ===
-    const projTally={};
-    coDone.forEach(e=>{
-      const pid=getProjId(e);if(!pid)return;
-      if(!projTally[pid])projTally[pid]={tasks:0,hours:0,customers:new Set(),skills:new Set()};
-      projTally[pid].tasks++;
-      projTally[pid].hours+=parseFloat(e.hours)||0;
-      const cid=getCustId(e);if(cid){const c=getCust(cid);if(c)projTally[pid].customers.add(c.name);}
-      (e.skills||'').split(',').forEach(s=>{const t=s.trim();if(t)projTally[pid].skills.add(t);});
-    });
-    const projRanked=Object.entries(projTally).sort((a,b)=>b[1].hours-a[1].hours);
+    if(co.description)md+='\n'+co.description+'\n';
     if(projRanked.length){
       md+='\n';
-      projRanked.forEach(([pid,t])=>{
-        const p=getProj(pid);
-        if(p.description){
-          // User-supplied accomplishment text — use as-is
-          md+='• '+p.description+'\n';
-        }else{
-          // Auto-derived fallback: kept short and generalised, prompts user to edit
-          const custs=[...t.customers].slice(0,3).join(', ');
-          const skillTop=[...t.skills].slice(0,3).join(', ');
-          let bullet='Worked on '+p.name;
-          if(custs)bullet+=' across '+t.customers.size+' customer'+(t.customers.size>1?'s':'')+' ('+custs+(t.customers.size>3?', …':'')+')';
-          if(skillTop)bullet+=' — applied '+skillTop;
-          md+='• '+bullet+'\n';
-        }
-      });
+      projRanked.forEach(([pid,t])=>{const p=getProj(pid);md+='• '+(p.description||autoProjectBullet(p,t))+'\n';});
     }
-
-    // === Certifications obtained at this company (planned ones excluded) ===
-    const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id);
-    const certsObtained=cocerts.filter(c=>{const s=certStatus(c);return s.kind!=='planned';});
-    if(certsObtained.length){
-      certsObtained.forEach(c=>{
-        md+='• Earned '+c.name+(c.issuer?' ('+c.issuer+')':'')+(c.issue_date?' — '+fmtMonthYear(c.issue_date):'')+'\n';
-      });
-    }
+    const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id).filter(c=>certStatus(c).kind!=='planned');
+    cocerts.forEach(c=>{md+='• Earned '+c.name+(c.issuer?' ('+c.issuer+')':'')+(c.issue_date?' — '+fmtMonthYear(c.issue_date):'')+'\n';});
     md+='\n\n';
   });
-  if(!md)md='_No completed tasks for the selected scope._\n\nLog some work in **Log Work** with skills tagged, then come back here. Open each Project to write a one-line resume bullet, or leave them blank for an auto-derived summary.';
-  document.getElementById('skills-resume').textContent=md.trim();
-
-  // Top skills list
-  const topTally={};
-  scopedEntries.forEach(e=>(e.skills||'').split(',').forEach(s=>{const t=s.trim();if(!t)return;if(!topTally[t])topTally[t]={tasks:0,hours:0};topTally[t].tasks++;topTally[t].hours+=parseFloat(e.hours)||0;}));
-  const topRanked=Object.entries(topTally).sort((a,b)=>b[1].tasks-a[1].tasks).slice(0,15);
-  document.getElementById('skills-top').innerHTML=topRanked.length?topRanked.map(([s,t])=>'<div class="act-item"><span class="adot" style="background:var(--primary)"></span><div class="atext"><div style="font-weight:600">'+s+'</div><div class="ameta">'+t.tasks+' tasks · '+t.hours+' hrs</div></div></div>').join(''):'<div class="empty" style="padding:24px"><div class="empty-title">No skills tagged yet</div><div class="empty-sub">Add comma-separated skills when logging completed work</div></div>';
-
-  // Project highlights
-  const projTallyAll={};
-  scopedEntries.forEach(e=>{const pid=getProjId(e);if(!pid)return;if(!projTallyAll[pid])projTallyAll[pid]={tasks:0,hours:0};projTallyAll[pid].tasks++;projTallyAll[pid].hours+=parseFloat(e.hours)||0;});
-  const projRanked=Object.entries(projTallyAll).sort((a,b)=>b[1].hours-a[1].hours).slice(0,8);
-  document.getElementById('skills-projects').innerHTML=projRanked.length?projRanked.map(([pid,t])=>{const p=getProj(pid);return'<div class="act-item"><span class="adot" style="background:'+p.color+'"></span><div class="atext"><div style="font-weight:600">'+p.name+'</div><div class="ameta">'+t.tasks+' tasks · '+t.hours+' hrs</div></div></div>';}).join(''):'<div class="empty" style="padding:24px"><div class="empty-title">No projects</div></div>';
+  return md.trim();
 }
 function copySkillsMarkdown(){
-  const md=document.getElementById('skills-resume').textContent;
+  const md=buildResumeMarkdown(v('skills-company')||'');
   if(!md){toast('Nothing to copy yet.','error');return;}
-  navigator.clipboard.writeText(md).then(()=>toast('Resume markdown copied — paste into your CV or LinkedIn!','success')).catch(()=>toast('Copy failed. Select the text manually.','error'));
+  navigator.clipboard.writeText(md).then(()=>toast('Resume copied — paste into your CV or LinkedIn!','success')).catch(()=>toast('Copy failed. Select the text manually.','error'));
 }
 
 /* ENTRY MODAL */
