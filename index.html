@@ -272,6 +272,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .cert-card.expiring::before{background:var(--amber);}
 .cert-card.expired::before{background:var(--red);}
 .cert-card.no-expiry::before{background:var(--primary);}
+.cert-card.planned::before{background:var(--blue);}
 .cert-name{font-size:15px;font-weight:700;margin-bottom:4px;}
 .cert-issuer{font-size:12px;color:var(--muted);margin-bottom:14px;}
 .cert-dates{display:flex;gap:18px;font-size:11px;margin-bottom:12px;}
@@ -282,6 +283,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .cert-status.expiring{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
 .cert-status.expired{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);}
 .cert-status.no-expiry{background:rgba(99,102,241,.12);color:var(--pri-h);border:1px solid rgba(99,102,241,.25);}
+.cert-status.planned{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25);}
 .cert-foot{display:flex;gap:6px;margin-top:14px;align-items:center;}
 .cert-url{font-size:11px;color:var(--primary);text-decoration:none;margin-left:auto;}
 .cert-url:hover{text-decoration:underline;}
@@ -1764,8 +1766,15 @@ async function deleteCompanyFromModal(){
 
 /* CERTIFICATIONS */
 function certStatus(c){
-  if(!c.expiry_date)return{kind:'no-expiry',label:'No expiry'};
   const today=new Date();today.setHours(0,0,0,0);
+  // Planned / pending: issue_date is in the future → user hasn't taken the exam yet
+  const issued=c.issue_date||c.issued_date;
+  if(issued){
+    const iss=new Date(issued+'T00:00:00');
+    const daysToIssue=Math.round((iss-today)/86400000);
+    if(daysToIssue>0)return{kind:'planned',label:'Planned · in '+daysToIssue+' days'};
+  }
+  if(!c.expiry_date)return{kind:'no-expiry',label:'No expiry'};
   const exp=new Date(c.expiry_date+'T00:00:00');
   const diffDays=Math.round((exp-today)/86400000);
   if(diffDays<0)return{kind:'expired',label:'Expired '+Math.abs(diffDays)+' days ago'};
@@ -1782,24 +1791,29 @@ function renderCertifications(){
     return;
   }
   const status=certs.map(certStatus);
-  const cActive=status.filter(s=>s.kind==='active').length;
+  const cActive=status.filter(s=>s.kind==='active'||s.kind==='no-expiry').length;
   const cExpiring=status.filter(s=>s.kind==='expiring').length;
   const cExpired=status.filter(s=>s.kind==='expired').length;
+  const cPlanned=status.filter(s=>s.kind==='planned').length;
   stats.innerHTML='<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:var(--pri-bg)">🎓</div><div class="stat-label">Total</div></div><div class="stat-value">'+certs.length+'</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(34,197,94,.1)">✅</div><div class="stat-label">Active</div></div><div class="stat-value" style="color:var(--green)">'+cActive+'</div></div>'
+    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(59,130,246,.1)">📅</div><div class="stat-label">Planned</div></div><div class="stat-value" style="color:var(--blue)">'+cPlanned+'</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(245,158,11,.1)">⏰</div><div class="stat-label">Expiring &lt;90 days</div></div><div class="stat-value" style="color:var(--amber)">'+cExpiring+'</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(239,68,68,.1)">⚠️</div><div class="stat-label">Expired</div></div><div class="stat-value" style="color:var(--red)">'+cExpired+'</div></div>';
-  // Sort: expired first (action needed), then expiring soon, then by expiry asc, then no-expiry
+  // Sort: expired/expiring (action) → active → planned (future) → no-expiry
   const sorted=[...certs].sort((a,b)=>{
     const sa=certStatus(a),sb=certStatus(b);
-    const order={expired:0,expiring:1,active:2,'no-expiry':3};
+    const order={expired:0,expiring:1,active:2,planned:3,'no-expiry':4};
     if(order[sa.kind]!==order[sb.kind])return order[sa.kind]-order[sb.kind];
+    if(sa.kind==='planned')return (a.issue_date||'9999').localeCompare(b.issue_date||'9999');
     return (a.expiry_date||'9999').localeCompare(b.expiry_date||'9999');
   });
   g.innerHTML=sorted.map(c=>{
     const s=certStatus(c);
     const co=getCompany(c.company_id||c.companyId||'');
-    return '<div class="cert-card '+s.kind+'"><div class="cert-name">'+c.name+'</div><div class="cert-issuer">'+(c.issuer||'—')+(co?' · '+co.name:' · Personal')+'</div><div class="cert-dates"><div><div class="cert-dates-lbl">Issued</div><div>'+(c.issue_date||c.issued_date?fmtDateShort(c.issue_date||c.issued_date):'—')+'</div></div><div><div class="cert-dates-lbl">Expires</div><div>'+(c.expiry_date?fmtDateShort(c.expiry_date):'No expiry')+'</div></div></div><span class="cert-status '+s.kind+'">'+s.label+'</span><div class="cert-foot"><button class="btn btn-ghost btn-sm" onclick="editCert(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCert(\''+c.id+'\')">Delete</button>'+(c.credential_url?'<a class="cert-url" href="'+c.credential_url+'" target="_blank" rel="noopener">View credential ↗</a>':'')+'</div></div>';
+    const issueLbl=s.kind==='planned'?'Planned for':'Issued';
+    const expiryLbl=s.kind==='planned'?'Will expire':'Expires';
+    return '<div class="cert-card '+s.kind+'"><div class="cert-name">'+c.name+'</div><div class="cert-issuer">'+(c.issuer||'—')+(co?' · '+co.name:' · Personal')+'</div><div class="cert-dates"><div><div class="cert-dates-lbl">'+issueLbl+'</div><div>'+(c.issue_date||c.issued_date?fmtDateShort(c.issue_date||c.issued_date):'—')+'</div></div><div><div class="cert-dates-lbl">'+expiryLbl+'</div><div>'+(c.expiry_date?fmtDateShort(c.expiry_date):'No expiry')+'</div></div></div><span class="cert-status '+s.kind+'">'+s.label+'</span><div class="cert-foot"><button class="btn btn-ghost btn-sm" onclick="editCert(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCert(\''+c.id+'\')">Delete</button>'+(c.credential_url?'<a class="cert-url" href="'+c.credential_url+'" target="_blank" rel="noopener">View credential ↗</a>':'')+'</div></div>';
   }).join('');
 }
 function openAddCert(){
