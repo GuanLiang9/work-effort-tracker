@@ -137,6 +137,7 @@ async function main() {
   await ensureStringAttr('companies', 'employment_type', 50);   // Full-time, Contract, …
   await ensureStringAttr('companies', 'location',        100);  // "Singapore · On-site"
   await ensureStringAttr('companies', 'description',     2000); // resume summary paragraph
+  await ensureStringAttr('companies', 'extra_bullets',   4000); // user-added custom bullets, newline-separated
   await ensureStringAttr('companies', 'user_id',         36,  true);
   await ensureIndex('companies', 'user_id_idx', ['user_id']);
 

@@ -258,6 +258,17 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .resume-bullet-edit{opacity:0;transition:opacity .15s,background .15s;background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 6px;border-radius:6px;flex-shrink:0;align-self:flex-start;}
 .resume-bullet:hover .resume-bullet-edit{opacity:1;}
 .resume-bullet-edit:hover{background:var(--surface3);color:var(--text);}
+.resume-bullet-edit.del:hover{background:rgba(239,68,68,.15);color:var(--red);}
+/* Inline add/edit bullet input */
+.add-bullet-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;margin-top:6px;background:transparent;border:1px dashed var(--border2);color:var(--muted);font-size:12.5px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .15s;font-family:inherit;}
+.add-bullet-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(99,102,241,.05);border-style:solid;}
+.bullet-input-add,.bullet-input-edit{align-items:center !important;gap:8px;}
+.bullet-input-add input,.bullet-input-edit input{flex:1;background:var(--surface3);border:1px solid var(--primary);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13.5px;font-family:inherit;outline:none;min-width:0;}
+.bullet-input-add input:focus,.bullet-input-edit input:focus{box-shadow:0 0 0 3px rgba(99,102,241,.18);}
+.bullet-btn{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:transparent;color:var(--muted);transition:all .15s;flex-shrink:0;}
+.bullet-btn:hover{background:var(--surface2);color:var(--text);}
+.bullet-btn-primary{background:var(--brand-grad);color:#fff;border:none;}
+.bullet-btn-primary:hover{filter:brightness(1.1);color:#fff;}
 
 /* ── SKILL BARS (Top Skills + Project Hours) ────────────── */
 .skill-bars{display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;padding-right:4px;}
@@ -1969,6 +1980,37 @@ function autoProjectBullet(project,t){
   return bullet;
 }
 function htmlEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function getExtraBullets(co){return (co.extra_bullets||'').split('\n').map(s=>s.trim()).filter(Boolean);}
+// State for inline-editing custom bullets on the Skills page
+let _bulletUI={addingFor:null,editing:null};   // editing = {coId, idx}
+function startAddBullet(coId){_bulletUI={addingFor:coId,editing:null};renderSkills();setTimeout(()=>{const el=document.querySelector('.bullet-input-add input');if(el)el.focus();},20);}
+function cancelAddBullet(){_bulletUI={addingFor:null,editing:null};renderSkills();}
+async function saveAddBullet(coId){
+  const el=document.querySelector('.bullet-input-add input');if(!el)return;
+  const text=el.value.trim();if(!text){cancelAddBullet();return;}
+  const co=db.companies.find(c=>c.id===coId);if(!co)return;
+  const bullets=getExtraBullets(co);bullets.push(text);
+  try{await dbUpdate('companies',coId,{extra_bullets:bullets.join('\n')});_bulletUI={addingFor:null,editing:null};refresh();toast('Bullet added','success');}
+  catch(err){toast('Save failed: '+err.message,'error');}
+}
+function startEditBullet(coId,idx){_bulletUI={addingFor:null,editing:{coId,idx}};renderSkills();setTimeout(()=>{const el=document.querySelector('.bullet-input-edit input');if(el){el.focus();el.select();}},20);}
+function cancelEditBullet(){_bulletUI={addingFor:null,editing:null};renderSkills();}
+async function saveEditBullet(coId,idx){
+  const el=document.querySelector('.bullet-input-edit input');if(!el)return;
+  const text=el.value.trim();
+  const co=db.companies.find(c=>c.id===coId);if(!co)return;
+  const bullets=getExtraBullets(co);
+  if(!text){bullets.splice(idx,1);}else{bullets[idx]=text;}
+  try{await dbUpdate('companies',coId,{extra_bullets:bullets.join('\n')});_bulletUI={addingFor:null,editing:null};refresh();toast(text?'Bullet updated':'Bullet deleted','success');}
+  catch(err){toast('Save failed: '+err.message,'error');}
+}
+async function deleteExtraBullet(coId,idx){
+  if(!confirm('Delete this bullet?'))return;
+  const co=db.companies.find(c=>c.id===coId);if(!co)return;
+  const bullets=getExtraBullets(co);bullets.splice(idx,1);
+  try{await dbUpdate('companies',coId,{extra_bullets:bullets.join('\n')});refresh();toast('Bullet deleted','success');}
+  catch(err){toast(err.message,'error');}
+}
 function buildCompanyTally(co){
   const coAll=db.entries.filter(e=>getCompanyId(e)===co.id);
   const coDone=completedOf(coAll);
@@ -2011,7 +2053,9 @@ function renderSkills(){
     if(totalDur)dateLine.push(totalDur);
     const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id);
     const certsObtained=cocerts.filter(c=>certStatus(c).kind!=='planned');
-    const hasContent=projRanked.length||certsObtained.length;
+    const extraBullets=getExtraBullets(co);
+    const isAdding=_bulletUI.addingFor===co.id;
+    const editingIdx=(_bulletUI.editing&&_bulletUI.editing.coId===co.id)?_bulletUI.editing.idx:-1;
     return `<div class="resume-co">
       <div class="resume-co-head">
         <div class="resume-co-name">${htmlEsc(co.name)}</div>
@@ -2022,9 +2066,9 @@ function renderSkills(){
       ${dateLine.length?'<div class="resume-meta">'+dateLine.join(' · ')+'</div>':''}
       ${co.location?'<div class="resume-meta">'+htmlEsc(co.location)+'</div>':''}
       <div class="resume-summary ${co.description?'':'empty'}">
-        ${co.description?htmlEsc(co.description):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary and accomplishments here — supports bullet lists (start a line with • or -).')+'</em>'}
+        ${co.description?htmlEsc(co.description):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary, or use + Add bullet below.')+'</em>'}
       </div>
-      ${hasContent?`<div class="resume-bullets">
+      <div class="resume-bullets">
         ${projRanked.map(([pid,t])=>{
           const p=getProj(pid);
           const isCustom=!!p.description;
@@ -2040,7 +2084,30 @@ function renderSkills(){
           <span class="resume-bullet-text">Earned ${htmlEsc(c.name)}${c.issuer?' ('+htmlEsc(c.issuer)+')':''}${c.issue_date?' — '+fmtMonthYear(c.issue_date):''}</span>
           <button class="resume-bullet-edit" onclick="editCert('${c.id}')" title="Edit certification" aria-label="Edit cert">✏️</button>
         </div>`).join('')}
-      </div>`:''}
+        ${extraBullets.map((b,idx)=>idx===editingIdx
+          ?`<div class="resume-bullet custom bullet-input-edit">
+              <span class="resume-bullet-dot">•</span>
+              <input type="text" value="${htmlEsc(b)}" placeholder="Empty = delete this bullet" onkeydown="if(event.key==='Enter'){event.preventDefault();saveEditBullet('${co.id}',${idx});}else if(event.key==='Escape'){cancelEditBullet();}">
+              <button class="bullet-btn bullet-btn-primary" onclick="saveEditBullet('${co.id}',${idx})">Save</button>
+              <button class="bullet-btn" onclick="cancelEditBullet()">Cancel</button>
+            </div>`
+          :`<div class="resume-bullet custom">
+              <span class="resume-bullet-dot">•</span>
+              <span class="resume-bullet-text">${htmlEsc(b)}</span>
+              <button class="resume-bullet-edit" onclick="startEditBullet('${co.id}',${idx})" title="Edit bullet" aria-label="Edit bullet">✏️</button>
+              <button class="resume-bullet-edit del" onclick="deleteExtraBullet('${co.id}',${idx})" title="Delete bullet" aria-label="Delete bullet">🗑️</button>
+            </div>`
+        ).join('')}
+        ${isAdding
+          ?`<div class="resume-bullet custom bullet-input-add">
+              <span class="resume-bullet-dot">•</span>
+              <input type="text" placeholder="Type your bullet (e.g. 'Led migration of XYZ system, reducing downtime 40%')" onkeydown="if(event.key==='Enter'){event.preventDefault();saveAddBullet('${co.id}');}else if(event.key==='Escape'){cancelAddBullet();}">
+              <button class="bullet-btn bullet-btn-primary" onclick="saveAddBullet('${co.id}')">Add</button>
+              <button class="bullet-btn" onclick="cancelAddBullet()">Cancel</button>
+            </div>`
+          :`<button class="add-bullet-btn" onclick="startAddBullet('${co.id}')" title="Add a custom bullet to this company">+ Add bullet</button>`
+        }
+      </div>
     </div>`;
   }).filter(Boolean).join('');
   document.getElementById('skills-resume').innerHTML=sections||'<div class="empty" style="padding:32px"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add a company / role on the <strong>🏢 Companies</strong> page to start building your resume.</div></div>';
@@ -2095,6 +2162,8 @@ function buildResumeMarkdown(filterId){
     }
     const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id).filter(c=>certStatus(c).kind!=='planned');
     cocerts.forEach(c=>{md+='• Earned '+c.name+(c.issuer?' ('+c.issuer+')':'')+(c.issue_date?' — '+fmtMonthYear(c.issue_date):'')+'\n';});
+    // User-added custom bullets (typed directly on the resume preview)
+    getExtraBullets(co).forEach(b=>{md+='• '+b+'\n';});
     md+='\n\n';
   });
   return md.trim();
