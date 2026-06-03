@@ -1985,6 +1985,15 @@ function autoProjectBullet(project,t){
 }
 function htmlEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function getExtraBullets(co){return (co.extra_bullets||'').split('\n').map(s=>s.trim()).filter(Boolean);}
+// Clean multi-line text for the resume role-summary area:
+//  - strip leading whitespace per line (kills accidental indentation from paste)
+//  - rtrim each line
+//  - collapse 3+ blank lines to a single paragraph break
+//  - trim the whole block
+function cleanDescription(t){
+  if(!t)return'';
+  return t.split('\n').map(l=>l.replace(/^\s+/,'').replace(/\s+$/,'')).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
 // State for inline-editing custom bullets on the Skills page
 let _bulletUI={addingFor:null,editing:null};   // editing = {coId, idx}
 function startAddBullet(coId){_bulletUI={addingFor:coId,editing:null};renderSkills();setTimeout(()=>{const el=document.querySelector('.bullet-input-add input');if(el)el.focus();},20);}
@@ -2070,7 +2079,7 @@ function renderSkills(){
       ${dateLine.length?'<div class="resume-meta">'+dateLine.join(' · ')+'</div>':''}
       ${co.location?'<div class="resume-meta">'+htmlEsc(co.location)+'</div>':''}
       <div class="resume-summary ${co.description?'':'empty'}">
-        ${co.description?htmlEsc(co.description):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary, or use + Add bullet below.')+'</em>'}
+        ${co.description?htmlEsc(cleanDescription(co.description)):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary, or use + Add bullet below.')+'</em>'}
       </div>
       <div class="resume-bullets">
         ${projRanked.map(([pid,t])=>{
@@ -2160,7 +2169,7 @@ function buildResumeMarkdown(filterId){
     if(totalDur)dateLine.push(totalDur);
     if(dateLine.length)md+=dateLine.join(' · ')+'\n';
     if(co.location)md+=co.location+'\n';
-    if(co.description)md+='\n'+co.description+'\n';
+    if(co.description)md+='\n'+cleanDescription(co.description)+'\n';
     if(projRanked.length){
       md+='\n';
       projRanked.forEach(([pid,t])=>{const p=getProj(pid);md+='• '+(p.description||autoProjectBullet(p,t))+'\n';});
