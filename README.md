@@ -8,17 +8,35 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 
 ## Features
 
-- **Dashboard** — stat cards + 3 charts, with a **month-period filter** so you can drill into hours by month
+### Time & Task Tracking
+- **Dashboard** — stat cards + 3 charts, with a **month-period filter** so you can drill into hours by month. Total Hours, Tasks Completed, **🌙 Weekend Hours**, and Status breakdown
 - **Tasks** — filterable list with status tabs, project/customer filters, and a **date-range filter** (From / To)
-- **Export** — one-click **CSV** (Excel) and **PDF** export of the current filtered task view, with totals and active-filter summary
-- **Log Work** — form to add work entries with a **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable), plus a **Skills Gained** tag field
+- **Log Work** — form to add work entries with **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable), **Skills Gained** tag field, and **Company / Role** selector
 - **Customers** — internal 🏢 vs external 🤝 customer cards
-- **Projects** — project overview with total hours
-- **🏢 Companies / Roles** — every job you've held, with start/end dates. Active-company switcher in the sidebar; entries default to the active company
-- **⭐ Skills** — resume-ready markdown extracted from your completed tasks, grouped by company + role + dates. One-click "Copy as Markdown" for direct paste into your CV or LinkedIn
-- **🎓 Certifications** — track active credentials with renewal-date alerts. Status auto-derives: Active / Expiring &lt; 90 days / Expired
+- **Projects** — project overview with total hours and editable resume-bullet field
+- **🌙 Non-working day tracking** — tasks completed on weekends are tagged separately and broken out across the dashboard and exports
+- **Export** — one-click **CSV** (Excel) and **PDF** export with totals (Weekday / Weekend split) and active-filter summary
+
+### Career & Resume Tools
+- **🏢 Companies / Roles** — every job you've held with employment type (Full-time / Contract / etc.), role title, dates, location, and a multi-line role summary. Active-company switcher in the sidebar — new entries default to it
+- **🎓 Certifications** — track credentials with auto-derived status:
+  - 🟢 **Active** · 🔵 **Planned** (future exam date) · 🟡 **Expiring &lt; 90 days** · 🔴 **Expired**
+  - Cards sort with action items first (expired / expiring) so renewals surface
+- **⭐ Skills (Resume Preview)** — LinkedIn-style experience output, auto-generated from your data:
+  - Company header (name · employment-type · duration) · Role · Date range · Location · Summary paragraph
+  - Project bullets — each project gets a one-line accomplishment with auto-derived fallback or your polished text
+  - Certification bullets — earned credentials list automatically
+  - **+ Add bullet** inline button — add custom accomplishment bullets per company (perfect for past roles with no task data)
+  - **Top Skills** — every skill sorted by hours invested (your "depth" signal), with gradient bars and 🥇🥈🥉 medal badges for the top 3
+  - **📋 Copy as Markdown** — ready to paste into LinkedIn / CV
+
+### Platform
 - **Auth** — email/password, registration, Google OAuth via Appwrite
+- **PWA** — installable to mobile home screen with branded icon set
 - **Mobile-friendly** — sliding sidebar, finger-sized tap targets, no iOS zoom on input focus, swipeable tables, stacked layouts on phones
+- **Accessibility** — proper heading hierarchy, `aria-label` on icon buttons, keyboard-only focus rings, `prefers-reduced-motion` respected
+- **SEO** — sitemap.xml, robots.txt, JSON-LD schema, full Open Graph + Twitter Card meta, Google Search Console verified
+- **Security headers** — HSTS, CSP, X-Frame-Options DENY, Permissions-Policy lockdown via Cloudflare `_headers`
 
 ---
 
@@ -36,6 +54,31 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 ## Recurring tasks
 
 On the **Log Work** page, tick **🔁 Recurring task** and set how many months to repeat for (2–36). One entry is created per month at the same day-of-month as the original (clamped to month-end if needed — e.g. Jan 31 → Feb 28). Each generated entry is independent, so you can edit hours, mark complete, or delete any individual occurrence without affecting the others.
+
+---
+
+## Using the Skills / Resume Preview
+
+1. **Add your companies** (🏢 Companies → + New Company / Role)
+   - Fill in name, role, employment type, dates, location
+   - Write a one-paragraph **Role Summary** (supports multi-line — you can paste bullet lists into it for past roles)
+   - When you change jobs, add the new company and switch to it via the sidebar chip
+
+2. **Tag your work** — when logging tasks (Log Work or Add Task modal):
+   - Pick the right **Company / Role** (defaults to active)
+   - Add comma-separated **Skills Gained** (e.g. `Python, AWS, Stakeholder Management`)
+
+3. **Polish your project bullets** (📁 Projects → Edit any project)
+   - Fill in the **Resume bullet** field with a polished one-liner
+   - Without it, an auto-derived bullet shows in italic listing customers + key skills
+
+4. **Add custom bullets directly on the resume** (⭐ Skills → +Add bullet per company)
+   - For accomplishments that don't map to a project, or for past roles with no task data
+   - Click ✏️ to edit, 🗑️ to delete, Enter to save, Esc to cancel
+
+5. **Copy & paste**
+   - Click **📋 Copy as Markdown** at the top of the Skills page
+   - Paste straight into LinkedIn About / CV / cover letter
 
 ---
 
