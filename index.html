@@ -935,6 +935,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
     <div class="modal-form">
       <input type="hidden" id="m-proj-id">
       <div class="fg"><label for="m-proj-name">Project Name *</label><input type="text" id="m-proj-name" placeholder="e.g. BMC, OneApp…"></div>
+      <div class="fg"><label for="m-proj-desc">Resume bullet <span style="text-transform:none;font-weight:400;color:var(--dim)">— one-line accomplishment shown on the Skills page</span></label><textarea id="m-proj-desc" placeholder="e.g. Built and delivered the BMC Helix ITSM platform across multiple customers, including audit logging and security improvements." style="min-height:60px"></textarea></div>
       <div class="fg"><label for="m-proj-color">Colour</label><input type="color" id="m-proj-color" value="#6366f1" style="height:42px;padding:4px"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('project-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalProject()">Save</button></div>
@@ -953,18 +954,25 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
   </div>
 </div>
 <div class="overlay" id="company-modal">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:540px">
     <div class="modal-hdr"><div class="modal-title" id="m-co-heading">New Company / Role</div><button class="modal-close" onclick="closeModal('company-modal')" aria-label="Close dialog">✕</button></div>
     <div class="modal-form">
       <input type="hidden" id="m-co-id">
       <div class="fg"><label for="m-co-name">Company Name *</label><input type="text" id="m-co-name" placeholder="e.g. Keppel Technology Solutions"></div>
-      <div class="fg"><label for="m-co-role">Role / Title</label><input type="text" id="m-co-role" placeholder="e.g. Software Engineer"></div>
+      <div class="modal-grid">
+        <div class="fg"><label for="m-co-role">Role / Title</label><input type="text" id="m-co-role" placeholder="e.g. Software Engineer"></div>
+        <div class="fg"><label for="m-co-emp">Employment Type</label><select id="m-co-emp"><option value="">—</option><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Freelance</option><option>Internship</option></select></div>
+      </div>
       <div class="modal-grid">
         <div class="fg"><label for="m-co-start">Start Date</label><input type="date" id="m-co-start"></div>
-        <div class="fg"><label for="m-co-end">End Date <span style="text-transform:none;font-weight:400;color:var(--dim)">(leave blank if current)</span></label><input type="date" id="m-co-end"></div>
+        <div class="fg"><label for="m-co-end">End Date <span style="text-transform:none;font-weight:400;color:var(--dim)">(blank = current)</span></label><input type="date" id="m-co-end"></div>
       </div>
-      <div class="fg"><label for="m-co-color">Colour</label><input type="color" id="m-co-color" value="#6366f1" style="height:42px;padding:4px"></div>
-      <div class="fg"><label for="m-co-notes">Notes</label><textarea id="m-co-notes" placeholder="Team, department, anything that helps you remember…"></textarea></div>
+      <div class="fg"><label for="m-co-loc">Location</label><input type="text" id="m-co-loc" placeholder="e.g. Singapore · On-site"></div>
+      <div class="fg"><label for="m-co-desc">Role Summary <span style="text-transform:none;font-weight:400;color:var(--dim)">(paragraph shown above bullets on Skills page)</span></label><textarea id="m-co-desc" placeholder="e.g. Designed and deployed AI-powered solutions using Claude to modernise IT operations…"></textarea></div>
+      <div class="modal-grid">
+        <div class="fg"><label for="m-co-color">Colour</label><input type="color" id="m-co-color" value="#6366f1" style="height:42px;padding:4px"></div>
+        <div class="fg"><label for="m-co-notes">Internal notes</label><input type="text" id="m-co-notes" placeholder="Team, department, reporting line…"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-danger-soft" id="m-co-delete" onclick="deleteCompanyFromModal()" style="margin-right:auto;display:none">Delete</button>
@@ -1036,8 +1044,12 @@ function initAppwrite(){
 }
 
 /* SEED */
-const SCO=[{id:'co1',name:'Keppel Technology Solutions',role:'Software Engineer',start_date:'2023-06-01',end_date:'',color:'#6366f1',notes:''}];
-const SP=[{id:'p1',name:'BMC',color:'#3b82f6'},{id:'p2',name:'OneApp',color:'#22c55e'},{id:'p3',name:'AI Engineering',color:'#a855f7'}];
+const SCO=[{id:'co1',name:'Keppel Technology Solutions',role:'Software Engineer',start_date:'2023-06-01',end_date:'',color:'#6366f1',notes:'',employment_type:'Full-time',location:'Singapore · On-site',description:''}];
+const SP=[
+  {id:'p1',name:'BMC',color:'#3b82f6',description:''},
+  {id:'p2',name:'OneApp',color:'#22c55e',description:''},
+  {id:'p3',name:'AI Engineering',color:'#a855f7',description:''}
+];
 const SC=[{id:'cint',name:'Internal',type:'internal',color:'#3b82f6'},{id:'csentosa',name:'Sentosa',type:'external',color:'#f59e0b'},{id:'cncc',name:'NCC',type:'external',color:'#f97316'},{id:'ctal',name:'TAL',type:'external',color:'#ec4899'},{id:'csporthub',name:'SportHub',type:'external',color:'#8b5cf6'},{id:'cgbtb',name:'Garden by the Bay',type:'external',color:'#22c55e'},{id:'caiops',name:'AIOps / Internal AI',type:'internal',color:'#6366f1'}];
 const SE=[
   {id:'e1',title:'OneApp domain change session',projectId:'p2',customerId:'cint',hours:6,status:'completed',date:'2026-05-10',notes:'5 hours + 1 hour session',skills:'DNS, Domain Management, Customer Communication',companyId:'co1'},
@@ -1704,12 +1716,12 @@ function renderProjects(){
   if(!db.projects.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><div class="empty-title">No projects yet</div></div>';return;}
   g.innerHTML=db.projects.map(proj=>{const h=projHours(proj.id),tasks=db.entries.filter(e=>getProjId(e)===proj.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0;return'<div class="entity-card"><div class="entity-card-bar" style="background:'+proj.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+proj.color+'">'+proj.name+'</div><div class="entity-card-sub"></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+proj.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editProject(\''+proj.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteProject(\''+proj.id+'\')">Delete</button></div></div>';}).join('');
 }
-function openAddProject(){document.getElementById('m-proj-heading').textContent='New Project';document.getElementById('m-proj-id').value='';document.getElementById('m-proj-name').value='';document.getElementById('m-proj-color').value='#6366f1';openModal('project-modal');}
-function editProject(id){const p=db.projects.find(x=>x.id===id);if(!p)return;document.getElementById('m-proj-heading').textContent='Edit Project';document.getElementById('m-proj-id').value=p.id;document.getElementById('m-proj-name').value=p.name;document.getElementById('m-proj-color').value=p.color;openModal('project-modal');}
+function openAddProject(){document.getElementById('m-proj-heading').textContent='New Project';document.getElementById('m-proj-id').value='';document.getElementById('m-proj-name').value='';document.getElementById('m-proj-desc').value='';document.getElementById('m-proj-color').value='#6366f1';openModal('project-modal');}
+function editProject(id){const p=db.projects.find(x=>x.id===id);if(!p)return;document.getElementById('m-proj-heading').textContent='Edit Project';document.getElementById('m-proj-id').value=p.id;document.getElementById('m-proj-name').value=p.name;document.getElementById('m-proj-desc').value=p.description||'';document.getElementById('m-proj-color').value=p.color;openModal('project-modal');}
 async function saveModalProject(){
-  const id=v('m-proj-id'),name=v('m-proj-name'),color=document.getElementById('m-proj-color').value;
+  const id=v('m-proj-id'),name=v('m-proj-name'),description=v('m-proj-desc'),color=document.getElementById('m-proj-color').value;
   if(!name){toast('Enter a project name.','error');return;}
-  try{if(id)await dbUpdate('projects',id,{name,color});else await dbInsert('projects',DEMO_MODE?{id:uid(),name,color}:{name,color});closeModal('project-modal');refresh();toast('Project saved!','success');}catch(err){toast(err.message,'error');}
+  try{if(id)await dbUpdate('projects',id,{name,color,description});else await dbInsert('projects',DEMO_MODE?{id:uid(),name,color,description}:{name,color,description});closeModal('project-modal');refresh();toast('Project saved!','success');}catch(err){toast(err.message,'error');}
 }
 async function deleteProject(id){if(!confirm('Delete this project?'))return;try{await dbDelete('projects',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
 
@@ -1753,7 +1765,8 @@ function renderCompanies(){
 }
 function openAddCompany(){
   document.getElementById('m-co-heading').textContent='New Company / Role';
-  ['m-co-id','m-co-name','m-co-role','m-co-notes'].forEach(id=>document.getElementById(id).value='');
+  ['m-co-id','m-co-name','m-co-role','m-co-notes','m-co-loc','m-co-desc'].forEach(id=>document.getElementById(id).value='');
+  setSel('m-co-emp','Full-time');
   setDate('m-co-start',today());setDate('m-co-end','');
   document.getElementById('m-co-color').value='#6366f1';
   document.getElementById('m-co-delete').style.display='none';
@@ -1765,6 +1778,9 @@ function editCompany(id){
   document.getElementById('m-co-id').value=c.id;
   document.getElementById('m-co-name').value=c.name;
   document.getElementById('m-co-role').value=c.role||'';
+  document.getElementById('m-co-loc').value=c.location||'';
+  document.getElementById('m-co-desc').value=c.description||'';
+  setSel('m-co-emp',c.employment_type||'');
   setDate('m-co-start',c.start_date||'');setDate('m-co-end',c.end_date||'');
   document.getElementById('m-co-color').value=c.color||'#6366f1';
   document.getElementById('m-co-notes').value=c.notes||'';
@@ -1773,11 +1789,13 @@ function editCompany(id){
 }
 async function saveModalCompany(){
   const id=v('m-co-id'),name=v('m-co-name'),role=v('m-co-role'),start_date=v('m-co-start'),end_date=v('m-co-end'),notes=v('m-co-notes'),color=document.getElementById('m-co-color').value;
+  const employment_type=v('m-co-emp'),location=v('m-co-loc'),description=v('m-co-desc');
   if(!name){toast('Enter a company name.','error');return;}
   try{
-    if(id){await dbUpdate('companies',id,{name,role,start_date,end_date,notes,color});}
-    else{const row={name,role,start_date,end_date,notes,color};const created=await dbInsert('companies',DEMO_MODE?{id:uid(),...row}:row);if(created)setActiveCompany(created.id);}
-    closeModal('company-modal');refresh();updateCompanyChip();toast('Saved!','success');
+    const payload={name,role,start_date,end_date,notes,color,employment_type,location,description};
+    if(id){await dbUpdate('companies',id,payload);}
+    else{const created=await dbInsert('companies',DEMO_MODE?{id:uid(),...payload}:payload);if(created)setActiveCompany(created.id);}
+    closeModal('company-modal');refresh();toast('Saved!','success');
   }catch(err){toast('Save failed: '+err.message+(err.message.includes('not found')?' — make sure the "companies" Appwrite collection exists.':''),'error');}
 }
 async function deleteCompanyFromModal(){
@@ -1876,6 +1894,19 @@ async function saveModalCert(){
 async function deleteCert(id){if(!confirm('Delete this certification?'))return;try{await dbDelete('certifications',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
 
 /* SKILLS PAGE */
+function fmtMonthYear(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-SG',{month:'short',year:'numeric'});}
+function durationLabel(startDate,endDate){
+  if(!startDate)return'';
+  const s=new Date(startDate+'T00:00:00');
+  const e=endDate?new Date(endDate+'T00:00:00'):new Date();
+  let months=(e.getFullYear()-s.getFullYear())*12+(e.getMonth()-s.getMonth());
+  if(e.getDate()<s.getDate())months--;
+  if(months<1)return'<1 mo';
+  const years=Math.floor(months/12),mos=months%12;
+  if(years&&mos)return years+' yr'+(years>1?'s':'')+' '+mos+' mo'+(mos>1?'s':'');
+  if(years)return years+' yr'+(years>1?'s':'');
+  return mos+' mo'+(mos>1?'s':'');
+}
 function renderSkills(){
   // Populate company filter
   populateSel('skills-company',db.companies,'All companies','id','name',true);
@@ -1888,67 +1919,73 @@ function renderSkills(){
   const pendingCount=allInScope.filter(e=>e.status!=='completed').length;
   summary.textContent=scopedEntries.length+' completed · '+pendingCount+' in progress · '+uniqSkills.size+' unique skills · '+sumHours(scopedEntries)+' hrs';
 
-  // Resume bullets — grouped by company
+  // Resume bullets — LinkedIn-style company / role layout
   const companies=filterId?db.companies.filter(c=>c.id===filterId):[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
   let md='';
   companies.forEach(co=>{
     const coAll=db.entries.filter(e=>getCompanyId(e)===co.id);
     const coDone=completedOf(coAll);
-    const coPending=coAll.filter(e=>e.status!=='completed');
     if(!coAll.length)return;
-    const dateRange=(fmtDateShort(co.start_date)||'?')+' – '+(co.end_date?fmtDateShort(co.end_date):'Present');
-    md+='## '+(co.role?co.role+' · ':'')+co.name+' · '+dateRange+'\n\n';
-    // Tally skills (from completed only — resume worthy)
-    const skillTally={};
-    coDone.forEach(e=>(e.skills||'').split(',').forEach(s=>{
-      const t=s.trim();if(!t)return;
-      if(!skillTally[t])skillTally[t]={tasks:0,hours:0};
-      skillTally[t].tasks++;skillTally[t].hours+=parseFloat(e.hours)||0;
-    }));
-    const ranked=Object.entries(skillTally).sort((a,b)=>b[1].tasks-a[1].tasks);
-    if(ranked.length){
-      md+='### Skills Demonstrated\n';
-      ranked.forEach(([s,t])=>{md+='- **'+s+'** — '+t.tasks+' task'+(t.tasks===1?'':'s')+', '+t.hours+' hrs\n';});
-      md+='\n';
-    }
-    // Notable projects (top 6 by completed hours)
+
+    // === Header block (matches LinkedIn experience entry) ===
+    md+=co.name+'\n';
+    const empLine=[];
+    if(co.employment_type)empLine.push(co.employment_type);
+    const totalDur=durationLabel(co.start_date,co.end_date);
+    if(totalDur)empLine.push(totalDur);
+    if(empLine.length)md+=empLine.join(' · ')+'\n';
+    if(co.role)md+=co.role+'\n';
+    const dateLine=[];
+    if(co.start_date)dateLine.push(fmtMonthYear(co.start_date)+' - '+(co.end_date?fmtMonthYear(co.end_date):'Present'));
+    if(totalDur)dateLine.push(totalDur);
+    if(dateLine.length)md+=dateLine.join(' · ')+'\n';
+    if(co.location)md+=co.location+'\n';
+
+    // === Role summary paragraph (from company description) ===
+    if(co.description){md+='\n'+co.description+'\n';}
+
+    // === Project bullets (one per project, generalised) ===
     const projTally={};
-    coDone.forEach(e=>{const pid=getProjId(e);if(!pid)return;if(!projTally[pid])projTally[pid]={tasks:0,hours:0,customers:new Set()};projTally[pid].tasks++;projTally[pid].hours+=parseFloat(e.hours)||0;const cid=getCustId(e);if(cid){const c=getCust(cid);if(c)projTally[pid].customers.add(c.name);}});
-    const projRanked=Object.entries(projTally).sort((a,b)=>b[1].hours-a[1].hours).slice(0,6);
+    coDone.forEach(e=>{
+      const pid=getProjId(e);if(!pid)return;
+      if(!projTally[pid])projTally[pid]={tasks:0,hours:0,customers:new Set(),skills:new Set()};
+      projTally[pid].tasks++;
+      projTally[pid].hours+=parseFloat(e.hours)||0;
+      const cid=getCustId(e);if(cid){const c=getCust(cid);if(c)projTally[pid].customers.add(c.name);}
+      (e.skills||'').split(',').forEach(s=>{const t=s.trim();if(t)projTally[pid].skills.add(t);});
+    });
+    const projRanked=Object.entries(projTally).sort((a,b)=>b[1].hours-a[1].hours);
     if(projRanked.length){
-      md+='### Notable Projects\n';
-      projRanked.forEach(([pid,t])=>{const p=getProj(pid);const custs=[...t.customers].slice(0,4).join(', ');md+='- **'+p.name+'** — '+t.tasks+' task'+(t.tasks===1?'':'s')+', '+t.hours+' hrs'+(custs?' (customers: '+custs+')':'')+'\n';});
       md+='\n';
+      projRanked.forEach(([pid,t])=>{
+        const p=getProj(pid);
+        if(p.description){
+          // User-supplied accomplishment text — use as-is
+          md+='• '+p.description+'\n';
+        }else{
+          // Auto-derived fallback: kept short and generalised, prompts user to edit
+          const custs=[...t.customers].slice(0,3).join(', ');
+          const skillTop=[...t.skills].slice(0,3).join(', ');
+          let bullet='Worked on '+p.name;
+          if(custs)bullet+=' across '+t.customers.size+' customer'+(t.customers.size>1?'s':'')+' ('+custs+(t.customers.size>3?', …':'')+')';
+          if(skillTop)bullet+=' — applied '+skillTop;
+          md+='• '+bullet+'\n';
+        }
+      });
     }
-    // Certifications obtained while at this company
+
+    // === Certifications obtained at this company (planned ones excluded) ===
     const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===co.id);
     const certsObtained=cocerts.filter(c=>{const s=certStatus(c);return s.kind!=='planned';});
     if(certsObtained.length){
-      md+='### Certifications\n';
-      certsObtained.forEach(c=>{md+='- **'+c.name+'** ('+c.issuer+')'+(c.issue_date?' — issued '+fmtDateShort(c.issue_date):'')+'\n';});
-      md+='\n';
-    }
-    // Currently in progress — pending/in-progress tasks (achievement-in-flight section)
-    if(coPending.length){
-      md+='### Currently In Progress\n';
-      // Group pending by project for tidier output
-      const pendByProj={};
-      coPending.forEach(e=>{const pid=getProjId(e);const k=pid||'__none__';if(!pendByProj[k])pendByProj[k]=[];pendByProj[k].push(e);});
-      Object.entries(pendByProj).forEach(([pid,arr])=>{
-        const pname=pid==='__none__'?'(no project)':getProj(pid).name;
-        md+='- **'+pname+':** ';
-        md+=arr.slice(0,5).map(e=>e.title).join('; ');
-        md+='\n';
+      certsObtained.forEach(c=>{
+        md+='• Earned '+c.name+(c.issuer?' ('+c.issuer+')':'')+(c.issue_date?' — '+fmtMonthYear(c.issue_date):'')+'\n';
       });
-      // Planned certs while at this company
-      const certsPlanned=cocerts.filter(c=>certStatus(c).kind==='planned');
-      certsPlanned.forEach(c=>{md+='- **'+c.name+'** — planned for '+(c.issue_date?fmtDateShort(c.issue_date):'TBD')+'\n';});
-      md+='\n';
     }
-    md+='\n';
+    md+='\n\n';
   });
-  if(!md)md='_No tasks yet for the selected scope._\n\nLog some work in **Log Work** with skills tagged to start building this list.';
-  document.getElementById('skills-resume').textContent=md;
+  if(!md)md='_No completed tasks for the selected scope._\n\nLog some work in **Log Work** with skills tagged, then come back here. Open each Project to write a one-line resume bullet, or leave them blank for an auto-derived summary.';
+  document.getElementById('skills-resume').textContent=md.trim();
 
   // Top skills list
   const topTally={};

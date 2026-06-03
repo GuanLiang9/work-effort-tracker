@@ -128,13 +128,16 @@ async function main() {
 
   console.log('— companies collection —');
   await ensureCollection('companies', 'Companies');
-  await ensureStringAttr('companies', 'name',       255, true);
-  await ensureStringAttr('companies', 'role',       255);
-  await ensureStringAttr('companies', 'start_date', 20);
-  await ensureStringAttr('companies', 'end_date',   20);
-  await ensureStringAttr('companies', 'color',      20);
-  await ensureStringAttr('companies', 'notes',      2000);
-  await ensureStringAttr('companies', 'user_id',    36,  true);
+  await ensureStringAttr('companies', 'name',            255, true);
+  await ensureStringAttr('companies', 'role',            255);
+  await ensureStringAttr('companies', 'start_date',      20);
+  await ensureStringAttr('companies', 'end_date',        20);
+  await ensureStringAttr('companies', 'color',           20);
+  await ensureStringAttr('companies', 'notes',           2000);
+  await ensureStringAttr('companies', 'employment_type', 50);   // Full-time, Contract, …
+  await ensureStringAttr('companies', 'location',        100);  // "Singapore · On-site"
+  await ensureStringAttr('companies', 'description',     2000); // resume summary paragraph
+  await ensureStringAttr('companies', 'user_id',         36,  true);
   await ensureIndex('companies', 'user_id_idx', ['user_id']);
 
   console.log('\n— certifications collection —');
@@ -152,6 +155,9 @@ async function main() {
   console.log('\n— entries: new attributes —');
   await ensureStringAttr('entries', 'skills',     1000);
   await ensureStringAttr('entries', 'company_id', 36);
+
+  console.log('\n— projects: description attribute —');
+  await ensureStringAttr('projects', 'description', 1000); // one-line accomplishment bullet for the Skills page
 
   console.log('\n✓ All done. Reload the app — the default "Keppel Technology Solutions" company will be auto-created and your existing tasks tagged with it.');
   console.log('  Then revoke the API key in Appwrite Console (Settings → API Keys → delete) — you don\'t need it again.\n');
