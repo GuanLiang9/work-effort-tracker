@@ -34,7 +34,7 @@ loadEnvFile('.env.example');
 
 // ── Build config ────────────────────────────────────────────
 const config = {
-  appwriteEndpoint:   process.env.APPWRITE_ENDPOINT   || 'https://cloud.appwrite.io/v1',
+  appwriteEndpoint:   process.env.APPWRITE_ENDPOINT   || 'https://sgp.cloud.appwrite.io/v1',
   appwriteProjectId:  process.env.APPWRITE_PROJECT_ID  || 'DEMO',
   appwriteDatabaseId: process.env.APPWRITE_DATABASE_ID || 'DEMO',
 };
