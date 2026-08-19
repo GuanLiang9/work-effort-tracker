@@ -1153,13 +1153,35 @@ function lsInit(){
   }
 }
 function getCompanyId(e){return e.company_id||e.companyId||'';}
-function getActiveCompany(){return db.companies.find(c=>c.id===activeCompanyId)||db.companies[0]||null;}
+const ALL_CO='__all__';   // sentinel activeCompanyId: "view entire experience, all companies"
+function isAllCompanyMode(){return !activeCompanyId||activeCompanyId===ALL_CO;}
+function getActiveCompany(){return isAllCompanyMode()?null:(db.companies.find(c=>c.id===activeCompanyId)||null);}
+// Company with no end_date (current job), most recently started — used as the
+// fallback "real" company id for new entries logged while in All-companies mode.
+function currentJobCompanyId(){
+  const current=db.companies.filter(c=>!c.end_date).sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''))[0];
+  return current?current.id:(db.companies[0]?.id||'');
+}
+function defaultEntryCompanyId(){return !isAllCompanyMode()?activeCompanyId:currentJobCompanyId();}
+// Entries/projects/customers scoped to the active company. In All-companies mode
+// (or when no company is selected/exists) everything is shown, unfiltered.
+function scopedEntries(){return isAllCompanyMode()?db.entries:db.entries.filter(e=>getCompanyId(e)===activeCompanyId);}
+function scopedProjects(){
+  if(isAllCompanyMode())return db.projects;
+  const ids=new Set(scopedEntries().map(getProjId));
+  return db.projects.filter(p=>ids.has(p.id));
+}
+function scopedCustomers(){
+  if(isAllCompanyMode())return db.customers;
+  const ids=new Set(scopedEntries().map(getCustId));
+  return db.customers.filter(c=>ids.has(c.id));
+}
 function pickInitialActiveCompany(){
   const saved=localStorage.getItem('wt_active_co');
+  if(saved===ALL_CO){activeCompanyId=ALL_CO;return;}
   if(saved&&db.companies.some(c=>c.id===saved)){activeCompanyId=saved;return;}
   // Prefer a company that has no end_date (current job), most recent start
-  const current=db.companies.filter(c=>!c.end_date).sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''))[0];
-  activeCompanyId=current?current.id:(db.companies[0]?.id||'');
+  activeCompanyId=currentJobCompanyId();
   if(activeCompanyId)localStorage.setItem('wt_active_co',activeCompanyId);
 }
 function setActiveCompany(id){activeCompanyId=id;localStorage.setItem('wt_active_co',id||'');refresh();updateCompanyChip();}
@@ -1473,6 +1495,7 @@ function setSel(id,val){
 function renderDashboard(){
   populateMonthFilter();
   const all=getDashEntries();
+  const sProj=scopedProjects(),sCust=scopedCustomers();
   const cmp=completedOf(all);
   const completed=cmp.length;
   const pending=all.length-completed;
@@ -1482,16 +1505,16 @@ function renderDashboard(){
   const weekdayHrs=hours-weekendHrs;
   const weekendTasks=cmp.filter(e=>isWeekend(e.date));
   document.getElementById('dash-period-summary').textContent=monthLabel(dashMonth)+' — '+hours+' completed hrs ('+weekendHrs+' weekend) across '+all.length+' entries';
-  document.getElementById('dash-stats').innerHTML='<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:var(--pri-bg)">⏱️</div><div class="stat-label">Total Hours</div></div><div class="stat-value"><span data-count="'+hours+'">0</span><span style="font-size:16px;color:var(--muted)"> hrs</span></div><div class="stat-sub">completed only · '+db.projects.length+' projects</div></div>'
+  document.getElementById('dash-stats').innerHTML='<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:var(--pri-bg)">⏱️</div><div class="stat-label">Total Hours</div></div><div class="stat-value"><span data-count="'+hours+'">0</span><span style="font-size:16px;color:var(--muted)"> hrs</span></div><div class="stat-sub">completed only · '+sProj.length+' projects</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(168,85,247,.12)">🌙</div><div class="stat-label">Weekend Hours</div></div><div class="stat-value" style="color:#c084fc"><span data-count="'+weekendHrs+'">0</span><span style="font-size:16px;color:var(--muted)"> hrs</span></div><div class="stat-sub">non-working day effort · '+weekendTasks.length+' tasks</div></div>'
-    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,182,212,.1)">📋</div><div class="stat-label">Total Tasks</div></div><div class="stat-value"><span data-count="'+all.length+'">0</span></div><div class="stat-sub">'+db.customers.length+' customers</div></div>'
+    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,182,212,.1)">📋</div><div class="stat-label">Total Tasks</div></div><div class="stat-value"><span data-count="'+all.length+'">0</span></div><div class="stat-sub">'+sCust.length+' customers</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(34,197,94,.1)">✅</div><div class="stat-label">Completed</div></div><div class="stat-value" style="color:var(--green)"><span data-count="'+completed+'">0</span></div><div class="stat-sub">'+(all.length?Math.round(completed/all.length*100):0)+'% rate</div></div>'
     +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(245,158,11,.1)">⏳</div><div class="stat-label">Pending</div></div><div class="stat-value" style="color:var(--amber)"><span data-count="'+pending+'">0</span></div><div class="stat-sub">'+(all.length?Math.round(pending/all.length*100):0)+'% remaining</div></div>';
   animateCounters(document.getElementById('dash-stats'));
   // Project overview — completed hours only
   const dashProjHours=pid=>sumHours(completedOf(all.filter(e=>getProjId(e)===pid)));
-  const maxH=Math.max(...db.projects.map(p=>dashProjHours(p.id)),1);
-  document.getElementById('proj-overview').innerHTML=db.projects.map(proj=>{const h=dashProjHours(proj.id),t=all.filter(e=>getProjId(e)===proj.id).length;return'<div class="prog-row"><div class="prog-label"><span style="display:flex;align-items:center;gap:8px;font-weight:500"><span class="adot" style="background:'+proj.color+'"></span>'+proj.name+'</span><span style="color:var(--muted)">'+h+'h · '+t+' tasks</span></div><div class="prog-bar"><div class="prog-fill" style="width:'+Math.round(h/maxH*100)+'%;background:'+proj.color+'"></div></div></div>';}).join('');
+  const maxH=Math.max(...sProj.map(p=>dashProjHours(p.id)),1);
+  document.getElementById('proj-overview').innerHTML=sProj.map(proj=>{const h=dashProjHours(proj.id),t=all.filter(e=>getProjId(e)===proj.id).length;return'<div class="prog-row"><div class="prog-label"><span style="display:flex;align-items:center;gap:8px;font-weight:500"><span class="adot" style="background:'+proj.color+'"></span>'+proj.name+'</span><span style="color:var(--muted)">'+h+'h · '+t+' tasks</span></div><div class="prog-bar"><div class="prog-fill" style="width:'+Math.round(h/maxH*100)+'%;background:'+proj.color+'"></div></div></div>';}).join('');
   const recent=[...all].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
   document.getElementById('recent-work').innerHTML=recent.length?recent.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="background:'+p.color+'"></span><div class="atext"><div>'+e.title+weekendBadge(e.date)+'</div><div class="ameta">'+p.name+(c?' · '+c.name:'')+' · '+fmtDate(e.date)+'</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No entries in this period</div></div>';
   const pend=[...all].filter(e=>e.status!=='completed').slice(0,5);
@@ -1509,7 +1532,8 @@ function buildChartHours(){
   if(chartH)chartH.destroy();
   const ents=getDashEntries();
   const ph=pid=>sumHours(completedOf(ents.filter(e=>getProjId(e)===pid)));  // completed only
-  chartH=new Chart(ctx,{type:'bar',data:{labels:db.projects.map(p=>p.name),datasets:[{label:'Hours',data:db.projects.map(p=>ph(p.id)),backgroundColor:db.projects.map(p=>h2r(p.color,.7)),borderColor:db.projects.map(p=>p.color),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' completed hrs'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
+  const sProj=scopedProjects();
+  chartH=new Chart(ctx,{type:'bar',data:{labels:sProj.map(p=>p.name),datasets:[{label:'Hours',data:sProj.map(p=>ph(p.id)),backgroundColor:sProj.map(p=>h2r(p.color,.7)),borderColor:sProj.map(p=>p.color),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' completed hrs'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
 }
 function buildChartStatus(){
   if(typeof Chart==='undefined')return;
@@ -1530,7 +1554,7 @@ function buildChartCustomer(){
 /* TASKS */
 function setFilter(f){taskFilter=f;document.querySelectorAll('#filter-tabs .tab').forEach(t=>t.classList.toggle('active',t.textContent.trim().toLowerCase()===f.replace('-',' ')));renderTasks();}
 function getFilteredEntries(){
-  let list=[...db.entries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  let list=[...scopedEntries()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(taskFilter==='pending')list=list.filter(e=>e.status==='pending');
   else if(taskFilter==='in-progress')list=list.filter(e=>e.status==='in-progress');
   else if(taskFilter==='completed')list=list.filter(e=>e.status==='completed');
@@ -1562,10 +1586,10 @@ function populateMonthFilter(){
   if(cur&&!sorted.includes(cur)){dashMonth='';}
 }
 function setDashMonth(){dashMonth=document.getElementById('dash-month').value;renderDashboard();}
-function getDashEntries(){return dashMonth?db.entries.filter(e=>e.date&&e.date.startsWith(dashMonth)):db.entries;}
+function getDashEntries(){const se=scopedEntries();return dashMonth?se.filter(e=>e.date&&e.date.startsWith(dashMonth)):se;}
 function renderTasks(){
-  populateSel('proj-filter',db.projects,'All Projects','id','name',true);
-  populateSel('cust-filter',db.customers,'All Customers','id','name',true);
+  populateSel('proj-filter',scopedProjects(),'All Projects','id','name',true);
+  populateSel('cust-filter',scopedCustomers(),'All Customers','id','name',true);
   const list=getFilteredEntries();
   const el=document.getElementById('task-list');
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No tasks found</div><div class="empty-sub">Change filters or add a task</div></div>';return;}
@@ -1710,9 +1734,9 @@ function renderLog(){
   populateSel('lw-project',db.projects,'Select project…','id','name');
   populateSel('lw-customer',db.customers,'None','id','name');
   populateCompanySel('lw-company','Select company…');
-  if(!v('lw-company'))setSel('lw-company',activeCompanyId||'');
+  if(!v('lw-company'))setSel('lw-company',defaultEntryCompanyId());
   if(!document.getElementById('lw-date').value)setDate('lw-date',today());
-  const rows=[...db.entries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const rows=[...scopedEntries()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const tb=document.getElementById('log-tbody');
   if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No entries yet</td></tr>';return;}
   tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+weekendBadge(e.date)+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit entry" title="Edit entry">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete entry" title="Delete entry">🗑️</button></td></tr>';}).join('');
@@ -1730,7 +1754,7 @@ function addMonthsToDate(yyyymmdd,n){
   return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
 }
 async function saveLogEntry(){
-  const title=v('lw-title'),projectId=v('lw-project'),hours=parseFloat(v('lw-hours'))||0,date=v('lw-date'),status=v('lw-status'),notes=v('lw-notes'),customerId=v('lw-customer')||null,skills=v('lw-skills'),companyId=v('lw-company')||activeCompanyId||'';
+  const title=v('lw-title'),projectId=v('lw-project'),hours=parseFloat(v('lw-hours'))||0,date=v('lw-date'),status=v('lw-status'),notes=v('lw-notes'),customerId=v('lw-customer')||null,skills=v('lw-skills'),companyId=v('lw-company')||defaultEntryCompanyId();
   if(!title){toast('Enter a task description.','error');return;}
   if(!projectId){toast('Select a project.','error');return;}
   if(hours<=0){toast('Enter hours > 0.','error');return;}
@@ -1745,13 +1769,14 @@ async function saveLogEntry(){
     toast(recurring?'Saved '+months+' recurring entries!':'Entry saved!','success');
   }catch(err){toast('Save failed: '+err.message,'error');}
 }
-function clearLogForm(){['lw-title','lw-hours','lw-notes','lw-skills'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setSel('lw-company',activeCompanyId||'');setDate('lw-date',today());const cb=document.getElementById('lw-recurring');if(cb){cb.checked=false;toggleRecurring();}}
+function clearLogForm(){['lw-title','lw-hours','lw-notes','lw-skills'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setSel('lw-company',defaultEntryCompanyId());setDate('lw-date',today());const cb=document.getElementById('lw-recurring');if(cb){cb.checked=false;toggleRecurring();}}
 
 /* CUSTOMERS */
 function renderCustomers(){
   const g=document.getElementById('customers-grid');
-  if(!db.customers.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🤝</div><div class="empty-title">No customers yet</div></div>';return;}
-  g.innerHTML=db.customers.map(c=>{const h=custHours(c.id),tasks=db.entries.filter(e=>getCustId(e)===c.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+c.color+'">'+ic+' '+c.name+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(\''+c.id+'\')">Delete</button></div></div>';}).join('');
+  const list=scopedCustomers(),se=scopedEntries();
+  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🤝</div><div class="empty-title">No customers yet</div></div>';return;}
+  g.innerHTML=list.map(c=>{const tasks=se.filter(e=>getCustId(e)===c.id),h=sumHours(completedOf(tasks)),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+c.color+'">'+ic+' '+c.name+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(\''+c.id+'\')">Delete</button></div></div>';}).join('');
 }
 function openAddCustomer(){document.getElementById('m-cust-heading').textContent='New Customer';document.getElementById('m-cust-id').value='';document.getElementById('m-cust-name').value='';setSel('m-cust-type','external');document.getElementById('m-cust-color').value='#f59e0b';openModal('customer-modal');}
 function editCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;document.getElementById('m-cust-heading').textContent='Edit Customer';document.getElementById('m-cust-id').value=c.id;document.getElementById('m-cust-name').value=c.name;setSel('m-cust-type',c.type);document.getElementById('m-cust-color').value=c.color;openModal('customer-modal');}
@@ -1765,8 +1790,9 @@ async function deleteCustomer(id){const t=db.entries.filter(e=>getCustId(e)===id
 /* PROJECTS */
 function renderProjects(){
   const g=document.getElementById('projects-grid');
-  if(!db.projects.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><div class="empty-title">No projects yet</div></div>';return;}
-  g.innerHTML=db.projects.map(proj=>{const h=projHours(proj.id),tasks=db.entries.filter(e=>getProjId(e)===proj.id),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0;return'<div class="entity-card"><div class="entity-card-bar" style="background:'+proj.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+proj.color+'">'+proj.name+'</div><div class="entity-card-sub"></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+proj.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editProject(\''+proj.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteProject(\''+proj.id+'\')">Delete</button></div></div>';}).join('');
+  const list=scopedProjects(),se=scopedEntries();
+  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><div class="empty-title">No projects yet</div></div>';return;}
+  g.innerHTML=list.map(proj=>{const tasks=se.filter(e=>getProjId(e)===proj.id),h=sumHours(completedOf(tasks)),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0;return'<div class="entity-card"><div class="entity-card-bar" style="background:'+proj.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+proj.color+'">'+proj.name+'</div><div class="entity-card-sub"></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+proj.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editProject(\''+proj.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteProject(\''+proj.id+'\')">Delete</button></div></div>';}).join('');
 }
 function openAddProject(){document.getElementById('m-proj-heading').textContent='New Project';document.getElementById('m-proj-id').value='';document.getElementById('m-proj-name').value='';document.getElementById('m-proj-desc').value='';document.getElementById('m-proj-color').value='#6366f1';openModal('project-modal');}
 function editProject(id){const p=db.projects.find(x=>x.id===id);if(!p)return;document.getElementById('m-proj-heading').textContent='Edit Project';document.getElementById('m-proj-id').value=p.id;document.getElementById('m-proj-name').value=p.name;document.getElementById('m-proj-desc').value=p.description||'';document.getElementById('m-proj-color').value=p.color;openModal('project-modal');}
@@ -1784,7 +1810,11 @@ function updateCompanyChip(){
   const c=getActiveCompany();
   const name=document.getElementById('cc-name'),role=document.getElementById('cc-role'),dot=document.getElementById('cc-dot');
   if(!name)return;
-  if(!c){name.textContent='No company';role.textContent='Click to add one';if(dot)dot.style.color='#64748b';return;}
+  if(!c){
+    if(isAllCompanyMode()&&db.companies.length){name.textContent='All companies';role.textContent='Viewing entire experience';if(dot)dot.style.color='var(--primary)';}
+    else{name.textContent='No company';role.textContent='Click to add one';if(dot)dot.style.color='#64748b';}
+    return;
+  }
   name.textContent=c.name;
   role.textContent=(c.role||'')+(c.end_date?'':' · current');
   if(dot)dot.style.color=c.color||'var(--primary)';
@@ -1793,7 +1823,8 @@ function openCompanyPicker(){
   const list=document.getElementById('company-picker-list');
   if(!db.companies.length){list.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add one to get started</div></div>';openModal('company-picker');return;}
   const sorted=[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
-  list.innerHTML=sorted.map(c=>'<div class="co-pick-row '+(c.id===activeCompanyId?'active':'')+'" onclick="setActiveCompany(\''+c.id+'\');closeModal(\'company-picker\');"><span class="cc-dot" style="color:'+(c.color||'#6366f1')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+c.name+(c.end_date?'':'<span class="co-card-current">Current</span>')+'</div><div style="font-size:12px;color:var(--muted)">'+(c.role||'—')+' · '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div></div></div>').join('');
+  const allRow='<div class="co-pick-row '+(isAllCompanyMode()?'active':'')+'" onclick="setActiveCompany(\''+ALL_CO+'\');closeModal(\'company-picker\');"><span class="cc-dot" style="color:var(--primary)">🌐</span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">All companies</div><div style="font-size:12px;color:var(--muted)">View your entire working experience</div></div></div>';
+  list.innerHTML=allRow+sorted.map(c=>'<div class="co-pick-row '+(c.id===activeCompanyId?'active':'')+'" onclick="setActiveCompany(\''+c.id+'\');closeModal(\'company-picker\');"><span class="cc-dot" style="color:'+(c.color||'#6366f1')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+c.name+(c.end_date?'':'<span class="co-card-current">Current</span>')+'</div><div style="font-size:12px;color:var(--muted)">'+(c.role||'—')+' · '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div></div></div>').join('');
   openModal('company-picker');
 }
 function renderCompanies(){
@@ -1916,7 +1947,7 @@ function openAddCert(){
   ['m-cert-id','m-cert-name','m-cert-issuer','m-cert-url','m-cert-notes'].forEach(id=>document.getElementById(id).value='');
   setDate('m-cert-issued',today());setDate('m-cert-expiry','');
   populateCompanySel('m-cert-company','Personal (not linked)');
-  setSel('m-cert-company',activeCompanyId||'');
+  setSel('m-cert-company',defaultEntryCompanyId());
   openModal('cert-modal');
 }
 function editCert(id){
@@ -2078,9 +2109,7 @@ function renderSkills(){
       ${co.role?'<div class="resume-role">'+htmlEsc(co.role)+'</div>':''}
       ${dateLine.length?'<div class="resume-meta">'+dateLine.join(' · ')+'</div>':''}
       ${co.location?'<div class="resume-meta">'+htmlEsc(co.location)+'</div>':''}
-      <div class="resume-summary ${co.description?'':'empty'}">
-        ${co.description?htmlEsc(cleanDescription(co.description)):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary, or use + Add bullet below.')+'</em>'}
-      </div>
+      <div class="resume-summary ${co.description?'':'empty'}">${co.description?htmlEsc(cleanDescription(co.description)):'<em>'+(coAll.length?'Add a one-paragraph summary describing your overall role — click ✏️ Edit above.':'No tasks logged for this role. Click ✏️ Edit above to write your role summary, or use + Add bullet below.')+'</em>'}</div>
       <div class="resume-bullets">
         ${projRanked.map(([pid,t])=>{
           const p=getProj(pid);
@@ -2197,8 +2226,8 @@ function populateCompanySel(id,placeholder='Select company…',includeBlank=fals
   const labelled=items.map(c=>({id:c.id,label:nameCount[c.name]>1&&c.role?c.name+' — '+c.role:c.name}));
   populateSel(id,labelled,placeholder,'id','label');
   if(!includeBlank){
-    // try to default the picker to the active company if blank
-    const el=document.getElementById(id);if(el&&!el.value&&activeCompanyId)setSel(id,activeCompanyId);
+    // try to default the picker to the active company if blank (never the "All companies" sentinel)
+    const el=document.getElementById(id);const defCo=defaultEntryCompanyId();if(el&&!el.value&&defCo)setSel(id,defCo);
   }
 }
 function openAddEntry(){
@@ -2208,7 +2237,7 @@ function openAddEntry(){
   populateSel('m-project',db.projects,'Select project…','id','name');
   populateSel('m-customer',db.customers,'None','id','name');
   populateCompanySel('m-company','Select company…');
-  setSel('m-company',activeCompanyId||'');
+  setSel('m-company',defaultEntryCompanyId());
   openModal('entry-modal');
 }
 function editEntry(id){
@@ -2221,11 +2250,11 @@ function editEntry(id){
   populateCompanySel('m-company','Select company…');
   setSel('m-project',getProjId(e)||'');
   setSel('m-customer',getCustId(e)||'');
-  setSel('m-company',getCompanyId(e)||activeCompanyId||'');
+  setSel('m-company',getCompanyId(e)||defaultEntryCompanyId());
   openModal('entry-modal');
 }
 async function saveModalEntry(){
-  const id=v('m-id'),title=v('m-title'),projectId=v('m-project'),hours=parseFloat(v('m-hours'))||0,date=v('m-date'),status=v('m-status'),notes=v('m-notes'),customerId=v('m-customer')||null,skills=v('m-skills'),companyId=v('m-company')||activeCompanyId||'';
+  const id=v('m-id'),title=v('m-title'),projectId=v('m-project'),hours=parseFloat(v('m-hours'))||0,date=v('m-date'),status=v('m-status'),notes=v('m-notes'),customerId=v('m-customer')||null,skills=v('m-skills'),companyId=v('m-company')||defaultEntryCompanyId();
   if(!title){toast('Enter a task description.','error');return;}
   if(!projectId){toast('Select a project.','error');return;}
   if(hours<=0){toast('Enter hours > 0.','error');return;}
