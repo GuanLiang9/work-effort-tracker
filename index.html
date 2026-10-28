@@ -6,12 +6,12 @@
   <title>WorkTracker — Effort & Productivity Dashboard</title>
   <meta name="description" content="Log hours, manage tasks, and visualise productivity across projects and customers.">
   <meta name="google-site-verification" content="ZBQDtiAuYJUwrWFoN09wcEZAK0qMA3LBi-4GSlaoxrU">
-  <meta name="theme-color" content="#0a0f1e">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#F2EFE6">
+  <meta name="color-scheme" content="light">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="mask-icon" href="icon.svg" color="#6366f1">
+  <link rel="mask-icon" href="icon.svg" color="#C38133">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -62,17 +62,18 @@
   <style>
 /* ── TOKENS ─────────────────────────────────────────────── */
 :root{
-  --bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--surface3:#1f2d40;
-  --border:#1e2d45;--border2:#2a3f5a;
-  --primary:#6366f1;--pri-h:#818cf8;--pri-bg:rgba(99,102,241,.12);
-  --text:#f0f4ff;--muted:#8899bb;--dim:#4a5a7a;
-  --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;
-  --sidebar-w:240px;--radius:12px;
-  --shadow:0 4px 24px rgba(0,0,0,.4);--shadow-sm:0 2px 8px rgba(0,0,0,.3);
-  --brand-grad:linear-gradient(135deg,#6366f1 0%,#a855f7 100%);
-  --brand-grad-h:linear-gradient(135deg,#7c7ff5 0%,#b66bf9 100%);
+  /* Editorial system — skills/SKILL.md: off-white · black · white · terracotta */
+  --bg:#F2EFE6;--surface:#FFFFFF;--surface2:#F7F5EF;--surface3:#EDE9DE;
+  --border:rgba(0,0,0,.10);--border2:rgba(0,0,0,.22);
+  --primary:#C38133;--pri-h:#A86B22;--pri-bg:rgba(195,129,51,.12);
+  --text:#000000;--muted:#5E5A52;--dim:#9A958A;--ink:#000000;
+  --green:#2F7D4F;--amber:#B7791F;--red:#B42318;--blue:#2E5A88;--purple:#6B4E9B;
+  --sidebar-w:248px;--radius:2px;
+  --shadow:0 18px 40px -18px rgba(0,0,0,.25);--shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --brand-grad:linear-gradient(135deg,#C38133 0%,#A86B22 100%);
+  --brand-grad-h:linear-gradient(135deg,#000 0%,#1c1c1c 100%);
 }
-.brand-mark{display:inline-block;border-radius:10px;flex-shrink:0;box-shadow:0 4px 12px rgba(99,102,241,.28);overflow:hidden;line-height:0;}
+.brand-mark{display:inline-block;border-radius:10px;flex-shrink:0;box-shadow:0 4px 12px rgba(195,129,51,.28);overflow:hidden;line-height:0;}
 .brand-mark img{display:block;width:100%;height:100%;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
@@ -80,8 +81,8 @@ body{
   font-family:'Inter',system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.5;
   /* Ambient depth: very faint indigo/purple wash behind the dark base — subtle but adds life */
   background:
-    radial-gradient(ellipse 800px 600px at 12% 0%,rgba(99,102,241,.06) 0%,transparent 55%),
-    radial-gradient(ellipse 700px 500px at 88% 100%,rgba(168,85,247,.05) 0%,transparent 55%),
+    radial-gradient(ellipse 800px 600px at 12% 0%,rgba(195,129,51,.06) 0%,transparent 55%),
+    radial-gradient(ellipse 700px 500px at 88% 100%,rgba(195,129,51,.05) 0%,transparent 55%),
     var(--bg);
   background-attachment:fixed;
 }
@@ -91,7 +92,7 @@ body{
 *:focus{outline:none;}
 button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.icon-btn:focus-visible,.task-cb:focus-visible{outline:2px solid var(--pri-h);outline-offset:2px;border-radius:9px;}
 /* Soft glow on hovered section + chart cards */
-.chart-card:hover,.section-card:hover{border-color:rgba(99,102,241,.25);box-shadow:0 8px 28px rgba(0,0,0,.45),0 0 0 1px rgba(99,102,241,.08);}
+.chart-card:hover,.section-card:hover{border-color:rgba(195,129,51,.25);box-shadow:0 8px 28px rgba(0,0,0,.45),0 0 0 1px rgba(195,129,51,.08);}
 /* Stat icon — subtle inner glow */
 .stat-icon{box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);}
 /* Animated shimmer on progress bars */
@@ -109,9 +110,9 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .stat-value{animation:popIn .45s cubic-bezier(.34,1.56,.64,1) both;}
 @keyframes popIn{from{opacity:0;transform:translateY(6px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
 /* Section card title — small gradient accent bar (inline so spans inside titles keep flowing) */
-.section-title::before,.chart-title::before{content:'';display:inline-block;width:4px;height:13px;border-radius:2px;background:var(--brand-grad);box-shadow:0 0 8px rgba(99,102,241,.45);margin-right:8px;vertical-align:-2px;}
+.section-title::before,.chart-title::before{content:'';display:inline-block;width:4px;height:13px;border-radius:2px;background:var(--brand-grad);box-shadow:0 0 8px rgba(195,129,51,.45);margin-right:8px;vertical-align:-2px;}
 /* Task item — softer hover bg shift */
-.task-item:hover{background:linear-gradient(180deg,var(--surface) 0%,rgba(99,102,241,.04) 100%);}
+.task-item:hover{background:linear-gradient(180deg,var(--surface) 0%,rgba(195,129,51,.04) 100%);}
 /* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
@@ -129,26 +130,26 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 /* ── AUTH SCREEN ─────────────────────────────────────────── */
 #auth-screen{
   display:none;min-height:100vh;
-  background:radial-gradient(ellipse at 20% 20%,rgba(99,102,241,.18) 0%,transparent 55%),
-             radial-gradient(ellipse at 80% 80%,rgba(168,85,247,.12) 0%,transparent 55%),var(--bg);
+  background:radial-gradient(ellipse at 20% 20%,rgba(195,129,51,.18) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 80%,rgba(195,129,51,.12) 0%,transparent 55%),var(--bg);
   align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;
 }
 #auth-screen.show{display:flex;}
 .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:float 8s ease-in-out infinite;}
-.orb1{width:400px;height:400px;background:rgba(99,102,241,.07);top:-100px;left:-100px;}
-.orb2{width:300px;height:300px;background:rgba(168,85,247,.06);bottom:-80px;right:-80px;animation-delay:3s;}
+.orb1{width:400px;height:400px;background:rgba(195,129,51,.07);top:-100px;left:-100px;}
+.orb2{width:300px;height:300px;background:rgba(195,129,51,.06);bottom:-80px;right:-80px;animation-delay:3s;}
 .orb3{width:200px;height:200px;background:rgba(6,182,212,.05);top:40%;left:60%;animation-delay:5s;}
 @keyframes float{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-20px) scale(1.05);}66%{transform:translate(-10px,15px) scale(.97);}}
 .auth-card{
   width:100%;max-width:440px;background:rgba(17,24,39,.82);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
-  border:1px solid rgba(99,102,241,.18);border-radius:22px;padding:40px;
+  border:1px solid rgba(195,129,51,.18);border-radius:22px;padding:40px;
   box-shadow:0 32px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);
   position:relative;z-index:1;
 }
 .auth-logo{text-align:center;margin-bottom:32px;}
 .auth-logo-icon{
   width:60px;height:60px;border-radius:16px;margin:0 auto 14px;
-  box-shadow:0 12px 32px rgba(99,102,241,.45);
+  box-shadow:0 12px 32px rgba(195,129,51,.45);
 }
 .auth-logo h1{font-size:24px;font-weight:800;background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.4px;}
 .auth-logo p{font-size:13px;color:var(--muted);margin-top:6px;}
@@ -158,10 +159,10 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .auth-form{display:flex;flex-direction:column;gap:16px;}
 .auth-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
 .auth-input{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit;}
-.auth-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.15);}
+.auth-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(195,129,51,.15);}
 .auth-input::placeholder{color:var(--dim);}
-.auth-btn-primary{width:100%;padding:13px;border:none;border-radius:10px;background:var(--brand-grad);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(99,102,241,.35);letter-spacing:.1px;}
-.auth-btn-primary:hover{background:var(--brand-grad-h);transform:translateY(-1px);box-shadow:0 12px 32px rgba(99,102,241,.5);}
+.auth-btn-primary{width:100%;padding:13px;border:none;border-radius:10px;background:var(--brand-grad);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(195,129,51,.35);letter-spacing:.1px;}
+.auth-btn-primary:hover{background:var(--brand-grad-h);transform:translateY(-1px);box-shadow:0 12px 32px rgba(195,129,51,.5);}
 .auth-btn-primary:active{transform:translateY(0);}
 .auth-divider{display:flex;align-items:center;gap:12px;color:var(--dim);font-size:12px;font-weight:500;}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border2);}
@@ -196,13 +197,13 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .nav-label{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.9px;padding:8px 10px 4px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;color:var(--muted);font-weight:500;margin-bottom:1px;transition:all .15s;user-select:none;position:relative;}
 .nav-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
-.nav-item.active{background:linear-gradient(135deg,rgba(99,102,241,.18) 0%,rgba(168,85,247,.10) 100%);color:var(--pri-h);box-shadow:inset 0 0 0 1px rgba(99,102,241,.18);}
-.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--brand-grad);border-radius:0 3px 3px 0;box-shadow:0 0 12px rgba(99,102,241,.6);}
+.nav-item.active{background:linear-gradient(135deg,rgba(195,129,51,.18) 0%,rgba(195,129,51,.10) 100%);color:var(--pri-h);box-shadow:inset 0 0 0 1px rgba(195,129,51,.18);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--brand-grad);border-radius:0 3px 3px 0;box-shadow:0 0 12px rgba(195,129,51,.6);}
 .nav-icon{font-size:15px;width:20px;text-align:center;}
 .nav-badge{margin-left:auto;background:var(--pri-bg);color:var(--primary);font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;}
 .sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);}
 .user-card{display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px;background:var(--surface2);}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--pri-bg);border:1px solid rgba(99,102,241,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--primary);flex-shrink:0;overflow:hidden;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--pri-bg);border:1px solid rgba(195,129,51,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--primary);flex-shrink:0;overflow:hidden;}
 .user-avatar img{width:100%;height:100%;object-fit:cover;}
 .user-info{flex:1;min-width:0;}
 .user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -222,9 +223,9 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 
 /* ── BUTTONS ─────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit;}
-.btn-primary{background:var(--brand-grad);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,.3);}
-.btn-primary:hover{background:var(--brand-grad-h);transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.45);}
-.btn-primary:active{transform:translateY(0);box-shadow:0 2px 8px rgba(99,102,241,.35);}
+.btn-primary{background:var(--brand-grad);color:#fff;box-shadow:0 2px 8px rgba(195,129,51,.3);}
+.btn-primary:hover{background:var(--brand-grad-h);transform:translateY(-1px);box-shadow:0 8px 24px rgba(195,129,51,.45);}
+.btn-primary:active{transform:translateY(0);box-shadow:0 2px 8px rgba(195,129,51,.35);}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2);}
 .btn-ghost:hover{background:var(--surface2);color:var(--text);}
 .btn-danger-soft{background:rgba(239,68,68,.1);color:var(--red);border:none;}
@@ -233,7 +234,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 
 /* ── STAT CARDS ──────────────────────────────────────────── */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px;}
-.weekend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.25);margin-left:6px;}
+.weekend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(195,129,51,.12);color:#c084fc;border:1px solid rgba(195,129,51,.25);margin-left:6px;}
 
 /* ── RESUME PREVIEW (Skills page) ────────────────────────── */
 .resume-box{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:22px 26px;max-height:640px;overflow:auto;color:var(--text);font-size:14px;line-height:1.55;}
@@ -246,7 +247,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .resume-edit-btn:hover{background:var(--surface3);color:var(--text);border-color:var(--primary);}
 .resume-role{font-size:14.5px;font-weight:600;color:var(--text);margin-top:6px;}
 .resume-meta{font-size:12.5px;color:var(--muted);line-height:1.55;}
-.resume-summary{margin:14px 0 10px;color:var(--text);font-size:13.5px;line-height:1.6;padding:10px 14px;border-radius:8px;background:rgba(99,102,241,.04);border-left:3px solid rgba(99,102,241,.25);position:relative;white-space:pre-wrap;}
+.resume-summary{margin:14px 0 10px;color:var(--text);font-size:13.5px;line-height:1.6;padding:10px 14px;border-radius:8px;background:rgba(195,129,51,.04);border-left:3px solid rgba(195,129,51,.25);position:relative;white-space:pre-wrap;}
 .resume-summary.empty{color:var(--muted);background:transparent;border-left-style:dashed;border-left-color:var(--border2);}
 .resume-summary em{font-style:italic;}
 .resume-bullets{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
@@ -264,10 +265,10 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .resume-bullet-edit.del:hover{background:rgba(239,68,68,.15);color:var(--red);}
 /* Inline add/edit bullet input */
 .add-bullet-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;margin-top:6px;background:transparent;border:1px dashed var(--border2);color:var(--muted);font-size:12.5px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .15s;font-family:inherit;}
-.add-bullet-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(99,102,241,.05);border-style:solid;}
+.add-bullet-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(195,129,51,.05);border-style:solid;}
 .bullet-input-add,.bullet-input-edit{align-items:center !important;gap:8px;}
 .bullet-input-add input,.bullet-input-edit input{flex:1;background:var(--surface3);border:1px solid var(--primary);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13.5px;font-family:inherit;outline:none;min-width:0;}
-.bullet-input-add input:focus,.bullet-input-edit input:focus{box-shadow:0 0 0 3px rgba(99,102,241,.18);}
+.bullet-input-add input:focus,.bullet-input-edit input:focus{box-shadow:0 0 0 3px rgba(195,129,51,.18);}
 .bullet-btn{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:transparent;color:var(--muted);transition:all .15s;flex-shrink:0;}
 .bullet-btn:hover{background:var(--surface2);color:var(--text);}
 .bullet-btn-primary{background:var(--brand-grad);color:#fff;border:none;}
@@ -296,15 +297,15 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .cc-arrow{font-size:14px;color:var(--muted);flex-shrink:0;}
 
 /* ── SKILL CHIPS ─────────────────────────────────────────── */
-.skill-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(99,102,241,.12);color:var(--pri-h);border:1px solid rgba(99,102,241,.25);margin:2px 4px 2px 0;}
+.skill-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(195,129,51,.12);color:var(--pri-h);border:1px solid rgba(195,129,51,.25);margin:2px 4px 2px 0;}
 .skills-line{display:flex;flex-wrap:wrap;gap:2px;margin-top:6px;}
 
 /* ── COMPANY CARDS ───────────────────────────────────────── */
 .co-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden;--c:var(--primary);}
 .co-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);}
 .co-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
-.co-card.active{border-color:var(--primary);box-shadow:0 0 0 1px rgba(99,102,241,.4),var(--shadow);}
-.co-card.active::before{background:var(--brand-grad);box-shadow:0 0 12px rgba(99,102,241,.5);}
+.co-card.active{border-color:var(--primary);box-shadow:0 0 0 1px rgba(195,129,51,.4),var(--shadow);}
+.co-card.active::before{background:var(--brand-grad);box-shadow:0 0 12px rgba(195,129,51,.5);}
 .co-card-current{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);margin-left:8px;vertical-align:middle;text-transform:uppercase;letter-spacing:.5px;}
 .co-card-name{font-size:16px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;}
 .co-card-role{font-size:13px;color:var(--muted);margin-bottom:10px;}
@@ -333,7 +334,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .cert-status.active{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
 .cert-status.expiring{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
 .cert-status.expired{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);}
-.cert-status.no-expiry{background:rgba(99,102,241,.12);color:var(--pri-h);border:1px solid rgba(99,102,241,.25);}
+.cert-status.no-expiry{background:rgba(195,129,51,.12);color:var(--pri-h);border:1px solid rgba(195,129,51,.25);}
 .cert-status.planned{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25);}
 .cert-foot{display:flex;gap:6px;margin-top:14px;align-items:center;}
 .cert-url{font-size:11px;color:var(--primary);text-decoration:none;margin-left:auto;}
@@ -342,7 +343,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 /* Company picker rows */
 .co-pick-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;cursor:pointer;transition:background .15s,border-color .15s;}
 .co-pick-row:hover{background:var(--surface2);border-color:var(--primary);}
-.co-pick-row.active{background:rgba(99,102,241,.08);border-color:var(--primary);}
+.co-pick-row.active{background:rgba(195,129,51,.08);border-color:var(--primary);}
 .co-pick-row .cc-dot{width:12px;height:12px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:var(--brand-grad);opacity:.5;transition:opacity .2s;}
@@ -384,7 +385,7 @@ button:focus-visible,.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visib
 .dash-filter-bar{display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
 .filter-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;}
 .tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;user-select:none;}
-.tab.active{background:var(--brand-grad);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(99,102,241,.3);}
+.tab.active{background:var(--brand-grad);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(195,129,51,.3);}
 .sel-filter,.date-filter{font-size:13px;padding-top:9px;padding-bottom:9px;min-width:140px;}
 
 /* ── TASKS ────────────────────────────────────────────────── */
@@ -430,13 +431,13 @@ input,select,textarea{
   font-family:inherit;
 }
 input:hover,select:hover,textarea:hover{border-color:var(--border);}
-input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.18);background:var(--surface3);}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(195,129,51,.18);background:var(--surface3);}
 input::placeholder,textarea::placeholder{color:var(--dim);}
 textarea{resize:vertical;min-height:80px;}
 /* Custom select — no native chrome, custom chevron */
 select{
   cursor:pointer;padding-right:38px;
-  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e");
+  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23000000' d='M6 8 0 0h12z'/%3e%3c/svg%3e");
   background-repeat:no-repeat;background-position:right 14px center;background-size:10px;
   appearance:none;-webkit-appearance:none;-moz-appearance:none;
 }
@@ -445,9 +446,9 @@ select option{background:var(--surface);color:var(--text);padding:10px;}
 /* Native date input — hide built-in chrome, flatpickr replaces calendar */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="month"]::-webkit-calendar-picker-indicator{display:none;-webkit-appearance:none;opacity:0;}
-input[type="date"],input[type="month"]{cursor:pointer;color-scheme:dark;}
+input[type="date"],input[type="month"]{cursor:pointer;color-scheme:light;}
 /* When flatpickr is active it adds .flatpickr-input — show the calendar icon */
-.flatpickr-input{padding-right:38px !important;background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2'/%3e%3cline x1='16' y1='2' x2='16' y2='6'/%3e%3cline x1='8' y1='2' x2='8' y2='6'/%3e%3cline x1='3' y1='10' x2='21' y2='10'/%3e%3c/svg%3e") !important;background-repeat:no-repeat !important;background-position:right 13px center !important;background-size:14px !important;}
+.flatpickr-input{padding-right:38px !important;background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2'/%3e%3cline x1='16' y1='2' x2='16' y2='6'/%3e%3cline x1='8' y1='2' x2='8' y2='6'/%3e%3cline x1='3' y1='10' x2='21' y2='10'/%3e%3c/svg%3e") !important;background-repeat:no-repeat !important;background-position:right 13px center !important;background-size:14px !important;}
 
 /* ── FLATPICKR DARK THEME ───────────────────────────────── */
 .flatpickr-calendar{
@@ -509,14 +510,14 @@ span.flatpickr-weekday{color:var(--muted);font-weight:600;font-size:11px;text-tr
   min-height:44px;cursor:pointer;
   transition:border-color .18s,box-shadow .18s,background .18s;
   box-shadow:none;
-  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e") !important;
+  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23000000' d='M6 8 0 0h12z'/%3e%3c/svg%3e") !important;
   background-repeat:no-repeat !important;background-position:right 16px center !important;background-size:10px !important;
 }
 .ts-wrapper.single .ts-control:hover,.ts-wrapper.multi .ts-control:hover{border-color:var(--border);}
 .ts-wrapper.focus .ts-control,.ts-wrapper.single.input-active .ts-control,.ts-wrapper.multi.input-active .ts-control{
-  border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(99,102,241,.18) !important;
+  border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(195,129,51,.18) !important;
   background:var(--surface3) !important;
-  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23818cf8' d='M6 8 0 0h12z'/%3e%3c/svg%3e") !important;
+  background-image:url("data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23000000' d='M6 8 0 0h12z'/%3e%3c/svg%3e") !important;
   background-repeat:no-repeat !important;background-position:right 16px center !important;background-size:10px !important;
 }
 .ts-wrapper.disabled .ts-control{opacity:.5;cursor:not-allowed;}
@@ -574,7 +575,7 @@ thead th{padding:11px 14px;font-size:11px;font-weight:700;color:var(--muted);tex
 tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:nth-child(even) td{background:rgba(255,255,255,.015);}
-tbody tr:hover td{background:rgba(99,102,241,.05);}
+tbody tr:hover td{background:rgba(195,129,51,.05);}
 
 /* ── CARDS GRID ──────────────────────────────────────────── */
 .cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
@@ -623,6 +624,217 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 
+/* ── EDITORIAL THEME OVERRIDES (skills/SKILL.md) ─────────── */
+body{background:var(--bg);color:var(--text);}
+.orb{display:none;}
+.brand-mark,.auth-logo-icon{box-shadow:none;border-radius:0;}
+.brand-name{text-transform:uppercase;letter-spacing:.08em;font-weight:900;font-size:14px;}
+.loading-brand,.auth-logo h1{background:none;-webkit-text-fill-color:currentColor;color:#000;text-transform:uppercase;font-weight:900;letter-spacing:-.02em;}
+.auth-logo h1{font-size:34px;}
+#auth-screen{background:var(--bg);}
+.auth-card{background:#fff;border:1px solid #000;border-radius:0;box-shadow:12px 12px 0 #000;backdrop-filter:none;}
+.auth-tabs{border-radius:0;background:var(--surface2);border:1px solid var(--border2);}
+.auth-tab{border-radius:0;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:700;}
+.auth-tab.active{background:#000;color:#fff;box-shadow:none;}
+.auth-input{background:#fff;border-radius:0;}
+.auth-btn-primary{background:#000;border-radius:0;box-shadow:none;text-transform:uppercase;letter-spacing:.14em;font-size:13px;font-weight:700;}
+.auth-btn-primary:hover{background:var(--primary);box-shadow:none;}
+.auth-btn-google{border-radius:0;background:#fff;border-color:#000;}
+.auth-error{color:var(--red);}
+.sidebar{background:var(--bg);border-right:1px solid #000;}
+.sidebar-brand,.sidebar-footer{border-color:#000;}
+.nav-label{color:var(--primary);letter-spacing:.18em;}
+.nav-item{border-radius:0;color:#000;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:12px;}
+.nav-item:hover{background:rgba(0,0,0,.05);color:#000;}
+.nav-item.active{background:#000;color:#fff;box-shadow:none;}
+.nav-item.active::before{background:var(--primary);box-shadow:none;width:4px;top:0;bottom:0;border-radius:0;}
+.nav-badge{background:var(--primary);color:#fff;border-radius:0;}
+.user-card,.company-chip{border-radius:0;background:#fff;border:1px solid var(--border2);}
+.company-chip:hover{border-color:#000;background:#fff;}
+.cc-dot{box-shadow:none;background:currentColor;}
+.user-avatar{border-radius:0;background:#000;color:#fff;border:none;}
+.main{background:var(--bg);}
+.page-wrap{padding:40px 44px;}
+.ph{margin-bottom:34px;align-items:flex-end;padding-bottom:22px;border-bottom:1px solid #000;}
+.ph-title{font-size:clamp(34px,4.6vw,64px);font-weight:900;letter-spacing:-.035em;line-height:.92;text-transform:uppercase;background:none;-webkit-text-fill-color:currentColor;color:#000;}
+.ph-sub{font-size:15px;color:var(--muted);margin-top:10px;max-width:56ch;}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--primary);margin-bottom:12px;}
+.btn{border-radius:0;text-transform:uppercase;letter-spacing:.13em;font-size:11.5px;font-weight:700;padding:12px 20px;border:1px solid #000;}
+.btn-primary{background:#000;color:#fff;box-shadow:none;}
+.btn-primary:hover{background:var(--primary);border-color:var(--primary);transform:none;box-shadow:none;}
+.btn-primary:active{box-shadow:none;}
+.btn-ghost{background:transparent;color:#000;border:1px solid #000;}
+.btn-ghost:hover{background:#000;color:#fff;}
+.btn-danger-soft{background:transparent;color:var(--red);border:1px solid currentColor;}
+.btn-danger-soft:hover{background:var(--red);color:#fff;}
+.btn-sm{padding:7px 12px;font-size:10.5px;}
+.stat-card,.chart-card,.section-card,.task-item,.entity-card,.form-card,.table-wrap,.co-card,.cert-card,.dash-filter-bar,.filter-tabs,.modal,.toast,.resume-box,.co-pick-row{border-radius:0;}
+.stat-card,.chart-card,.section-card,.entity-card,.form-card,.table-wrap,.co-card,.cert-card,.task-item{border:1px solid var(--border);box-shadow:none;}
+.stat-card::before{display:none;}
+.stat-card:hover,.entity-card:hover,.task-item:hover,.co-card:hover,.cert-card:hover{transform:translateY(-2px);border-color:#000;box-shadow:6px 6px 0 #000;}
+.chart-card:hover,.section-card:hover{border-color:#000;box-shadow:none;}
+.stat-icon{display:none;}
+.stat-label{text-transform:uppercase;letter-spacing:.16em;font-size:10.5px;font-weight:800;color:var(--muted);}
+.stat-value{font-size:44px;font-weight:900;letter-spacing:-.04em;}
+.stat-sub{font-size:12px;}
+.stat-card.accent{background:#000;color:#fff;border-color:#000;}
+.stat-card.accent .stat-label,.stat-card.accent .stat-sub{color:rgba(255,255,255,.65);}
+.stat-card.accent .stat-value{color:#fff;}
+.stat-card.terra{background:var(--primary);color:#fff;border-color:var(--primary);}
+.stat-card.terra .stat-label,.stat-card.terra .stat-sub{color:rgba(255,255,255,.8);}
+.stat-value.sm{font-size:24px;line-height:1.1;letter-spacing:-.02em;word-break:break-word;}
+.section-title,.chart-title{text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800;color:#000;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.section-title::before,.chart-title::before{width:8px;height:8px;border-radius:0;background:var(--primary);box-shadow:none;margin-right:0;vertical-align:0;}
+.task-item:hover{background:#fff;}
+.task-item::before{background:var(--primary);width:4px;}
+.task-cb{border-radius:0;border-color:#000;}
+.task-cb.done{background:#000;border-color:#000;}
+.tab{border-radius:0;text-transform:uppercase;letter-spacing:.1em;font-size:11.5px;font-weight:700;color:#000;}
+.tab.active{background:#000;color:#fff;box-shadow:none;}
+.filter-tabs{border-color:#000;background:#fff;}
+.dash-filter-bar{background:#fff;}
+label,.filter-label{color:#000;letter-spacing:.12em;}
+input,select,textarea{background:#fff;border-radius:0;border:1px solid var(--border2);color:#000;}
+input:hover,select:hover,textarea:hover{border-color:#000;}
+input:focus,select:focus,textarea:focus{border-color:#000;background:#fff;box-shadow:0 0 0 3px rgba(195,129,51,.25);}
+.ts-wrapper.single .ts-control,.ts-wrapper.multi .ts-control{background-color:#fff !important;border-radius:0;border-color:var(--border2);}
+.ts-wrapper.focus .ts-control{background-color:#fff !important;border-color:#000 !important;box-shadow:0 0 0 3px rgba(195,129,51,.25) !important;}
+.ts-dropdown{border-radius:0 !important;border-color:#000 !important;box-shadow:8px 8px 0 rgba(0,0,0,.9) !important;}
+.ts-dropdown .option{border-radius:0;}
+.ts-dropdown .option.active.selected{background:#000 !important;}
+.ts-dropdown .option.selected{background:var(--pri-bg) !important;color:#000 !important;}
+.ts-wrapper.disabled .ts-control{background:var(--surface2) !important;}
+.flatpickr-calendar{border-radius:0;border-color:#000;box-shadow:8px 8px 0 rgba(0,0,0,.9);}
+.flatpickr-day{border-radius:0;}
+.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange{background:#000 !important;border-color:#000 !important;}
+.flatpickr-prev-month,.flatpickr-next-month{border-radius:0 !important;}
+.flatpickr-prev-month:hover,.flatpickr-next-month:hover{background:#000 !important;border-color:#000 !important;}
+.proj-badge,.cust-badge,.status-badge,.hrs-badge,.skill-chip,.weekend-badge,.cert-status,.co-card-current{border-radius:0;}
+.status-badge{text-transform:uppercase;letter-spacing:.08em;font-size:10px;font-weight:800;}
+.s-in-progress{background:rgba(0,0,0,.07);color:#000;}
+.s-in-progress::before{background:var(--primary);}
+.s-pending{background:rgba(195,129,51,.14);color:var(--pri-h);}
+.hrs-badge{background:#000;color:#fff;}
+.cust-badge.internal{background:rgba(0,0,0,.06);color:#000;}
+.cust-badge.external{background:rgba(195,129,51,.14);color:var(--pri-h);}
+.weekend-badge{color:#6B4E9B;background:rgba(107,78,155,.1);border-color:rgba(107,78,155,.25);}
+.ahours{color:#000;}
+.prog-bar{background:rgba(0,0,0,.08);border-radius:0;height:6px;}
+.prog-fill{border-radius:0;}
+.skill-bar-track{border-radius:0;}
+.skill-bar-fill{background:var(--primary);border-radius:0;}
+.skill-chip{color:var(--pri-h);}
+thead th{background:#000;color:#fff;letter-spacing:.14em;border-bottom:none;}
+tbody tr:nth-child(even) td{background:rgba(0,0,0,.018);}
+.overlay{background:rgba(20,18,14,.5);}
+.modal{border:1px solid #000;box-shadow:14px 14px 0 rgba(0,0,0,.9);}
+.modal-title{text-transform:uppercase;letter-spacing:-.01em;font-weight:900;font-size:20px;}
+.toast{background:#fff;border:1px solid #000;}
+.co-card.active{border-color:#000;box-shadow:6px 6px 0 var(--primary);}
+.co-card.active::before{background:var(--primary);box-shadow:none;}
+.entity-card-name,.co-card-name{text-transform:uppercase;letter-spacing:-.01em;font-weight:900;}
+.es-val{font-weight:900;}
+.empty-title{color:#000;text-transform:uppercase;letter-spacing:.06em;font-size:13px;}
+.icon-btn{border-radius:0;}
+.color-pick{border-radius:0;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.25);border-radius:0;}
+.task-chal{margin-top:6px;font-size:12px;color:var(--pri-h);display:flex;gap:6px;align-items:flex-start;}
+.seg{display:inline-flex;border:1px solid #000;margin-left:auto;}
+.seg button{background:#fff;border:none;padding:5px 10px;font:inherit;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:#000;}
+.seg button.on{background:#000;color:#fff;}
+.modal-grid>.fg,.form-grid>.fg{min-width:0;}
+.sel-row .ts-wrapper{min-width:0;}
+.fg input,.fg textarea{width:100%;min-width:0;}
+.sel-row .btn{flex-shrink:0;}
+.field-hint{font-size:11px;color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400;}
+
+/* ── ROLES & PROJECTS ───────────────────────────────────── */
+.role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;}
+.role-card{background:#fff;border:1px solid #000;display:flex;flex-direction:column;}
+.role-head{padding:22px 22px 16px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;}
+.role-swatch{width:14px;height:14px;flex-shrink:0;margin-top:6px;}
+.role-kicker{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--primary);}
+.role-name{font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;line-height:1.05;margin-top:2px;}
+.role-meta{font-size:12px;color:var(--muted);margin-top:6px;}
+.role-projects{padding:8px 22px 4px;flex:1;}
+.rp-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);}
+.rp-row:last-child{border-bottom:none;}
+.rp-dot{width:8px;height:8px;flex-shrink:0;}
+.rp-body{flex:1;min-width:0;}
+.rp-name{font-weight:700;font-size:14px;}
+.rp-sub{font-size:11.5px;color:var(--muted);}
+.rp-bar{height:3px;background:rgba(0,0,0,.08);margin-top:6px;}
+.rp-bar > div{height:100%;}
+.rp-hrs{font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;}
+.role-foot{display:flex;gap:6px;padding:12px 22px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.role-empty{padding:18px 0;color:var(--muted);font-size:13px;}
+
+/* ── STANDUP ────────────────────────────────────────────── */
+.su-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:26px;}
+.day-pills{display:flex;border:1px solid #000;}
+.day-pills button{background:#fff;border:none;border-right:1px solid var(--border);padding:7px 9px;font:inherit;font-size:10.5px;font-weight:800;letter-spacing:.08em;cursor:pointer;color:#000;}
+.day-pills button:last-child{border-right:none;}
+.day-pills button.on{background:var(--primary);color:#fff;}
+.su-hero{display:grid;grid-template-columns:1.4fr 1fr;gap:0;border:1px solid #000;background:#fff;margin-bottom:26px;}
+.su-hero-l{padding:30px 32px;border-right:1px solid #000;}
+.su-hero-kick{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--primary);}
+.su-hero-title{font-size:clamp(30px,4vw,54px);font-weight:900;text-transform:uppercase;letter-spacing:-.035em;line-height:.95;margin-top:10px;}
+.su-hero-sub{color:var(--muted);margin-top:12px;font-size:14px;}
+.su-hero-r{display:grid;grid-template-columns:1fr 1fr;}
+.su-kpi{padding:20px 22px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+.su-kpi:nth-child(2n){border-right:none;}
+.su-kpi:nth-last-child(-n+2){border-bottom:none;}
+.su-kpi-v{font-size:38px;font-weight:900;letter-spacing:-.04em;line-height:1;}
+.su-kpi-l{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+.su-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:18px;}
+.su-col{background:#fff;border:1px solid var(--border);padding:24px;min-width:0;}
+.su-col-h{display:flex;align-items:baseline;gap:12px;padding-bottom:14px;margin-bottom:6px;border-bottom:1px solid #000;}
+.su-num{font-size:12px;font-weight:900;color:var(--primary);letter-spacing:.1em;}
+.su-col-t{font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;}
+.su-col-c{margin-left:auto;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.1em;}
+.su-group{padding:14px 0 6px;}
+.su-group + .su-group{border-top:1px dashed var(--border2);}
+.su-gname{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.su-gname i{width:8px;height:8px;display:inline-block;flex-shrink:0;}
+.su-gname span.h{margin-left:auto;color:var(--muted);}
+.su-item{display:flex;gap:10px;padding:5px 0;font-size:14px;line-height:1.45;}
+.su-item::before{content:'—';color:var(--primary);font-weight:800;flex-shrink:0;}
+.su-item .m{color:var(--muted);font-size:12px;white-space:nowrap;margin-left:auto;padding-left:8px;}
+.su-item.chal::before{content:'!';width:16px;height:16px;background:var(--primary);color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center;margin-top:2px;}
+.su-none{color:var(--muted);font-size:13px;padding:18px 0;}
+
+/* ── PRESENT MODE ───────────────────────────────────────── */
+.present{position:fixed;inset:0;z-index:20000;background:var(--bg);display:flex;flex-direction:column;}
+.present[hidden]{display:none;}
+.pr-top{display:flex;align-items:center;gap:16px;padding:calc(18px + env(safe-area-inset-top,0px)) 40px 18px;border-bottom:1px solid #000;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;}
+.pr-top .sp{flex:1;}
+.pr-close{background:none;border:1px solid #000;padding:6px 12px;font:inherit;font-size:11px;font-weight:800;letter-spacing:.14em;cursor:pointer;}
+.pr-close:hover{background:#000;color:#fff;}
+.pr-stage{flex:1;overflow:auto;padding:56px 7vw 40px;}
+.pr-slide{animation:prIn .45s cubic-bezier(.22,.61,.36,1) both;max-width:1280px;margin:0 auto;}
+@keyframes prIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+.pr-kick{font-size:13px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--primary);}
+.pr-h{font-size:clamp(44px,8.5vw,128px);font-weight:900;text-transform:uppercase;letter-spacing:-.045em;line-height:.88;margin:16px 0 26px;}
+.pr-sub{font-size:clamp(16px,1.6vw,22px);color:var(--muted);max-width:60ch;}
+.pr-kpis{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #000;margin-top:48px;}
+.pr-kpi{padding:22px 18px 0 0;}
+.pr-kpi-v{font-size:clamp(40px,5vw,76px);font-weight:900;letter-spacing:-.05em;line-height:1;}
+.pr-kpi-l{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+.pr-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px 44px;}
+.pr-group{border-top:4px solid #000;padding-top:16px;}
+.pr-gname{font-size:13px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;display:flex;gap:10px;align-items:center;}
+.pr-gname i{width:10px;height:10px;display:inline-block;}
+.pr-gname span{margin-left:auto;color:var(--muted);}
+.pr-item{font-size:clamp(17px,1.55vw,22px);line-height:1.4;padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;}
+.pr-item::before{content:'—';color:var(--primary);font-weight:900;}
+.pr-item small{margin-left:auto;color:var(--muted);font-size:.7em;white-space:nowrap;padding-left:10px;align-self:center;}
+.pr-nav{display:flex;align-items:center;gap:10px;padding:16px 40px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid #000;}
+.pr-dots{display:flex;gap:6px;flex:1;}
+.pr-dots span{height:4px;flex:1;max-width:60px;background:rgba(0,0,0,.15);cursor:pointer;}
+.pr-dots span.on{background:#000;}
+@media(max-width:1100px){.su-grid{grid-template-columns:1fr 1fr;}.su-grid .su-col:first-child{grid-column:1/-1;}.su-hero{grid-template-columns:1fr;}.su-hero-l{border-right:none;border-bottom:1px solid #000;}}
+@media(max-width:768px){.page-wrap{padding:20px 18px;}.su-grid{grid-template-columns:1fr;}.pr-top,.pr-nav{padding-left:18px;padding-right:18px;}.pr-stage{padding:30px 18px;}.pr-kpis{grid-template-columns:1fr 1fr;}.role-grid{grid-template-columns:1fr;}.ph-title{font-size:34px;}}
+
 /* ── RESPONSIVE ──────────────────────────────────────────── */
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
 @media(max-width:1100px){
@@ -634,7 +846,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);width:260px;}
   .sidebar.open{transform:translateX(0);}
   .sidebar-overlay.show{display:block;}
-  .hamburger{display:flex;width:42px;height:42px;font-size:22px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;}
+  .hamburger{display:flex;width:42px;height:42px;font-size:22px;background:var(--surface);border:1px solid #000;border-radius:0;margin-bottom:14px;}
 
   /* Main layout */
   .main{width:100%;}
@@ -672,7 +884,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
   /* Page header: stack title and action buttons */
   .ph{flex-direction:column;align-items:stretch;gap:14px;}
-  .ph-title{font-size:20px;}
+  .ph-title{font-size:30px;}
   .ph .btn{width:100%;justify-content:center;}
   .ph > div[style*="flex"]{flex-direction:column !important;}
 
@@ -798,12 +1010,13 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
       <div class="nav-label">Main</div>
       <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
       <div class="nav-item" data-page="tasks" onclick="navigate('tasks')"><span class="nav-icon">✅</span>Tasks<span class="nav-badge" id="pending-badge" style="display:none"></span></div>
+      <div class="nav-item" data-page="standup" onclick="navigate('standup')"><span class="nav-icon">🎤</span>Standup</div>
     </div>
     <div class="nav-section">
       <div class="nav-label">Manage</div>
       <div class="nav-item" data-page="log"       onclick="navigate('log')">      <span class="nav-icon">⏱️</span>Log Work</div>
+      <div class="nav-item" data-page="projects"  onclick="navigate('projects')"> <span class="nav-icon">📁</span>Roles &amp; Projects</div>
       <div class="nav-item" data-page="customers" onclick="navigate('customers')"><span class="nav-icon">🤝</span>Customers</div>
-      <div class="nav-item" data-page="projects"  onclick="navigate('projects')"> <span class="nav-icon">📁</span>Projects</div>
     </div>
     <div class="nav-section">
       <div class="nav-label">Career</div>
@@ -830,7 +1043,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
       <!-- DASHBOARD -->
       <div id="page-dashboard" class="page active">
-        <div class="ph"><div><h1 class="ph-title">Dashboard</h1><div class="ph-sub">Your work overview &amp; productivity insights</div></div><button class="btn btn-primary" onclick="openAddEntry()">+ Log Work</button></div>
+        <div class="ph"><div><div class="eyebrow" id="dash-eyebrow">Overview</div><h1 class="ph-title">Dashboard</h1><div class="ph-sub">Where your hours went — by role, project and customer.</div></div><button class="btn btn-primary" onclick="openAddEntry()">+ Log Work</button></div>
         <div class="dash-filter-bar">
           <div class="filter-group">
             <label class="filter-label" for="dash-month">Period</label>
@@ -840,12 +1053,12 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
         </div>
         <div class="stats" id="dash-stats"></div>
         <div class="charts-row">
-          <div class="chart-card"><div class="chart-title">Hours by Project</div><canvas id="chartHours" height="180"></canvas></div>
+          <div class="chart-card"><div class="chart-title"><span id="chartHours-title">Hours by Project</span><span class="seg" id="dash-group-seg" style="display:none"><button data-g="project" onclick="setDashGroup('project')">Project</button><button data-g="role" onclick="setDashGroup('role')">Role</button></span></div><canvas id="chartHours" height="180"></canvas></div>
           <div class="chart-card"><div class="chart-title">Task Status</div><canvas id="chartStatus" height="180"></canvas></div>
         </div>
         <div class="charts-row2">
-          <div class="chart-card"><div class="chart-title">Hours by Customer <span style="font-size:11px;color:var(--muted);font-weight:400">(🔵 internal · 🟡 external)</span></div><canvas id="chartCustomer" height="180"></canvas></div>
-          <div class="section-card"><div class="section-title">Projects Overview</div><div id="proj-overview"></div></div>
+          <div class="chart-card"><div class="chart-title">Hours by Customer <span style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.08em">■ internal · <span style="color:var(--primary)">■</span> external</span></div><canvas id="chartCustomer" height="180"></canvas></div>
+          <div class="section-card"><div class="section-title">Roles &amp; Projects</div><div id="proj-overview"></div></div>
         </div>
         <div class="two-col">
           <div class="section-card"><div class="section-title">Recent Work</div><div id="recent-work"></div></div>
@@ -858,7 +1071,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
 
       <!-- TASKS -->
       <div id="page-tasks" class="page">
-        <div class="ph"><div><h1 class="ph-title">Tasks</h1><div class="ph-sub">Track pending and completed work items</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="exportCSV()" title="Export current view to CSV (opens in Excel)">📊 Export CSV</button><button class="btn btn-ghost" onclick="exportPDF()" title="Export current view to PDF">📄 Export PDF</button><button class="btn btn-primary" onclick="openAddEntry()">+ Add Task</button></div></div>
+        <div class="ph"><div><div class="eyebrow">Work items</div><h1 class="ph-title">Tasks</h1><div class="ph-sub">Pending, in-progress and completed work — filter by role, project or customer.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="exportCSV()" title="Export current view to CSV (opens in Excel)">📊 Export CSV</button><button class="btn btn-ghost" onclick="exportPDF()" title="Export current view to PDF">📄 Export PDF</button><button class="btn btn-primary" onclick="openAddEntry()">+ Add Task</button></div></div>
         <div class="filter-bar">
           <div class="filter-tabs" id="filter-tabs">
             <div class="tab active" onclick="setFilter('all')">All</div>
@@ -866,6 +1079,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
             <div class="tab" onclick="setFilter('in-progress')">In Progress</div>
             <div class="tab" onclick="setFilter('completed')">Completed</div>
           </div>
+          <select class="sel-filter" id="role-filter"  onchange="setSel('proj-filter','');renderTasks()" aria-label="Filter by role"><option value="">All Roles</option></select>
           <select class="sel-filter" id="proj-filter"  onchange="renderTasks()" aria-label="Filter by project"><option value="">All Projects</option></select>
           <select class="sel-filter" id="cust-filter"  onchange="renderTasks()" aria-label="Filter by customer"><option value="">All Customers</option></select>
           <div class="filter-group"><label class="filter-label" for="date-from">From</label><input type="date" class="date-filter" id="date-from" onchange="renderTasks()"></div>
@@ -875,49 +1089,66 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
         <div id="task-list" class="task-list"></div>
       </div>
 
+      <!-- STANDUP -->
+      <div id="page-standup" class="page">
+        <div class="ph"><div><div class="eyebrow">Team sync</div><h1 class="ph-title">Standup</h1><div class="ph-sub" id="su-sub">Built live from your logs — done, next, and blockers.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="copyStandup()">📋 Copy text</button><button class="btn btn-primary" onclick="openPresent()">▶ Present</button></div></div>
+        <div class="su-bar">
+          <div class="filter-tabs" id="su-tabs"><div class="tab" data-mode="daily" onclick="setStandupMode('daily')">Daily</div><div class="tab" data-mode="weekly" onclick="setStandupMode('weekly')">Weekly</div></div>
+          <div class="filter-group"><label class="filter-label" for="su-date">Meeting date</label><input type="date" class="date-filter" id="su-date" onchange="renderStandup()"></div>
+          <div class="filter-group" id="su-days-wrap"><span class="filter-label">Weekly on</span><div class="day-pills" id="su-days"></div></div>
+        </div>
+        <div id="su-body"></div>
+      </div>
+
       <!-- LOG WORK -->
       <div id="page-log" class="page">
-        <div class="ph"><div><h1 class="ph-title">Log Work</h1><div class="ph-sub">Record tasks and hours spent</div></div></div>
+        <div class="ph"><div><div class="eyebrow">Capture</div><h1 class="ph-title">Log Work</h1><div class="ph-sub">Record what you did, for which role and project — it flows straight into your standup.</div></div></div>
         <div class="form-card">
           <div class="form-title">New Work Entry</div>
           <div class="form-grid">
             <div class="fg full"><label for="lw-title">Task / Work Description *</label><input type="text" id="lw-title" placeholder="What did you work on?"></div>
+            <div class="fg"><label for="lw-company">Company</label><select id="lw-company" onchange="onPickCompany('lw')"></select></div>
             <div class="fg">
-              <label for="lw-project">Project *</label>
-              <div class="sel-row"><select id="lw-project"><option value="">Select project…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-np-row')">+ New</button></div>
-              <div class="new-row" id="lw-np-row"><input type="text" id="lw-np-name" placeholder="Project name" aria-label="New project name"><input type="color" class="color-pick" id="lw-np-color" value="#6366f1" aria-label="New project colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('project','lw-project','lw-np-name','lw-np-color','lw-np-row')">Add</button></div>
+              <label for="lw-role">Role *</label>
+              <div class="sel-row"><select id="lw-role" onchange="onPickRole('lw')"><option value="">Select role…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-new-role-row')">+ New</button></div>
+              <div class="new-row" id="lw-new-role-row"><input type="text" id="lw-new-role-name" placeholder="Role, e.g. AI Engineering" aria-label="New role name"><input type="color" class="color-pick" id="lw-new-role-color" value="#000000" aria-label="New role colour"><button type="button" class="btn btn-primary btn-sm" onclick="addInline('lw','role')">Add</button></div>
+            </div>
+            <div class="fg">
+              <label for="lw-project">Project</label>
+              <div class="sel-row"><select id="lw-project"><option value="">Select project…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-new-project-row')">+ New</button></div>
+              <div class="new-row" id="lw-new-project-row"><input type="text" id="lw-new-project-name" placeholder="Project under this role" aria-label="New project name"><input type="color" class="color-pick" id="lw-new-project-color" value="#C38133" aria-label="New project colour"><button type="button" class="btn btn-primary btn-sm" onclick="addInline('lw','project')">Add</button></div>
             </div>
             <div class="fg">
               <label for="lw-customer">Customer</label>
-              <div class="sel-row"><select id="lw-customer"><option value="">None</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-nc-row')">+ New</button></div>
-              <div class="new-row" id="lw-nc-row"><input type="text" id="lw-nc-name" placeholder="Customer name" aria-label="New customer name"><select id="lw-nc-type" aria-label="Customer type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="lw-nc-color" value="#f59e0b" aria-label="New customer colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('customer','lw-customer','lw-nc-name','lw-nc-color','lw-nc-row','lw-nc-type')">Add</button></div>
+              <div class="sel-row"><select id="lw-customer"><option value="">None</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('lw-new-customer-row')">+ New</button></div>
+              <div class="new-row" id="lw-new-customer-row"><input type="text" id="lw-new-customer-name" placeholder="Customer name" aria-label="New customer name"><select id="lw-new-customer-type" aria-label="Customer type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="lw-new-customer-color" value="#5E5A52" aria-label="New customer colour"><button type="button" class="btn btn-primary btn-sm" onclick="addInline('lw','customer')">Add</button></div>
             </div>
             <div class="fg"><label for="lw-hours">Hours Spent *</label><input type="number" id="lw-hours" min="0" step="0.5" placeholder="0"></div>
             <div class="fg"><label for="lw-date">Date</label><input type="date" id="lw-date"></div>
             <div class="fg"><label for="lw-status">Status</label><select id="lw-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed" selected>Completed</option></select></div>
-            <div class="fg"><label for="lw-company">Company / Role</label><select id="lw-company"></select></div>
             <div class="fg full"><label for="lw-skills">Skills Gained <span style="text-transform:none;font-weight:400;color:var(--dim)">— comma-separated, e.g. <em>Python, AWS, Stakeholder Management</em></span></label><input type="text" id="lw-skills" placeholder="Add skills you gained or applied during this task" autocomplete="off"></div>
             <div class="fg full">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:normal;font-size:13px;color:var(--text);font-weight:500"><input type="checkbox" id="lw-recurring" style="width:18px;height:18px;cursor:pointer;flex:none" onchange="toggleRecurring()">🔁 Recurring task — repeat monthly for <input type="number" id="lw-recurring-months" min="2" max="36" value="12" style="width:64px;padding:6px 8px;font-size:14px;display:inline-block" disabled> months</label>
             </div>
+            <div class="fg full"><label for="lw-challenges">Challenges / Blockers <span class="field-hint">— shown in your standup</span></label><textarea id="lw-challenges" placeholder="Anything slowing you down? e.g. waiting on API access from infra team" style="min-height:60px"></textarea></div>
             <div class="fg full"><label for="lw-notes">Notes</label><textarea id="lw-notes" placeholder="Additional notes…"></textarea></div>
           </div>
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button class="btn btn-ghost" onclick="clearLogForm()">Clear</button><button class="btn btn-primary" onclick="saveLogEntry()">Save Entry</button></div>
         </div>
         <div style="font-size:15px;font-weight:700;margin-bottom:14px">Work History</div>
-        <div class="table-wrap"><table><thead><tr><th>Task</th><th>Project</th><th>Customer</th><th>Hours</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="log-tbody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Task</th><th>Role › Project</th><th>Customer</th><th>Hours</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="log-tbody"></tbody></table></div>
       </div>
 
       <!-- CUSTOMERS -->
       <div id="page-customers" class="page">
-        <div class="ph"><div><h1 class="ph-title">Customers</h1><div class="ph-sub">Manage internal and external clients</div></div><button class="btn btn-primary" onclick="openAddCustomer()">+ New Customer</button></div>
+        <div class="ph"><div><div class="eyebrow" id="cust-eyebrow">Clients</div><h1 class="ph-title">Customers</h1><div class="ph-sub">Internal and external customers for the active company.</div></div><button class="btn btn-primary" onclick="openAddCustomer()">+ New Customer</button></div>
         <div class="cards-grid" id="customers-grid"></div>
       </div>
 
       <!-- PROJECTS -->
       <div id="page-projects" class="page">
-        <div class="ph"><div><h1 class="ph-title">Projects</h1><div class="ph-sub">Manage your work projects</div></div><button class="btn btn-primary" onclick="openAddProject()">+ New Project</button></div>
-        <div class="cards-grid" id="projects-grid"></div>
+        <div class="ph"><div><div class="eyebrow" id="proj-eyebrow">Structure</div><h1 class="ph-title">Roles &amp; Projects</h1><div class="ph-sub">A role is the hat you wear (e.g. AI Engineering). Projects sit under a role so every hour is traceable.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="openAddProject('')">+ New Role</button><button class="btn btn-primary" onclick="openAddProject(null)">+ New Project</button></div></div>
+        <div class="role-grid" id="projects-grid"></div>
       </div>
 
       <!-- SKILLS -->
@@ -958,37 +1189,42 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
       <input type="hidden" id="m-id">
       <div class="fg"><label for="m-title">Task / Work Description *</label><input type="text" id="m-title" placeholder="What did you work on?"></div>
       <div class="modal-grid">
-        <div class="fg">
-          <label for="m-project">Project *</label>
-          <div class="sel-row"><select id="m-project"><option value="">Select project…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-np-row')">+</button></div>
-          <div class="new-row" id="m-np-row"><input type="text" id="m-np-name" placeholder="Project name" aria-label="New project name"><input type="color" class="color-pick" id="m-np-color" value="#6366f1" aria-label="New project colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('project','m-project','m-np-name','m-np-color','m-np-row')">Add</button></div>
-        </div>
-        <div class="fg">
-          <label for="m-customer">Customer</label>
-          <div class="sel-row"><select id="m-customer"><option value="">None</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-nc-row')">+</button></div>
-          <div class="new-row" id="m-nc-row"><input type="text" id="m-nc-name" placeholder="Customer name" aria-label="New customer name"><select id="m-nc-type" aria-label="Customer type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="m-nc-color" value="#f59e0b" aria-label="New customer colour"><button type="button" class="btn btn-primary btn-sm" onclick="addEntityInline('customer','m-customer','m-nc-name','m-nc-color','m-nc-row','m-nc-type')">Add</button></div>
-        </div>
+        <div class="fg"><label for="m-company">Company</label><select id="m-company" onchange="onPickCompany('m')"></select></div>
+            <div class="fg">
+              <label for="m-role">Role *</label>
+              <div class="sel-row"><select id="m-role" onchange="onPickRole('m')"><option value="">Select role…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-new-role-row')">+</button></div>
+              <div class="new-row" id="m-new-role-row"><input type="text" id="m-new-role-name" placeholder="Role, e.g. AI Engineering" aria-label="New role name"><input type="color" class="color-pick" id="m-new-role-color" value="#000000" aria-label="New role colour"><button type="button" class="btn btn-primary btn-sm" onclick="addInline('m','role')">Add</button></div>
+            </div>
+            <div class="fg">
+              <label for="m-project">Project</label>
+              <div class="sel-row"><select id="m-project"><option value="">Select project…</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-new-project-row')">+</button></div>
+              <div class="new-row" id="m-new-project-row"><input type="text" id="m-new-project-name" placeholder="Project under this role" aria-label="New project name"><input type="color" class="color-pick" id="m-new-project-color" value="#C38133" aria-label="New project colour"><button type="button" class="btn btn-primary btn-sm" onclick="addInline('m','project')">Add</button></div>
+            </div>
+            <div class="fg">
+              <label for="m-customer">Customer</label>
+              <div class="sel-row"><select id="m-customer"><option value="">None</option></select><button type="button" class="btn btn-ghost btn-sm" onclick="toggleRow('m-new-customer-row')">+</button></div>
+              <div class="new-row" id="m-new-customer-row"><input type="text" id="m-new-customer-name" placeholder="Customer name" aria-label="New customer name"><select id="m-new-customer-type" aria-label="Customer type"><option value="internal">Internal</option><option value="external">External</option></select><input type="color" class="color-pick" id="m-new-customer-color" value="#5E5A52" aria-label="New customer colour"><button type="button" class="btn btn-primary btn-sm" onclick="addInline('m','customer')">Add</button></div>
+            </div>
         <div class="fg"><label for="m-hours">Hours *</label><input type="number" id="m-hours" min="0" step="0.5" placeholder="0"></div>
         <div class="fg"><label for="m-date">Date</label><input type="date" id="m-date"></div>
-      </div>
-      <div class="modal-grid">
         <div class="fg"><label for="m-status">Status</label><select id="m-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>
-        <div class="fg"><label for="m-company">Company / Role</label><select id="m-company"></select></div>
       </div>
       <div class="fg"><label for="m-skills">Skills Gained <span style="text-transform:none;font-weight:400;color:var(--dim)">— comma-separated</span></label><input type="text" id="m-skills" placeholder="e.g. Python, AWS, Stakeholder Management" autocomplete="off"></div>
+      <div class="fg"><label for="m-challenges">Challenges / Blockers</label><textarea id="m-challenges" placeholder="Anything slowing you down?" style="min-height:60px"></textarea></div>
       <div class="fg"><label for="m-notes">Notes</label><textarea id="m-notes" placeholder="Additional notes…"></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('entry-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalEntry()">Save</button></div>
   </div>
 </div>
 <div class="overlay" id="project-modal">
-  <div class="modal" style="max-width:380px">
+  <div class="modal" style="max-width:440px">
     <div class="modal-hdr"><div class="modal-title" id="m-proj-heading">New Project</div><button class="modal-close" onclick="closeModal('project-modal')" aria-label="Close dialog">✕</button></div>
     <div class="modal-form">
       <input type="hidden" id="m-proj-id">
-      <div class="fg"><label for="m-proj-name">Project Name *</label><input type="text" id="m-proj-name" placeholder="e.g. BMC, OneApp…"></div>
+      <div class="fg"><label for="m-proj-parent">Type</label><select id="m-proj-parent"></select></div>
+      <div class="fg"><label for="m-proj-name">Name *</label><input type="text" id="m-proj-name" placeholder="e.g. AI Engineering, or a project like RAG Assistant"></div>
       <div class="fg"><label for="m-proj-desc">Resume bullet <span style="text-transform:none;font-weight:400;color:var(--dim)">— one-line accomplishment shown on the Skills page</span></label><textarea id="m-proj-desc" placeholder="e.g. Built and delivered the BMC Helix ITSM platform across multiple customers, including audit logging and security improvements." style="min-height:60px"></textarea></div>
-      <div class="fg"><label for="m-proj-color">Colour</label><input type="color" id="m-proj-color" value="#6366f1" style="height:42px;padding:4px"></div>
+      <div class="fg"><label for="m-proj-color">Colour</label><input type="color" id="m-proj-color" value="#C38133" style="height:42px;padding:4px"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('project-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalProject()">Save</button></div>
   </div>
@@ -1000,7 +1236,7 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
       <input type="hidden" id="m-cust-id">
       <div class="fg"><label for="m-cust-name">Name *</label><input type="text" id="m-cust-name" placeholder="e.g. Sentosa, NCC…"></div>
       <div class="fg"><label for="m-cust-type">Type</label><select id="m-cust-type"><option value="internal">🏢 Internal</option><option value="external">🤝 External</option></select></div>
-      <div class="fg"><label for="m-cust-color">Colour</label><input type="color" id="m-cust-color" value="#f59e0b" style="height:42px;padding:4px"></div>
+      <div class="fg"><label for="m-cust-color">Colour</label><input type="color" id="m-cust-color" value="#5E5A52" style="height:42px;padding:4px"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('customer-modal')">Cancel</button><button class="btn btn-primary" onclick="saveModalCustomer()">Save</button></div>
   </div>
@@ -1058,6 +1294,11 @@ tbody tr:hover td{background:rgba(99,102,241,.05);}
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('company-picker')">Close</button><button class="btn btn-primary" onclick="closeModal('company-picker');navigate('companies');">Manage companies</button></div>
   </div>
 </div>
+<div class="present" id="present" hidden>
+  <div class="pr-top"><span id="pr-title">Standup</span><span class="sp"></span><span id="pr-count"></span><button class="pr-close" onclick="closePresent()">Esc · Close</button></div>
+  <div class="pr-stage" id="pr-stage" onclick="presentClick(event)"></div>
+  <div class="pr-nav"><button class="btn btn-ghost btn-sm" onclick="presentGo(-1)">← Prev</button><div class="pr-dots" id="pr-dots"></div><button class="btn btn-primary btn-sm" onclick="presentGo(1)">Next →</button></div>
+</div>
 <div id="toast-box"></div>
 
 <script>window.APP_CONFIG=window.APP_CONFIG||{appwriteProjectId:'DEMO',appwriteDatabaseId:'DEMO'};</script>
@@ -1096,13 +1337,13 @@ function initAppwrite(){
 }
 
 /* SEED */
-const SCO=[{id:'co1',name:'Keppel Technology Solutions',role:'Software Engineer',start_date:'2023-06-01',end_date:'',color:'#6366f1',notes:'',employment_type:'Full-time',location:'Singapore · On-site',description:''}];
+const SCO=[{id:'co1',name:'Keppel Technology Solutions',role:'Software Engineer',start_date:'2023-06-01',end_date:'',color:'#C38133',notes:'',employment_type:'Full-time',location:'Singapore · On-site',description:''}];
 const SP=[
-  {id:'p1',name:'BMC',color:'#3b82f6',description:''},
-  {id:'p2',name:'OneApp',color:'#22c55e',description:''},
-  {id:'p3',name:'AI Engineering',color:'#a855f7',description:''}
+  {id:'p1',name:'BMC',color:'#000000',description:'',company_id:'co1'},
+  {id:'p2',name:'OneApp',color:'#5B7553',description:'',company_id:'co1'},
+  {id:'p3',name:'AI Engineering',color:'#C38133',description:'',company_id:'co1'}
 ];
-const SC=[{id:'cint',name:'Internal',type:'internal',color:'#3b82f6'},{id:'csentosa',name:'Sentosa',type:'external',color:'#f59e0b'},{id:'cncc',name:'NCC',type:'external',color:'#f97316'},{id:'ctal',name:'TAL',type:'external',color:'#ec4899'},{id:'csporthub',name:'SportHub',type:'external',color:'#8b5cf6'},{id:'cgbtb',name:'Garden by the Bay',type:'external',color:'#22c55e'},{id:'caiops',name:'AIOps / Internal AI',type:'internal',color:'#6366f1'}];
+const SC=[{id:'cint',name:'Internal',type:'internal',color:'#3b82f6'},{id:'csentosa',name:'Sentosa',type:'external',color:'#f59e0b'},{id:'cncc',name:'NCC',type:'external',color:'#f97316'},{id:'ctal',name:'TAL',type:'external',color:'#ec4899'},{id:'csporthub',name:'SportHub',type:'external',color:'#8b5cf6'},{id:'cgbtb',name:'Garden by the Bay',type:'external',color:'#22c55e'},{id:'caiops',name:'AIOps / Internal AI',type:'internal',color:'#C38133'}];
 const SE=[
   {id:'e1',title:'OneApp domain change session',projectId:'p2',customerId:'cint',hours:6,status:'completed',date:'2026-05-10',notes:'5 hours + 1 hour session',skills:'DNS, Domain Management, Customer Communication',companyId:'co1'},
   {id:'e2',title:'BMC MIS catalog update',projectId:'p1',customerId:'cint',hours:3,status:'completed',date:'2026-05-08',notes:'',skills:'BMC Helix, ITSM, Catalog Management',companyId:'co1'},
@@ -1121,6 +1362,30 @@ const SE=[
   {id:'e15',title:'Implement POC for Garden by the Bay',projectId:'p3',customerId:'cgbtb',hours:20,status:'completed',date:'2026-04-28',notes:'AI implementation POC',skills:'AI/ML, Proof of Concept, Python, Solution Architecture',companyId:'co1'},
   {id:'e16',title:'Implement AIOps Forecast POC',projectId:'p3',customerId:'caiops',hours:15,status:'completed',date:'2026-05-20',notes:'AIOps forecasting POC',skills:'AIOps, Forecasting, Machine Learning, Python',companyId:'co1'},
 ];
+SC.forEach(c=>c.company_id='co1');
+/* DEMO-only: a second (current) company with a Role → Project hierarchy, dated
+   relative to today so the Standup page always has something to show. */
+function demoNewCompany(){
+  const d=n=>addDays(today(),-n);
+  return{
+    companies:[{id:'co2',name:'Northwind AI Labs',role:'AI Engineer',start_date:d(21),end_date:'',color:'#C38133',notes:'',employment_type:'Full-time',location:'Singapore · Hybrid',description:''}],
+    projects:[
+      {id:'r1',name:'AI Engineering',color:'#000000',company_id:'co2',parent_id:''},
+      {id:'r1a',name:'RAG Assistant',color:'#C38133',company_id:'co2',parent_id:'r1'},
+      {id:'r1b',name:'Doc Intelligence',color:'#5B7553',company_id:'co2',parent_id:'r1'},
+      {id:'r1c',name:'Eval Harness',color:'#2E5A88',company_id:'co2',parent_id:'r1'}
+    ],
+    customers:[{id:'cn1',name:'Internal Platform',type:'internal',color:'#000000',company_id:'co2'},{id:'cn2',name:'Finance Ops',type:'external',color:'#C38133',company_id:'co2'}],
+    entries:[
+      {id:'n1',title:'Chunking + embedding pipeline for policy docs',projectId:'r1a',customerId:'cn1',hours:5,status:'completed',date:d(1),notes:'',skills:'RAG, Embeddings, Python',companyId:'co2',challenges:''},
+      {id:'n2',title:'Invoice field extraction prompt v2',projectId:'r1b',customerId:'cn2',hours:3,status:'completed',date:d(1),notes:'',skills:'Prompt Engineering, Claude',companyId:'co2',challenges:'Scanned PDFs have poor OCR quality'},
+      {id:'n3',title:'Retrieval eval set — 50 golden questions',projectId:'r1c',customerId:'cn1',hours:4,status:'completed',date:d(2),notes:'',skills:'LLM Evaluation',companyId:'co2',challenges:''},
+      {id:'n4',title:'Hybrid search (BM25 + vector) re-ranking',projectId:'r1a',customerId:'cn1',hours:6,status:'in-progress',date:today(),notes:'',skills:'Search, Re-ranking',companyId:'co2',challenges:'Waiting on vector DB access from infra'},
+      {id:'n5',title:'Demo doc extraction to Finance Ops',projectId:'r1b',customerId:'cn2',hours:1,status:'pending',date:today(),notes:'',skills:'Stakeholder Management',companyId:'co2',challenges:''},
+      {id:'n6',title:'Set up Claude API keys + rate limiting',projectId:'r1',customerId:'cn1',hours:2,status:'completed',date:d(4),notes:'',skills:'Claude API',companyId:'co2',challenges:''}
+    ]
+  };
+}
 /* Sample certifications shown in DEMO mode */
 const SCERT=[
   {id:'cert1',name:'AWS Certified AI Practitioner',issuer:'Amazon Web Services',issue_date:'2026-04-01',expiry_date:'2029-04-01',credential_url:'',companyId:'co1',notes:''},
@@ -1148,7 +1413,8 @@ function lsInit(){
     if(defCo)db.entries.forEach(e=>{if(!getCompanyId(e))e.companyId=defCo;});
     lsSave();
   }else{
-    db={projects:[...SP],customers:[...SC],entries:[...SE],companies:[...SCO],certifications:[...SCERT]};
+    const n=demoNewCompany();
+    db={projects:[...SP,...n.projects],customers:[...SC,...n.customers],entries:[...n.entries,...SE],companies:[{...SCO[0],end_date:addDays(today(),-24)},...n.companies],certifications:[...SCERT]};
     lsSave();
   }
 }
@@ -1166,16 +1432,33 @@ function defaultEntryCompanyId(){return !isAllCompanyMode()?activeCompanyId:curr
 // Entries/projects/customers scoped to the active company. In All-companies mode
 // (or when no company is selected/exists) everything is shown, unfiltered.
 function scopedEntries(){return isAllCompanyMode()?db.entries:db.entries.filter(e=>getCompanyId(e)===activeCompanyId);}
-function scopedProjects(){
-  if(isAllCompanyMode())return db.projects;
-  const ids=new Set(scopedEntries().map(getProjId));
-  return db.projects.filter(p=>ids.has(p.id));
+/* Roles & projects share the `projects` collection: parent_id empty = Role,
+   parent_id set = Project under that role. Projects/customers carry company_id;
+   legacy docs without it are attributed via the entries that reference them. */
+function getParentId(p){return(p&&(p.parent_id||p.parentId))||'';}
+function ownerCo(x){return x.company_id||x.companyId||'';}
+function belongsTo(x,coId,kind){
+  if(ownerCo(x))return ownerCo(x)===coId;
+  if(kind==='customer')return db.entries.some(e=>getCompanyId(e)===coId&&getCustId(e)===x.id);
+  const ids=new Set([x.id,...db.projects.filter(p=>getParentId(p)===x.id).map(p=>p.id)]);
+  return db.entries.some(e=>getCompanyId(e)===coId&&ids.has(getProjId(e)));
 }
-function scopedCustomers(){
-  if(isAllCompanyMode())return db.customers;
-  const ids=new Set(scopedEntries().map(getCustId));
-  return db.customers.filter(c=>ids.has(c.id));
+function projectsForCompany(coId){return !coId||coId===ALL_CO?db.projects:db.projects.filter(p=>belongsTo(p,coId,'project'));}
+function customersForCompany(coId){return !coId||coId===ALL_CO?db.customers:db.customers.filter(c=>belongsTo(c,coId,'customer'));}
+function rolesFor(coId){return projectsForCompany(coId).filter(p=>!getParentId(p));}
+function childrenOf(roleId){return roleId?db.projects.filter(p=>getParentId(p)===roleId):[];}
+function scopedProjects(){return projectsForCompany(isAllCompanyMode()?'':activeCompanyId);}
+function scopedCustomers(){return customersForCompany(isAllCompanyMode()?'':activeCompanyId);}
+function scopedRoles(){return scopedProjects().filter(p=>!getParentId(p));}
+/* Resolve an entry to {role, project}; project is null when logged directly against a role */
+function entryRP(e){
+  const p=getProj(getProjId(e)),pid=getParentId(p);
+  return pid?{role:getProj(pid),project:p}:{role:p,project:null};
 }
+function rpLabel(e){const{role,project}=entryRP(e);return role.name+(project?' › '+project.name:'');}
+function rpBadge(e){const{role,project}=entryRP(e);const c=(project||role).color||'#000';return'<span class="proj-badge" style="background:'+h2r(c,.12)+';color:'+(c==='#000000'?'#000':c)+'"><span class="pdot" style="background:'+c+'"></span>'+htmlEscape(role.name)+(project?' <span style="opacity:.55">›</span> '+htmlEscape(project.name):'')+'</span>';}
+/* Leaf bucket used by charts / standup grouping */
+function leafOf(e){const{role,project}=entryRP(e);return project?{id:project.id,name:project.name,color:project.color,role}:{id:role.id||'?',name:childrenOf(role.id).length?role.name+' · General':role.name,color:role.color,role};}
 function pickInitialActiveCompany(){
   const saved=localStorage.getItem('wt_active_co');
   if(saved===ALL_CO){activeCompanyId=ALL_CO;return;}
@@ -1233,12 +1516,12 @@ async function dbSeed(uid){
   }
   const projMap={};
   for(const p of SP){
-    const r=await aw_databases.createDocument(AW_DB,COL.projects,Appwrite.ID.unique(),{name:p.name,color:p.color,user_id:uid},perm(uid));
+    const r=await aw_databases.createDocument(AW_DB,COL.projects,Appwrite.ID.unique(),{name:p.name,color:p.color,company_id:defaultCompanyId,user_id:uid},perm(uid));
     projMap[p.id]=r.$id;db.projects.push(norm(r));
   }
   const custMap={};
   for(const c of SC){
-    const r=await aw_databases.createDocument(AW_DB,COL.customers,Appwrite.ID.unique(),{name:c.name,type:c.type,color:c.color,user_id:uid},perm(uid));
+    const r=await aw_databases.createDocument(AW_DB,COL.customers,Appwrite.ID.unique(),{name:c.name,type:c.type,color:c.color,company_id:defaultCompanyId,user_id:uid},perm(uid));
     custMap[c.id]=r.$id;db.customers.push(norm(r));
   }
   for(const e of SE){
@@ -1254,6 +1537,16 @@ async function dbSeed(uid){
 function getProjId(e){return e.project_id||e.projectId||null;}
 function getCustId(e){return e.customer_id||e.customerId||null;}
 function arrFor(table){return table==='projects'?db.projects:table==='customers'?db.customers:table==='companies'?db.companies:table==='certifications'?db.certifications:db.entries;}
+// Retries without attributes the collection doesn't have yet (pre-migration), so
+// the app keeps working until migrate-roles.js has added parent_id/company_id/challenges.
+async function awTolerant(fn,data){
+  try{return await fn(data);}
+  catch(e){
+    const m=/Unknown attribute:?\s*"?([A-Za-z0-9_]+)"?/i.exec(e.message||'');
+    if(m&&m[1] in data){const d={...data};delete d[m[1]];console.warn('Skipped unknown attribute:',m[1]);return awTolerant(fn,d);}
+    throw e;
+  }
+}
 async function dbInsert(table,row){
   if(DEMO_MODE){
     row.id=row.id||uid();
@@ -1261,14 +1554,14 @@ async function dbInsert(table,row){
     lsSave();return row;
   }
   const uid_v=currentUser.id;
-  const data=await aw_databases.createDocument(AW_DB,COL[table],Appwrite.ID.unique(),{...row,user_id:uid_v},perm(uid_v));
+  const data=await awTolerant(d=>aw_databases.createDocument(AW_DB,COL[table],Appwrite.ID.unique(),d,perm(uid_v)),{...row,user_id:uid_v});
   const n=norm(data);
   if(table==='entries')db.entries.unshift(n);else arrFor(table).push(n);
   return n;
 }
 async function dbUpdate(table,id,patch){
   if(DEMO_MODE){const a=arrFor(table);const i=a.find(x=>x.id===id);if(i)Object.assign(i,patch);lsSave();return;}
-  await aw_databases.updateDocument(AW_DB,COL[table],id,patch);
+  await awTolerant(d=>aw_databases.updateDocument(AW_DB,COL[table],id,d),patch);
   const i=arrFor(table).find(x=>x.id===id);if(i)Object.assign(i,patch);
 }
 async function dbDelete(table,id){
@@ -1408,6 +1701,7 @@ function navigate(page){
   closeSidebar();
   if(page==='dashboard')renderDashboard();
   if(page==='tasks')renderTasks();
+  if(page==='standup')renderStandup();
   if(page==='log')renderLog();
   if(page==='customers')renderCustomers();
   if(page==='projects')renderProjects();
@@ -1421,7 +1715,9 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 /* HELPERS */
 function v(id){return(document.getElementById(id)||{}).value?.trim()||'';}
 function uid(){return'x'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
-function today(){return new Date().toISOString().slice(0,10);}
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function today(){return ymd(new Date());}  // local date (toISOString is UTC → wrong before 8am SGT)
+function addDays(s,n){const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return ymd(d);}
 function fmtDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'});}
 function isWeekend(d){if(!d)return false;const w=new Date(d+'T00:00:00').getDay();return w===0||w===6;}  // Sun=0, Sat=6
 function completedOf(arr){return arr.filter(e=>e.status==='completed');}
@@ -1492,78 +1788,97 @@ function setSel(id,val){
 }
 
 /* DASHBOARD */
+const CHART_INK='#000',CHART_TICK='#5E5A52',CHART_GRID='rgba(0,0,0,.07)';
+let dashGroup=localStorage.getItem('wt_dash_group')||'project';
+function setDashGroup(g){dashGroup=g;localStorage.setItem('wt_dash_group',g);renderDashboard();}
+function weekStart(s){const d=new Date(s+'T00:00:00'),w=(d.getDay()+6)%7;return addDays(s,-w);}  // Monday
+// Completed hours bucketed by leaf project (or by role when grouping by role)
+function hoursBuckets(ents,by){
+  const m=new Map();
+  completedOf(ents).forEach(e=>{
+    const L=leafOf(e),k=by==='role'?{id:L.role.id||'?',name:L.role.name,color:L.role.color}:L;
+    const cur=m.get(k.id)||{id:k.id,name:k.name,color:k.color||'#000',h:0,n:0};
+    cur.h+=parseFloat(e.hours)||0;cur.n++;m.set(k.id,cur);
+  });
+  return[...m.values()].sort((a,b)=>b.h-a.h);
+}
+function stat(label,val,sub,cls,unit){return'<div class="stat-card '+(cls||'')+'"><div class="stat-top"><div class="stat-label">'+label+'</div></div><div class="stat-value'+(typeof val==='string'?' sm':'')+'">'+(typeof val==='string'?htmlEscape(val):'<span data-count="'+val+'">0</span>')+(unit?'<span style="font-size:16px;opacity:.6;font-weight:700"> '+unit+'</span>':'')+'</div><div class="stat-sub">'+sub+'</div></div>';}
 function renderDashboard(){
   populateMonthFilter();
-  const all=getDashEntries();
-  const sProj=scopedProjects(),sCust=scopedCustomers();
-  const cmp=completedOf(all);
-  const completed=cmp.length;
-  const pending=all.length-completed;
-  // Only count COMPLETED hours — pending tasks don't contribute to totals
-  const hours=sumHours(cmp);
-  const weekendHrs=sumHours(cmp.filter(e=>isWeekend(e.date)));
-  const weekdayHrs=hours-weekendHrs;
-  const weekendTasks=cmp.filter(e=>isWeekend(e.date));
-  document.getElementById('dash-period-summary').textContent=monthLabel(dashMonth)+' — '+hours+' completed hrs ('+weekendHrs+' weekend) across '+all.length+' entries';
-  document.getElementById('dash-stats').innerHTML='<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:var(--pri-bg)">⏱️</div><div class="stat-label">Total Hours</div></div><div class="stat-value"><span data-count="'+hours+'">0</span><span style="font-size:16px;color:var(--muted)"> hrs</span></div><div class="stat-sub">completed only · '+sProj.length+' projects</div></div>'
-    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(168,85,247,.12)">🌙</div><div class="stat-label">Weekend Hours</div></div><div class="stat-value" style="color:#c084fc"><span data-count="'+weekendHrs+'">0</span><span style="font-size:16px;color:var(--muted)"> hrs</span></div><div class="stat-sub">non-working day effort · '+weekendTasks.length+' tasks</div></div>'
-    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,182,212,.1)">📋</div><div class="stat-label">Total Tasks</div></div><div class="stat-value"><span data-count="'+all.length+'">0</span></div><div class="stat-sub">'+sCust.length+' customers</div></div>'
-    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(34,197,94,.1)">✅</div><div class="stat-label">Completed</div></div><div class="stat-value" style="color:var(--green)"><span data-count="'+completed+'">0</span></div><div class="stat-sub">'+(all.length?Math.round(completed/all.length*100):0)+'% rate</div></div>'
-    +'<div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(245,158,11,.1)">⏳</div><div class="stat-label">Pending</div></div><div class="stat-value" style="color:var(--amber)"><span data-count="'+pending+'">0</span></div><div class="stat-sub">'+(all.length?Math.round(pending/all.length*100):0)+'% remaining</div></div>';
+  const all=getDashEntries(),co=getActiveCompany();
+  document.getElementById('dash-eyebrow').textContent=co?co.name+(co.role?' · '+co.role:''):'All companies';
+  const cmp=completedOf(all),hours=sumHours(cmp);
+  const weekendTasks=cmp.filter(e=>isWeekend(e.date)),weekendHrs=sumHours(weekendTasks);
+  const ws=weekStart(today()),weekHrs=sumHours(completedOf(scopedEntries().filter(e=>e.date>=ws&&e.date<=today())));
+  const open=all.filter(e=>e.status!=='completed');
+  const chal=open.filter(e=>(e.challenges||'').trim());
+  const top=hoursBuckets(all,'project')[0];
+  const leaves=hoursBuckets(all,'project');
+  document.getElementById('dash-period-summary').textContent=monthLabel(dashMonth)+' — '+hours+' completed hrs across '+all.length+' entries';
+  document.getElementById('dash-stats').innerHTML=
+     stat('Total hours',hours,weekendHrs+' hrs on weekends · '+leaves.length+' projects','accent','hrs')
+    +stat('This week',weekHrs,'since Mon '+fmtDate(ws),'','hrs')
+    +stat('Top project',top?top.name:'—',top?top.h+' hrs · '+top.n+' tasks':'no completed work yet','terra')
+    +stat('Completed',cmp.length,(all.length?Math.round(cmp.length/all.length*100):0)+'% of '+all.length+' tasks')
+    +stat('Open',open.length,chal.length?'⚠ '+chal.length+' with blockers':'no blockers logged');
   animateCounters(document.getElementById('dash-stats'));
-  // Project overview — completed hours only
-  const dashProjHours=pid=>sumHours(completedOf(all.filter(e=>getProjId(e)===pid)));
-  const maxH=Math.max(...sProj.map(p=>dashProjHours(p.id)),1);
-  document.getElementById('proj-overview').innerHTML=sProj.map(proj=>{const h=dashProjHours(proj.id),t=all.filter(e=>getProjId(e)===proj.id).length;return'<div class="prog-row"><div class="prog-label"><span style="display:flex;align-items:center;gap:8px;font-weight:500"><span class="adot" style="background:'+proj.color+'"></span>'+proj.name+'</span><span style="color:var(--muted)">'+h+'h · '+t+' tasks</span></div><div class="prog-bar"><div class="prog-fill" style="width:'+Math.round(h/maxH*100)+'%;background:'+proj.color+'"></div></div></div>';}).join('');
-  const recent=[...all].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
-  document.getElementById('recent-work').innerHTML=recent.length?recent.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="background:'+p.color+'"></span><div class="atext"><div>'+e.title+weekendBadge(e.date)+'</div><div class="ameta">'+p.name+(c?' · '+c.name:'')+' · '+fmtDate(e.date)+'</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No entries in this period</div></div>';
-  const pend=[...all].filter(e=>e.status!=='completed').slice(0,5);
-  document.getElementById('pending-list').innerHTML=pend.length?pend.map(e=>{const p=getProj(getProjId(e));return'<div class="act-item"><span class="adot" style="background:var(--amber)"></span><div class="atext"><div>'+e.title+'</div><div class="ameta">'+p.name+' · <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">🎉</div><div class="empty-title">All caught up!</div></div>';
-  // Non-working day efforts section
+  // Roles & Projects overview — role headline + child project bars
+  const roleB=hoursBuckets(all,'role'),maxH=Math.max(...leaves.map(b=>b.h),1);
+  const roles=scopedRoles().filter(r=>all.some(e=>entryRP(e).role.id===r.id));
+  document.getElementById('proj-overview').innerHTML=roles.length?roles.map(r=>{
+    const rb=roleB.find(b=>b.id===r.id),kids=leaves.filter(l=>l.role&&l.role.id===r.id);
+    return'<div style="margin-bottom:16px"><div class="prog-label" style="font-weight:900;text-transform:uppercase;letter-spacing:.04em"><span style="display:flex;align-items:center;gap:8px"><span class="adot" style="border-radius:0;margin:0;background:'+r.color+'"></span>'+htmlEscape(r.name)+'</span><span>'+(rb?rb.h:0)+'h</span></div>'+
+      kids.map(k=>'<div class="prog-row" style="margin:8px 0 0 16px"><div class="prog-label"><span>'+htmlEscape(k.name)+'</span><span style="color:var(--muted)">'+k.h+'h · '+k.n+'</span></div><div class="prog-bar"><div class="prog-fill" style="width:'+Math.round(k.h/maxH*100)+'%;background:'+k.color+'"></div></div></div>').join('')+'</div>';
+  }).join(''):'<div class="empty"><div class="empty-icon">📁</div><div class="empty-title">No completed work in this period</div></div>';
+  const recent=[...all].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,6);
+  document.getElementById('recent-work').innerHTML=recent.length?recent.map(e=>{const L=leafOf(e),c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="border-radius:0;background:'+L.color+'"></span><div class="atext"><div>'+htmlEscape(e.title)+weekendBadge(e.date)+'</div><div class="ameta">'+htmlEscape(rpLabel(e))+(c?' · '+htmlEscape(c.name):'')+' · '+fmtDate(e.date)+'</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No entries in this period</div></div>';
+  const pend=[...open].sort((a,b)=>(a.status==='in-progress'?-1:1)-(b.status==='in-progress'?-1:1)).slice(0,6);
+  document.getElementById('pending-list').innerHTML=pend.length?pend.map(e=>'<div class="act-item"><span class="adot" style="border-radius:0;background:var(--primary)"></span><div class="atext"><div>'+htmlEscape(e.title)+'</div><div class="ameta">'+htmlEscape(rpLabel(e))+' · <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></div>'+((e.challenges||'').trim()?'<div class="task-chal">⚠ '+htmlEscape(e.challenges)+'</div>':'')+'</div><span class="ahours">'+e.hours+'h</span></div>').join(''):'<div class="empty"><div class="empty-icon">🎉</div><div class="empty-title">All caught up!</div></div>';
   const weekendEl=document.getElementById('weekend-list');
   if(weekendEl){
-    weekendEl.innerHTML=weekendTasks.length?[...weekendTasks].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8).map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="background:#c084fc"></span><div class="atext"><div>'+e.title+'</div><div class="ameta">'+p.name+(c?' · '+c.name:'')+' · '+fmtDate(e.date)+' ('+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(e.date+'T00:00:00').getDay()]+')</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">🌙</div><div class="empty-title">No weekend work in this period</div><div class="empty-sub">Enjoy your time off!</div></div>';
+    weekendEl.innerHTML=weekendTasks.length?[...weekendTasks].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8).map(e=>{const c=getCust(getCustId(e));return'<div class="act-item"><span class="adot" style="border-radius:0;background:#6B4E9B"></span><div class="atext"><div>'+htmlEscape(e.title)+'</div><div class="ameta">'+htmlEscape(rpLabel(e))+(c?' · '+htmlEscape(c.name):'')+' · '+fmtDate(e.date)+' ('+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(e.date+'T00:00:00').getDay()]+')</div></div><span class="ahours">'+e.hours+'h</span></div>';}).join(''):'<div class="empty"><div class="empty-icon">🌙</div><div class="empty-title">No weekend work in this period</div><div class="empty-sub">Enjoy your time off!</div></div>';
   }
+  // Role toggle only matters when the company has more than one role
+  const multiRole=scopedRoles().length>1,seg=document.getElementById('dash-group-seg');
+  if(seg){seg.style.display=multiRole?'':'none';seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.g===(multiRole?dashGroup:'project')));}
   setTimeout(()=>{buildChartHours();buildChartStatus();buildChartCustomer();},60);
 }
+function chartScales(){return{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{family:'Inter',weight:'600'}}},y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{family:'Inter'}},beginAtZero:true}};}
 function buildChartHours(){
   if(typeof Chart==='undefined')return;
   const ctx=document.getElementById('chartHours').getContext('2d');
   if(chartH)chartH.destroy();
-  const ents=getDashEntries();
-  const ph=pid=>sumHours(completedOf(ents.filter(e=>getProjId(e)===pid)));  // completed only
-  const sProj=scopedProjects();
-  chartH=new Chart(ctx,{type:'bar',data:{labels:sProj.map(p=>p.name),datasets:[{label:'Hours',data:sProj.map(p=>ph(p.id)),backgroundColor:sProj.map(p=>h2r(p.color,.7)),borderColor:sProj.map(p=>p.color),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' completed hrs'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
+  const by=scopedRoles().length>1?dashGroup:'project';
+  document.getElementById('chartHours-title').textContent=by==='role'?'Hours by Role':'Hours by Project';
+  const b=hoursBuckets(getDashEntries(),by);
+  chartH=new Chart(ctx,{type:'bar',data:{labels:b.map(x=>x.name),datasets:[{label:'Hours',data:b.map(x=>x.h),backgroundColor:b.map(x=>x.color),borderWidth:0,borderRadius:0,maxBarThickness:56}]},options:{indexAxis:b.length>6?'y':'x',responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.raw+' completed hrs · '+b[c.dataIndex].n+' tasks'}}},scales:chartScales()}});
 }
 function buildChartStatus(){
   if(typeof Chart==='undefined')return;
   const all=getDashEntries(),ctx=document.getElementById('chartStatus').getContext('2d');
   if(chartS)chartS.destroy();
-  chartS=new Chart(ctx,{type:'doughnut',data:{labels:['Completed','Pending','In Progress'],datasets:[{data:[all.filter(e=>e.status==='completed').length,all.filter(e=>e.status==='pending').length,all.filter(e=>e.status==='in-progress').length],backgroundColor:['rgba(34,197,94,.75)','rgba(245,158,11,.75)','rgba(59,130,246,.75)'],borderColor:['#22c55e','#f59e0b','#3b82f6'],borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8899bb',padding:14,boxWidth:12}}}}});
+  chartS=new Chart(ctx,{type:'doughnut',data:{labels:['Completed','Pending','In Progress'],datasets:[{data:[all.filter(e=>e.status==='completed').length,all.filter(e=>e.status==='pending').length,all.filter(e=>e.status==='in-progress').length],backgroundColor:['#000000','#C38133','#D9D3C4'],borderColor:'#fff',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:true,cutout:'68%',plugins:{legend:{position:'bottom',labels:{color:CHART_TICK,padding:14,boxWidth:12,font:{family:'Inter',weight:'600'}}}}}});
 }
 function buildChartCustomer(){
   if(typeof Chart==='undefined')return;
   const ctx=document.getElementById('chartCustomer').getContext('2d');
   if(chartC)chartC.destroy();
   const ents=getDashEntries();
-  const ch=cid=>sumHours(completedOf(ents.filter(e=>getCustId(e)===cid)));  // completed only
-  const custs=db.customers.filter(c=>ch(c.id)>0).sort((a,b)=>ch(b.id)-ch(a.id));
-  chartC=new Chart(ctx,{type:'bar',data:{labels:custs.map(c=>c.name),datasets:[{label:'Hours',data:custs.map(c=>ch(c.id)),backgroundColor:custs.map(c=>c.type==='internal'?'rgba(59,130,246,.7)':'rgba(245,158,11,.7)'),borderColor:custs.map(c=>c.type==='internal'?'#3b82f6':'#f59e0b'),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>' '+c.parsed.y+' completed hrs ('+custs[c.dataIndex].type+')'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8899bb'},beginAtZero:true}}}});
+  const ch=cid=>sumHours(completedOf(ents.filter(e=>getCustId(e)===cid)));
+  const custs=scopedCustomers().filter(c=>ch(c.id)>0).sort((a,b)=>ch(b.id)-ch(a.id));
+  chartC=new Chart(ctx,{type:'bar',data:{labels:custs.map(c=>c.name),datasets:[{label:'Hours',data:custs.map(c=>ch(c.id)),backgroundColor:custs.map(c=>c.type==='internal'?'#000000':'#C38133'),borderWidth:0,borderRadius:0,maxBarThickness:56}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>' '+c.raw+' completed hrs ('+custs[c.dataIndex].type+')'}}},scales:chartScales()}});
 }
 
 /* TASKS */
 function setFilter(f){taskFilter=f;document.querySelectorAll('#filter-tabs .tab').forEach(t=>t.classList.toggle('active',t.textContent.trim().toLowerCase()===f.replace('-',' ')));renderTasks();}
 function getFilteredEntries(){
   let list=[...scopedEntries()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  if(taskFilter==='pending')list=list.filter(e=>e.status==='pending');
-  else if(taskFilter==='in-progress')list=list.filter(e=>e.status==='in-progress');
-  else if(taskFilter==='completed')list=list.filter(e=>e.status==='completed');
-  const pfEl=document.getElementById('proj-filter'),cfEl=document.getElementById('cust-filter');
-  const pf=pfEl?pfEl.value:'',cf=cfEl?cfEl.value:'';
+  if(taskFilter!=='all')list=list.filter(e=>e.status===taskFilter);
+  const rf=v('role-filter'),pf=v('proj-filter'),cf=v('cust-filter');
+  if(rf)list=list.filter(e=>entryRP(e).role.id===rf);
   if(pf)list=list.filter(e=>getProjId(e)===pf);
   if(cf)list=list.filter(e=>getCustId(e)===cf);
-  const fromEl=document.getElementById('date-from'),toEl=document.getElementById('date-to');
-  const from=fromEl?fromEl.value:'',to=toEl?toEl.value:'';
+  const from=v('date-from'),to=v('date-to');
   if(from)list=list.filter(e=>e.date&&e.date>=from);
   if(to)list=list.filter(e=>e.date&&e.date<=to);
   return list;
@@ -1572,7 +1887,7 @@ function clearDateRange(){setDate('date-from','');setDate('date-to','');renderTa
 function monthLabel(ym){if(!ym)return'All time';const[y,m]=ym.split('-');const d=new Date(parseInt(y),parseInt(m)-1,1);return d.toLocaleDateString('en-SG',{month:'long',year:'numeric'});}
 function populateMonthFilter(){
   const sel=document.getElementById('dash-month');if(!sel)return;
-  const months=new Set();db.entries.forEach(e=>{if(e.date)months.add(e.date.slice(0,7));});
+  const months=new Set();scopedEntries().forEach(e=>{if(e.date)months.add(e.date.slice(0,7));});
   const sorted=[...months].sort().reverse();   // newest month first
   const cur=sel.value;
   const opts=[{value:'',text:'All time'}].concat(sorted.map(m=>({value:m,text:monthLabel(m)})));
@@ -1588,12 +1903,16 @@ function populateMonthFilter(){
 function setDashMonth(){dashMonth=document.getElementById('dash-month').value;renderDashboard();}
 function getDashEntries(){const se=scopedEntries();return dashMonth?se.filter(e=>e.date&&e.date.startsWith(dashMonth)):se;}
 function renderTasks(){
-  populateSel('proj-filter',scopedProjects(),'All Projects','id','name',true);
+  const roles=scopedRoles();
+  populateSel('role-filter',roles,'All Roles','id','name',true);
+  const rf=v('role-filter');
+  const leaves=(rf?childrenOf(rf):scopedProjects().filter(p=>getParentId(p)));
+  populateSel('proj-filter',leaves,'All Projects','id','name',true);
   populateSel('cust-filter',scopedCustomers(),'All Customers','id','name',true);
   const list=getFilteredEntries();
   const el=document.getElementById('task-list');
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No tasks found</div><div class="empty-sub">Change filters or add a task</div></div>';return;}
-  el.innerHTML=list.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e)),done=e.status==='completed';const skills=(e.skills||'').split(',').map(s=>s.trim()).filter(Boolean);const skillsHtml=skills.length?'<div class="skills-line">'+skills.map(s=>'<span class="skill-chip">'+s+'</span>').join('')+'</div>':'';return'<div class="task-item"><div class="task-cb '+(done?'done':'')+'" onclick="toggleStatus(\''+e.id+'\')">'+(done?'✓':'')+'</div><div class="task-body"><div class="task-title '+(done?'done':'')+'">'+e.title+'</div><div class="task-meta">'+pBadge(p)+(c?cBadge(c):'')+' <span class="hrs-badge">⏱ '+e.hours+'h</span> <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span>'+(e.date?' <span>📅 '+fmtDate(e.date)+'</span>'+weekendBadge(e.date):'')+'</div>'+skillsHtml+'</div><div class="task-actions"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit task" title="Edit task">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete task" title="Delete task">🗑️</button></div></div>';}).join('');
+  el.innerHTML=list.map(e=>{const c=getCust(getCustId(e)),done=e.status==='completed';const skills=(e.skills||'').split(',').map(s=>s.trim()).filter(Boolean);const skillsHtml=skills.length?'<div class="skills-line">'+skills.map(s=>'<span class="skill-chip">'+htmlEscape(s)+'</span>').join('')+'</div>':'';const chal=(e.challenges||'').trim()?'<div class="task-chal">⚠ '+htmlEscape(e.challenges)+'</div>':'';return'<div class="task-item"><div class="task-cb '+(done?'done':'')+'" onclick="toggleStatus(\''+e.id+'\')">'+(done?'✓':'')+'</div><div class="task-body"><div class="task-title '+(done?'done':'')+'">'+htmlEscape(e.title)+'</div><div class="task-meta">'+rpBadge(e)+(c?cBadge(c):'')+' <span class="hrs-badge">⏱ '+e.hours+'h</span> <span class="status-badge '+sCls(e.status)+'">'+e.status+'</span>'+(e.date?' <span>📅 '+fmtDate(e.date)+'</span>'+weekendBadge(e.date):'')+'</div>'+chal+skillsHtml+'</div><div class="task-actions"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit task" title="Edit task">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete task" title="Delete task">🗑️</button></div></div>';}).join('');
 }
 async function toggleStatus(id){const e=db.entries.find(x=>x.id===id);if(!e)return;const ns=e.status==='completed'?'pending':'completed';try{await dbUpdate('entries',id,{status:ns});refresh();updatePendingBadge();}catch(err){toast('Update failed: '+err.message,'error');}}
 async function deleteEntry(id){if(!confirm('Delete this entry?'))return;try{await dbDelete('entries',id);refresh();updatePendingBadge();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
@@ -1602,10 +1921,10 @@ async function deleteEntry(id){if(!confirm('Delete this entry?'))return;try{awai
 function buildExportRows(){
   const list=getFilteredEntries();
   return list.map(e=>{
-    const p=getProj(getProjId(e)),c=getCust(getCustId(e));
+    const c=getCust(getCustId(e));
     return{
       date:e.date||'',
-      project:p.name||'—',
+      project:rpLabel(e),
       customer:c?c.name+' ('+c.type+')':'—',
       title:e.title||'',
       notes:e.notes||'',
@@ -1634,7 +1953,7 @@ function exportFilename(ext){
 function exportCSV(){
   const rows=buildExportRows();
   if(!rows.length){toast('No entries to export with current filter.','error');return;}
-  const headers=['Date','Day Type','Project','Customer','Task','Notes','Hours','Status'];
+  const headers=['Date','Day Type','Role › Project','Customer','Task','Notes','Hours','Status'];
   // Totals — completed only (pending hours don't count)
   const completedRows=rows.filter(r=>r.status==='completed');
   const totalCompleted=completedRows.reduce((s,r)=>s+r.hours,0);
@@ -1661,7 +1980,8 @@ function exportPDF(){
   const userName=(currentUser&&(currentUser.name||currentUser.email))||'User';
   const filters=[];
   if(taskFilter!=='all')filters.push('Status: '+taskFilter);
-  const pf=document.getElementById('proj-filter'),cf=document.getElementById('cust-filter');
+  const pf=document.getElementById('proj-filter'),cf=document.getElementById('cust-filter'),rf=document.getElementById('role-filter');
+  if(rf&&rf.value){const r=db.projects.find(x=>x.id===rf.value);if(r)filters.push('Role: '+r.name);}
   if(pf&&pf.value){const p=db.projects.find(x=>x.id===pf.value);if(p)filters.push('Project: '+p.name);}
   if(cf&&cf.value){const c=db.customers.find(x=>x.id===cf.value);if(c)filters.push('Customer: '+c.name);}
   const fromEl=document.getElementById('date-from'),toEl=document.getElementById('date-to');
@@ -1673,36 +1993,36 @@ function exportPDF(){
   const filename=exportFilename('pdf').replace(/\.pdf$/,'');
   const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+htmlEscape(filename)+'</title><style>'+
     '*{box-sizing:border-box;margin:0;padding:0;}'+
-    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;color:#1a2235;padding:32px;line-height:1.5;}'+
-    '.report-header{border-bottom:3px solid #6366f1;padding-bottom:16px;margin-bottom:20px;}'+
-    '.report-header h1{font-size:24px;font-weight:800;color:#1a2235;margin-bottom:6px;}'+
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;color:#111111;padding:32px;line-height:1.5;}'+
+    '.report-header{border-bottom:3px solid #C38133;padding-bottom:16px;margin-bottom:20px;}'+
+    '.report-header h1{font-size:24px;font-weight:800;color:#111111;margin-bottom:6px;}'+
     '.report-header .meta{font-size:12px;color:#64748b;}'+
-    '.report-header .meta strong{color:#1a2235;}'+
-    '.summary-bar{display:flex;gap:24px;margin-bottom:18px;padding:14px 18px;background:#f1f5f9;border-radius:10px;border-left:4px solid #6366f1;}'+
+    '.report-header .meta strong{color:#111111;}'+
+    '.summary-bar{display:flex;gap:24px;margin-bottom:18px;padding:14px 18px;background:#f1f5f9;border-radius:10px;border-left:4px solid #C38133;}'+
     '.summary-item{display:flex;flex-direction:column;gap:2px;}'+
     '.summary-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;font-weight:700;}'+
-    '.summary-value{font-size:18px;font-weight:700;color:#1a2235;}'+
+    '.summary-value{font-size:18px;font-weight:700;color:#111111;}'+
     '.filters{font-size:11px;color:#64748b;margin-bottom:14px;padding:8px 14px;background:#fef3c7;border-radius:6px;border-left:3px solid #f59e0b;}'+
     'table{width:100%;border-collapse:collapse;font-size:11px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;}'+
-    'thead{background:#6366f1;color:#fff;}'+
+    'thead{background:#C38133;color:#fff;}'+
     'th{text-align:left;padding:10px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;}'+
     'td{padding:9px 12px;border-top:1px solid #e2e8f0;vertical-align:top;}'+
     'tbody tr:nth-child(even) td{background:#f8fafc;}'+
-    'tbody tr:hover td{background:#eef2ff;}'+
+    'tbody tr:hover td{background:#F7F1E6;}'+
     'td.num{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;}'+
     'td.notes{color:#64748b;font-size:10px;max-width:200px;}'+
-    '.badge{display:inline-block;padding:2px 8px;border-radius:4px;background:#eef2ff;color:#4338ca;font-weight:600;font-size:10px;}'+
+    '.badge{display:inline-block;padding:2px 8px;border-radius:4px;background:#F7F1E6;color:#8A5A1F;font-weight:600;font-size:10px;}'+
     'tbody tr.weekend-row td{background:#faf5ff;}'+
     'tbody tr.weekend-row:nth-child(even) td{background:#f3e8ff;}'+
-    'span.we{color:#a855f7;font-weight:700;}'+
-    'tfoot td{background:#1a2235;color:#fff;font-weight:700;padding:11px 12px;border:none;}'+
+    'span.we{color:#C38133;font-weight:700;}'+
+    'tfoot td{background:#111111;color:#fff;font-weight:700;padding:11px 12px;border:none;}'+
     'tfoot td.num{font-size:13px;}'+
     'tfoot tr.sub td{background:#374151;color:#e5e7eb;font-weight:500;font-size:11px;padding:6px 12px;}'+
     'tfoot tr.sub td.num{font-size:11px;font-weight:600;}'+
     '.footer{margin-top:30px;text-align:center;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:14px;}'+
     '.no-print{margin-bottom:18px;padding:10px;background:#fef9c3;border:1px dashed #ca8a04;border-radius:8px;text-align:center;font-size:12px;}'+
-    '.no-print button{padding:8px 16px;background:#6366f1;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;margin:0 4px;}'+
-    '.no-print button:hover{background:#4f46e5;}'+
+    '.no-print button{padding:8px 16px;background:#C38133;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;margin:0 4px;}'+
+    '.no-print button:hover{background:#A86B22;}'+
     '@media print{.no-print{display:none;}body{padding:18px;}@page{size:A4 landscape;margin:14mm;}}'+
     '</style></head><body>'+
     '<div class="no-print">📄 Choose <strong>"Save as PDF"</strong> in the print dialog destination → <button onclick="window.print()">🖨️ Print / Save as PDF</button><button onclick="window.close()" style="background:#94a3b8">Close</button></div>'+
@@ -1715,7 +2035,7 @@ function exportPDF(){
       '<div class="summary-item"><div class="summary-label">Period</div><div class="summary-value" style="font-size:13px">'+(rows[rows.length-1]?.date||'—')+' → '+(rows[0]?.date||'—')+'</div></div>'+
     '</div>'+
     (filters.length?'<div class="filters"><strong>Filters applied:</strong> '+filters.map(htmlEscape).join(' · ')+'</div>':'')+
-    '<table><thead><tr><th>Date</th><th>Project</th><th>Customer</th><th>Task</th><th>Notes</th><th style="text-align:right">Hours</th><th>Status</th></tr></thead>'+
+    '<table><thead><tr><th>Date</th><th>Role › Project</th><th>Customer</th><th>Task</th><th>Notes</th><th style="text-align:right">Hours</th><th>Status</th></tr></thead>'+
     '<tbody>'+tableRows+'</tbody>'+
     '<tfoot>'+
     '<tr class="sub"><td colspan="5" style="text-align:right">📅 Weekday hours (completed)</td><td class="num">'+totalWeekday+'</td><td></td></tr>'+
@@ -1731,15 +2051,17 @@ function exportPDF(){
 
 /* LOG WORK */
 function renderLog(){
-  populateSel('lw-project',db.projects,'Select project…','id','name');
-  populateSel('lw-customer',db.customers,'None','id','name');
   populateCompanySel('lw-company','Select company…');
-  if(!v('lw-company'))setSel('lw-company',defaultEntryCompanyId());
+  // Follow the sidebar company switch; otherwise keep whatever the user picked in the form
+  if(renderLog.lastCo!==activeCompanyId){renderLog.lastCo=activeCompanyId;setSel('lw-company',defaultEntryCompanyId());}
+  const co=v('lw-company')||defaultEntryCompanyId();
+  if(!v('lw-company'))setSel('lw-company',co);
+  fillEntryPickers('lw',co,v('lw-role'),v('lw-project'),v('lw-customer'));
   if(!document.getElementById('lw-date').value)setDate('lw-date',today());
   const rows=[...scopedEntries()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const tb=document.getElementById('log-tbody');
   if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No entries yet</td></tr>';return;}
-  tb.innerHTML=rows.map(e=>{const p=getProj(getProjId(e)),c=getCust(getCustId(e));return'<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.title+weekendBadge(e.date)+'</td><td>'+pBadge(p)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit entry" title="Edit entry">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete entry" title="Delete entry">🗑️</button></td></tr>';}).join('');
+  tb.innerHTML=rows.map(e=>{const c=getCust(getCustId(e));return'<tr><td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+htmlEscape(e.title)+'">'+htmlEscape(e.title)+weekendBadge(e.date)+'</td><td>'+rpBadge(e)+'</td><td>'+(c?cBadge(c):'<span style="color:var(--dim)">—</span>')+'</td><td><span class="hrs-badge">⏱ '+e.hours+'h</span></td><td style="color:var(--muted)">'+fmtDate(e.date)+'</td><td><span class="status-badge '+sCls(e.status)+'">'+e.status+'</span></td><td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="editEntry(\''+e.id+'\')" aria-label="Edit entry" title="Edit entry">✏️</button><button class="icon-btn del" onclick="deleteEntry(\''+e.id+'\')" aria-label="Delete entry" title="Delete entry">🗑️</button></td></tr>';}).join('');
 }
 function toggleRecurring(){
   const cb=document.getElementById('lw-recurring');
@@ -1753,55 +2075,106 @@ function addMonthsToDate(yyyymmdd,n){
   dt.setDate(Math.min(d,daysInTarget));
   return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
 }
+/* Shared entry fields → row in the shape the current mode expects */
+function entryRow(px){
+  const projectId=readEntryTarget(px);if(!projectId)return null;
+  const title=v(px+'-title'),hours=parseFloat(v(px+'-hours'))||0;
+  if(!title){toast('Enter a task description.','error');return null;}
+  if(hours<=0){toast('Enter hours > 0.','error');return null;}
+  const f={title,hours,status:v(px+'-status'),date:v(px+'-date'),notes:v(px+'-notes'),challenges:v(px+'-challenges'),skills:v(px+'-skills')};
+  const customerId=v(px+'-customer')||null,companyId=v(px+'-company')||defaultEntryCompanyId();
+  return DEMO_MODE?{...f,projectId,customerId,companyId}:{...f,project_id:projectId,customer_id:customerId,company_id:companyId};
+}
 async function saveLogEntry(){
-  const title=v('lw-title'),projectId=v('lw-project'),hours=parseFloat(v('lw-hours'))||0,date=v('lw-date'),status=v('lw-status'),notes=v('lw-notes'),customerId=v('lw-customer')||null,skills=v('lw-skills'),companyId=v('lw-company')||defaultEntryCompanyId();
-  if(!title){toast('Enter a task description.','error');return;}
-  if(!projectId){toast('Select a project.','error');return;}
-  if(hours<=0){toast('Enter hours > 0.','error');return;}
+  const row=entryRow('lw');if(!row)return;
+  const date=row.date||today();
   const recurring=document.getElementById('lw-recurring').checked;
   const months=recurring?Math.max(2,Math.min(36,parseInt(v('lw-recurring-months'),10)||12)):1;
   try{
-    const baseRow=DEMO_MODE?{title,projectId,customerId,hours,status,notes,skills,companyId}:{title,project_id:projectId,customer_id:customerId||null,hours,status,notes,skills,company_id:companyId};
     const dates=[];
     for(let i=0;i<months;i++)dates.push(addMonthsToDate(date,i));
-    await Promise.all(dates.map(d=>dbInsert('entries',DEMO_MODE?{id:uid(),...baseRow,date:d}:{...baseRow,date:d})));
+    await Promise.all(dates.map(d=>dbInsert('entries',DEMO_MODE?{id:uid(),...row,date:d}:{...row,date:d})));
     clearLogForm();refresh();
     toast(recurring?'Saved '+months+' recurring entries!':'Entry saved!','success');
   }catch(err){toast('Save failed: '+err.message,'error');}
 }
-function clearLogForm(){['lw-title','lw-hours','lw-notes','lw-skills'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setSel('lw-company',defaultEntryCompanyId());setDate('lw-date',today());const cb=document.getElementById('lw-recurring');if(cb){cb.checked=false;toggleRecurring();}}
+function clearLogForm(){['lw-title','lw-hours','lw-notes','lw-skills','lw-challenges'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});setSel('lw-project','');setSel('lw-customer','');setSel('lw-status','completed');setDate('lw-date',today());const cb=document.getElementById('lw-recurring');if(cb){cb.checked=false;toggleRecurring();}}
 
 /* CUSTOMERS */
 function renderCustomers(){
   const g=document.getElementById('customers-grid');
+  const co=getActiveCompany();document.getElementById('cust-eyebrow').textContent=co?co.name:'All companies';
   const list=scopedCustomers(),se=scopedEntries();
-  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🤝</div><div class="empty-title">No customers yet</div></div>';return;}
-  g.innerHTML=list.map(c=>{const tasks=se.filter(e=>getCustId(e)===c.id),h=sumHours(completedOf(tasks)),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+c.color+'">'+ic+' '+c.name+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(\''+c.id+'\')">Delete</button></div></div>';}).join('');
+  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🤝</div><div class="empty-title">No customers for this company yet</div><div class="empty-sub">Add one here or straight from Log Work</div></div>';return;}
+  g.innerHTML=list.map(c=>{const tasks=se.filter(e=>getCustId(e)===c.id),h=sumHours(completedOf(tasks)),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0,cl=c.type==='internal'?'internal':'external',ic=c.type==='internal'?'🏢':'🤝';return'<div class="entity-card"><div class="entity-card-bar" style="background:'+c.color+'"></div><div class="entity-card-body"><div class="entity-card-name">'+ic+' '+htmlEscape(c.name)+'</div><div class="entity-card-sub"><span class="cust-badge '+cl+'">'+c.type+'</span></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editCustomer(\''+c.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteCustomer(\''+c.id+'\')">Delete</button></div></div>';}).join('');
 }
-function openAddCustomer(){document.getElementById('m-cust-heading').textContent='New Customer';document.getElementById('m-cust-id').value='';document.getElementById('m-cust-name').value='';setSel('m-cust-type','external');document.getElementById('m-cust-color').value='#f59e0b';openModal('customer-modal');}
+function openAddCustomer(){document.getElementById('m-cust-heading').textContent='New Customer';document.getElementById('m-cust-id').value='';document.getElementById('m-cust-name').value='';setSel('m-cust-type','external');document.getElementById('m-cust-color').value='#5E5A52';openModal('customer-modal');}
 function editCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;document.getElementById('m-cust-heading').textContent='Edit Customer';document.getElementById('m-cust-id').value=c.id;document.getElementById('m-cust-name').value=c.name;setSel('m-cust-type',c.type);document.getElementById('m-cust-color').value=c.color;openModal('customer-modal');}
 async function saveModalCustomer(){
   const id=v('m-cust-id'),name=v('m-cust-name'),type=v('m-cust-type'),color=document.getElementById('m-cust-color').value;
   if(!name){toast('Enter a customer name.','error');return;}
-  try{if(id)await dbUpdate('customers',id,{name,type,color});else await dbInsert('customers',DEMO_MODE?{id:uid(),name,type,color}:{name,type,color});closeModal('customer-modal');refresh();toast('Customer saved!','success');}catch(err){toast(err.message,'error');}
+  try{if(id)await dbUpdate('customers',id,{name,type,color});else await dbInsert('customers',DEMO_MODE?{id:uid(),name,type,color,company_id:defaultEntryCompanyId()}:{name,type,color,company_id:defaultEntryCompanyId()});closeModal('customer-modal');refresh();toast('Customer saved!','success');}catch(err){toast(err.message,'error');}
 }
 async function deleteCustomer(id){const t=db.entries.filter(e=>getCustId(e)===id).length;if(!confirm(t>0?'This customer has '+t+' entries. Delete anyway?':'Delete this customer?'))return;try{await dbDelete('customers',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
 
-/* PROJECTS */
+/* ROLES & PROJECTS */
 function renderProjects(){
   const g=document.getElementById('projects-grid');
-  const list=scopedProjects(),se=scopedEntries();
-  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><div class="empty-title">No projects yet</div></div>';return;}
-  g.innerHTML=list.map(proj=>{const tasks=se.filter(e=>getProjId(e)===proj.id),h=sumHours(completedOf(tasks)),done=tasks.filter(e=>e.status==='completed').length,pct=tasks.length?Math.round(done/tasks.length*100):0;return'<div class="entity-card"><div class="entity-card-bar" style="background:'+proj.color+'"></div><div class="entity-card-body"><div class="entity-card-name" style="color:'+proj.color+'">'+proj.name+'</div><div class="entity-card-sub"></div><div class="entity-stats"><div><div class="es-val">'+h+'</div><div class="es-lbl">hours</div></div><div><div class="es-val">'+tasks.length+'</div><div class="es-lbl">tasks</div></div><div><div class="es-val">'+done+'</div><div class="es-lbl">done</div></div></div><div class="prog-bar" style="margin-top:12px"><div class="prog-fill" style="width:'+pct+'%;background:'+proj.color+'"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+pct+'% completed</div></div><div class="entity-card-foot"><button class="btn btn-ghost btn-sm" onclick="editProject(\''+proj.id+'\')">Edit</button><button class="btn btn-danger-soft btn-sm" onclick="deleteProject(\''+proj.id+'\')">Delete</button></div></div>';}).join('');
+  const co=getActiveCompany();document.getElementById('proj-eyebrow').textContent=co?co.name+(co.role?' · '+co.role:''):'All companies';
+  const roles=scopedRoles(),se=scopedEntries();
+  if(!roles.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><div class="empty-title">No roles for this company yet</div><div class="empty-sub">Start with a role like “AI Engineering”, then add projects under it</div><div style="margin-top:16px"><button class="btn btn-primary" onclick="openAddProject(\'\')">+ New Role</button></div></div>';return;}
+  const hrs=pid=>sumHours(completedOf(se.filter(e=>getProjId(e)===pid)));
+  const cnt=pid=>se.filter(e=>getProjId(e)===pid).length;
+  g.innerHTML=roles.map(r=>{
+    const kids=childrenOf(r.id),ids=[r.id,...kids.map(k=>k.id)];
+    const rEnts=se.filter(e=>ids.includes(getProjId(e))),rH=sumHours(completedOf(rEnts)),maxH=Math.max(...kids.map(k=>hrs(k.id)),1);
+    const direct=cnt(r.id);
+    const rows=kids.map(k=>'<div class="rp-row"><span class="rp-dot" style="background:'+k.color+'"></span><div class="rp-body"><div class="rp-name">'+htmlEscape(k.name)+'</div><div class="rp-sub">'+cnt(k.id)+' tasks'+(k.description?' · '+htmlEscape(k.description):'')+'</div><div class="rp-bar"><div style="width:'+Math.round(hrs(k.id)/maxH*100)+'%;background:'+k.color+'"></div></div></div><span class="rp-hrs">'+hrs(k.id)+'h</span><button class="icon-btn" onclick="editProject(\''+k.id+'\')" aria-label="Edit project" title="Edit">✏️</button><button class="icon-btn del" onclick="deleteProject(\''+k.id+'\')" aria-label="Delete project" title="Delete">🗑️</button></div>').join('');
+    return'<div class="role-card"><div class="role-head"><span class="role-swatch" style="background:'+r.color+'"></span><div style="flex:1;min-width:0"><div class="role-kicker">Role</div><div class="role-name">'+htmlEscape(r.name)+'</div><div class="role-meta">'+rH+' hrs · '+rEnts.length+' tasks · '+kids.length+' project'+(kids.length===1?'':'s')+'</div></div></div>'+
+      '<div class="role-projects">'+(rows||'<div class="role-empty">No projects yet — add one so your hours aren’t all in one bucket.</div>')+(direct&&kids.length?'<div class="rp-row"><span class="rp-dot" style="background:var(--dim)"></span><div class="rp-body"><div class="rp-name" style="color:var(--muted)">General (no project)</div><div class="rp-sub">'+direct+' tasks logged against the role — edit them to assign a project</div></div><span class="rp-hrs">'+hrs(r.id)+'h</span></div>':'')+'</div>'+
+      '<div class="role-foot"><button class="btn btn-primary btn-sm" onclick="openAddProject(\''+r.id+'\')">+ Project</button><button class="btn btn-ghost btn-sm" onclick="editProject(\''+r.id+'\')">Edit role</button><button class="btn btn-danger-soft btn-sm" style="margin-left:auto" onclick="deleteProject(\''+r.id+'\')">Delete</button></div></div>';
+  }).join('');
 }
-function openAddProject(){document.getElementById('m-proj-heading').textContent='New Project';document.getElementById('m-proj-id').value='';document.getElementById('m-proj-name').value='';document.getElementById('m-proj-desc').value='';document.getElementById('m-proj-color').value='#6366f1';openModal('project-modal');}
-function editProject(id){const p=db.projects.find(x=>x.id===id);if(!p)return;document.getElementById('m-proj-heading').textContent='Edit Project';document.getElementById('m-proj-id').value=p.id;document.getElementById('m-proj-name').value=p.name;document.getElementById('m-proj-desc').value=p.description||'';document.getElementById('m-proj-color').value=p.color;openModal('project-modal');}
+function fillParentSel(coId,val){
+  populateSel('m-proj-parent',rolesFor(coId).map(r=>({id:r.id,name:'Project under '+r.name})),'Role (top level)','id','name');
+  setSel('m-proj-parent',val||'');
+}
+// parent: '' → new role, roleId → new project under it, null → new project (pick role)
+function openAddProject(parent){
+  const co=defaultEntryCompanyId(),roles=rolesFor(co);
+  const pid=parent===null?(roles[0]?.id||''):parent;
+  document.getElementById('m-proj-heading').textContent=pid?'New Project':'New Role';
+  document.getElementById('m-proj-id').value='';document.getElementById('m-proj-name').value='';document.getElementById('m-proj-desc').value='';
+  document.getElementById('m-proj-color').value=pid?'#C38133':'#000000';
+  fillParentSel(co,pid);
+  openModal('project-modal');
+}
+function editProject(id){
+  const p=db.projects.find(x=>x.id===id);if(!p)return;
+  document.getElementById('m-proj-heading').textContent=getParentId(p)?'Edit Project':'Edit Role';
+  document.getElementById('m-proj-id').value=p.id;document.getElementById('m-proj-name').value=p.name;document.getElementById('m-proj-desc').value=p.description||'';document.getElementById('m-proj-color').value=p.color||'#000000';
+  fillParentSel(ownerCo(p)||defaultEntryCompanyId(),getParentId(p));
+  // A role that already has projects can't become a project itself (one level deep only)
+  if(childrenOf(p.id).length)populateSel('m-proj-parent',[],'Role (top level)','id','name');
+  openModal('project-modal');
+}
 async function saveModalProject(){
-  const id=v('m-proj-id'),name=v('m-proj-name'),description=v('m-proj-desc'),color=document.getElementById('m-proj-color').value;
-  if(!name){toast('Enter a project name.','error');return;}
-  try{if(id)await dbUpdate('projects',id,{name,color,description});else await dbInsert('projects',DEMO_MODE?{id:uid(),name,color,description}:{name,color,description});closeModal('project-modal');refresh();toast('Project saved!','success');}catch(err){toast(err.message,'error');}
+  const id=v('m-proj-id'),name=v('m-proj-name'),description=v('m-proj-desc'),color=document.getElementById('m-proj-color').value,parent_id=v('m-proj-parent');
+  if(!name){toast('Enter a name.','error');return;}
+  if(id&&parent_id===id){toast('A role cannot be its own parent.','error');return;}
+  try{
+    if(id){const p=db.projects.find(x=>x.id===id);await dbUpdate('projects',id,{name,color,description,parent_id,company_id:ownerCo(p)||defaultEntryCompanyId()});}
+    else{const row={name,color,description,parent_id,company_id:defaultEntryCompanyId()};await dbInsert('projects',DEMO_MODE?{id:uid(),...row}:row);}
+    closeModal('project-modal');refresh();toast((parent_id?'Project':'Role')+' saved!','success');
+  }catch(err){toast(err.message,'error');}
 }
-async function deleteProject(id){if(!confirm('Delete this project?'))return;try{await dbDelete('projects',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}}
+async function deleteProject(id){
+  const kids=childrenOf(id).length;
+  if(kids){toast('This role has '+kids+' project(s). Delete or move them first.','error');return;}
+  const t=db.entries.filter(e=>getProjId(e)===id).length;
+  if(!confirm(t?t+' entries use this. Delete anyway?':'Delete this?'))return;
+  try{await dbDelete('projects',id);refresh();toast('Deleted','success');}catch(err){toast(err.message,'error');}
+}
 
 /* COMPANIES */
 function fmtDateShort(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-SG',{month:'short',year:'numeric'});}
@@ -1824,7 +2197,7 @@ function openCompanyPicker(){
   if(!db.companies.length){list.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add one to get started</div></div>';openModal('company-picker');return;}
   const sorted=[...db.companies].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||''));
   const allRow='<div class="co-pick-row '+(isAllCompanyMode()?'active':'')+'" onclick="setActiveCompany(\''+ALL_CO+'\');closeModal(\'company-picker\');"><span class="cc-dot" style="color:var(--primary)">🌐</span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">All companies</div><div style="font-size:12px;color:var(--muted)">View your entire working experience</div></div></div>';
-  list.innerHTML=allRow+sorted.map(c=>'<div class="co-pick-row '+(c.id===activeCompanyId?'active':'')+'" onclick="setActiveCompany(\''+c.id+'\');closeModal(\'company-picker\');"><span class="cc-dot" style="color:'+(c.color||'#6366f1')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+c.name+(c.end_date?'':'<span class="co-card-current">Current</span>')+'</div><div style="font-size:12px;color:var(--muted)">'+(c.role||'—')+' · '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div></div></div>').join('');
+  list.innerHTML=allRow+sorted.map(c=>'<div class="co-pick-row '+(c.id===activeCompanyId?'active':'')+'" onclick="setActiveCompany(\''+c.id+'\');closeModal(\'company-picker\');"><span class="cc-dot" style="color:'+(c.color||'#C38133')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+c.name+(c.end_date?'':'<span class="co-card-current">Current</span>')+'</div><div style="font-size:12px;color:var(--muted)">'+(c.role||'—')+' · '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div></div></div>').join('');
   openModal('company-picker');
 }
 function renderCompanies(){
@@ -1841,7 +2214,7 @@ function renderCompanies(){
     const cocerts=(db.certifications||[]).filter(ct=>(ct.company_id||ct.companyId)===c.id);
     const current=!c.end_date;
     const active=c.id===activeCompanyId;
-    return '<div class="co-card '+(active?'active':'')+'" style="--c:'+(c.color||'#6366f1')+'"><div class="co-card-name">'+c.name+(current?'<span class="co-card-current">Current</span>':'')+'</div><div class="co-card-role">'+(c.role||'—')+'</div><div class="co-card-dates">📅 '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div>'+(c.notes?'<div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+c.notes+'</div>':'')+'<div class="co-card-stats"><div><div class="co-card-stat-val">'+completed.length+'<span style="font-size:12px;color:var(--muted);font-weight:500"> / '+ents.length+'</span></div><div class="co-card-stat-lbl">tasks done</div></div><div><div class="co-card-stat-val">'+completedHrs+'<span style="font-size:12px;color:var(--muted);font-weight:500">'+(pendingHrs?' (+'+pendingHrs+' pending)':'')+'</span></div><div class="co-card-stat-lbl">hours</div></div><div><div class="co-card-stat-val">'+skills.size+'</div><div class="co-card-stat-lbl">skills</div></div><div><div class="co-card-stat-val">'+cocerts.length+'</div><div class="co-card-stat-lbl">certs</div></div></div><div class="co-card-foot">'+(active?'':'<button class="btn btn-ghost btn-sm" onclick="setActiveCompany(\''+c.id+'\')">Set Active</button>')+'<button class="btn btn-ghost btn-sm" onclick="editCompany(\''+c.id+'\')">Edit</button></div></div>';
+    return '<div class="co-card '+(active?'active':'')+'" style="--c:'+(c.color||'#C38133')+'"><div class="co-card-name">'+c.name+(current?'<span class="co-card-current">Current</span>':'')+'</div><div class="co-card-role">'+(c.role||'—')+'</div><div class="co-card-dates">📅 '+fmtDateShort(c.start_date)+' – '+(c.end_date?fmtDateShort(c.end_date):'Present')+'</div>'+(c.notes?'<div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+c.notes+'</div>':'')+'<div class="co-card-stats"><div><div class="co-card-stat-val">'+completed.length+'<span style="font-size:12px;color:var(--muted);font-weight:500"> / '+ents.length+'</span></div><div class="co-card-stat-lbl">tasks done</div></div><div><div class="co-card-stat-val">'+completedHrs+'<span style="font-size:12px;color:var(--muted);font-weight:500">'+(pendingHrs?' (+'+pendingHrs+' pending)':'')+'</span></div><div class="co-card-stat-lbl">hours</div></div><div><div class="co-card-stat-val">'+skills.size+'</div><div class="co-card-stat-lbl">skills</div></div><div><div class="co-card-stat-val">'+cocerts.length+'</div><div class="co-card-stat-lbl">certs</div></div></div><div class="co-card-foot">'+(active?'':'<button class="btn btn-ghost btn-sm" onclick="setActiveCompany(\''+c.id+'\')">Set Active</button>')+'<button class="btn btn-ghost btn-sm" onclick="editCompany(\''+c.id+'\')">Edit</button></div></div>';
   }).join('');
   // Make ::before pick up the company color via CSS var
   document.querySelectorAll('.co-card').forEach(el=>{el.style.setProperty('--c',el.style.getPropertyValue('--c'));});
@@ -1851,7 +2224,7 @@ function openAddCompany(){
   ['m-co-id','m-co-name','m-co-role','m-co-notes','m-co-loc','m-co-desc'].forEach(id=>document.getElementById(id).value='');
   setSel('m-co-emp','Full-time');
   setDate('m-co-start',today());setDate('m-co-end','');
-  document.getElementById('m-co-color').value='#6366f1';
+  document.getElementById('m-co-color').value='#C38133';
   document.getElementById('m-co-delete').style.display='none';
   openModal('company-modal');
 }
@@ -1865,7 +2238,7 @@ function editCompany(id){
   document.getElementById('m-co-desc').value=c.description||'';
   setSel('m-co-emp',c.employment_type||'');
   setDate('m-co-start',c.start_date||'');setDate('m-co-end',c.end_date||'');
-  document.getElementById('m-co-color').value=c.color||'#6366f1';
+  document.getElementById('m-co-color').value=c.color||'#C38133';
   document.getElementById('m-co-notes').value=c.notes||'';
   document.getElementById('m-co-delete').style.display=db.companies.length>1?'inline-flex':'none';
   openModal('company-modal');
@@ -2218,13 +2591,37 @@ function copySkillsMarkdown(){
 }
 
 /* ENTRY MODAL */
+/* ENTRY PICKERS — Company → Role → Project → Customer, all scoped to the chosen company */
+function fillEntryPickers(px,coId,roleId,projId,custId){
+  const roles=rolesFor(coId);
+  if(roleId&&!roles.some(r=>r.id===roleId))roleId='';
+  populateSel(px+'-role',roles,roles.length?'Select role…':'No roles yet — add one →','id','name');
+  setSel(px+'-role',roleId||(roles.length===1?roles[0].id:''));
+  fillProjectPicker(px,projId);
+  const custs=customersForCompany(coId);
+  populateSel(px+'-customer',custs,'None','id','name');
+  setSel(px+'-customer',custs.some(c=>c.id===custId)?custId:'');
+}
+function fillProjectPicker(px,projId){
+  const r=v(px+'-role'),kids=childrenOf(r);
+  populateSel(px+'-project',kids,!r?'Select a role first':kids.length?'Select project…':'General (no projects yet)','id','name');
+  setSel(px+'-project',kids.some(k=>k.id===projId)?projId:(kids.length===1?kids[0].id:''));
+}
+function onPickCompany(px){fillEntryPickers(px,v(px+'-company'),'','',v(px+'-customer'));}
+function onPickRole(px){fillProjectPicker(px,'');}
+function readEntryTarget(px){
+  const r=v(px+'-role'),p=v(px+'-project');
+  if(!r){toast('Select a role.','error');return null;}
+  if(!p&&childrenOf(r).length){toast('Select a project under '+getProj(r).name+'.','error');return null;}
+  return p||r;
+}
 function populateCompanySel(id,placeholder='Select company…',includeBlank=false){
   // Keep labels short — just the company name — so long names fit the dropdown trigger.
   // Only append the role to disambiguate when two companies share a name.
   const items=[...db.companies];
   const nameCount={};items.forEach(c=>{nameCount[c.name]=(nameCount[c.name]||0)+1;});
   const labelled=items.map(c=>({id:c.id,label:nameCount[c.name]>1&&c.role?c.name+' — '+c.role:c.name}));
-  populateSel(id,labelled,placeholder,'id','label');
+  populateSel(id,labelled,placeholder,'id','label',true);
   if(!includeBlank){
     // try to default the picker to the active company if blank (never the "All companies" sentinel)
     const el=document.getElementById(id);const defCo=defaultEntryCompanyId();if(el&&!el.value&&defCo)setSel(id,defCo);
@@ -2232,12 +2629,11 @@ function populateCompanySel(id,placeholder='Select company…',includeBlank=fals
 }
 function openAddEntry(){
   document.getElementById('m-entry-heading').textContent='Add Work Entry';
-  document.getElementById('m-id').value='';document.getElementById('m-title').value='';document.getElementById('m-hours').value='';setDate('m-date',today());document.getElementById('m-notes').value='';setSel('m-status','completed');
-  document.getElementById('m-skills').value='';
-  populateSel('m-project',db.projects,'Select project…','id','name');
-  populateSel('m-customer',db.customers,'None','id','name');
+  ['m-id','m-title','m-hours','m-notes','m-skills','m-challenges'].forEach(id=>document.getElementById(id).value='');
+  setDate('m-date',today());setSel('m-status','completed');
   populateCompanySel('m-company','Select company…');
-  setSel('m-company',defaultEntryCompanyId());
+  const co=defaultEntryCompanyId();setSel('m-company',co);
+  fillEntryPickers('m',co);
   openModal('entry-modal');
 }
 function editEntry(id){
@@ -2245,40 +2641,147 @@ function editEntry(id){
   document.getElementById('m-entry-heading').textContent='Edit Work Entry';
   document.getElementById('m-id').value=e.id;document.getElementById('m-title').value=e.title;document.getElementById('m-hours').value=e.hours;setDate('m-date',e.date||'');document.getElementById('m-notes').value=e.notes||'';setSel('m-status',e.status);
   document.getElementById('m-skills').value=e.skills||'';
-  populateSel('m-project',db.projects,'Select project…','id','name');
-  populateSel('m-customer',db.customers,'None','id','name');
+  document.getElementById('m-challenges').value=e.challenges||'';
   populateCompanySel('m-company','Select company…');
-  setSel('m-project',getProjId(e)||'');
-  setSel('m-customer',getCustId(e)||'');
-  setSel('m-company',getCompanyId(e)||defaultEntryCompanyId());
+  const co=getCompanyId(e)||defaultEntryCompanyId();setSel('m-company',co);
+  const{role,project}=entryRP(e);
+  fillEntryPickers('m',co,role.id,project?project.id:'',getCustId(e));
   openModal('entry-modal');
 }
 async function saveModalEntry(){
-  const id=v('m-id'),title=v('m-title'),projectId=v('m-project'),hours=parseFloat(v('m-hours'))||0,date=v('m-date'),status=v('m-status'),notes=v('m-notes'),customerId=v('m-customer')||null,skills=v('m-skills'),companyId=v('m-company')||defaultEntryCompanyId();
-  if(!title){toast('Enter a task description.','error');return;}
-  if(!projectId){toast('Select a project.','error');return;}
-  if(hours<=0){toast('Enter hours > 0.','error');return;}
+  const id=v('m-id'),row=entryRow('m');if(!row)return;
   try{
-    if(id){const patch=DEMO_MODE?{title,projectId,customerId,hours,status,date,notes,skills,companyId}:{title,project_id:projectId,customer_id:customerId||null,hours,status,date,notes,skills,company_id:companyId};await dbUpdate('entries',id,patch);}
-    else{const row=DEMO_MODE?{id:uid(),title,projectId,customerId,hours,status,date,notes,skills,companyId}:{title,project_id:projectId,customer_id:customerId||null,hours,status,date,notes,skills,company_id:companyId};await dbInsert('entries',row);}
+    if(id)await dbUpdate('entries',id,row);
+    else await dbInsert('entries',DEMO_MODE?{id:uid(),...row}:row);
     closeModal('entry-modal');refresh();updatePendingBadge();toast('Saved!','success');
   }catch(err){toast('Save failed: '+err.message,'error');}
 }
 
-/* INLINE ADD */
+/* INLINE ADD — role / project / customer created under the form's company */
 function toggleRow(id){document.getElementById(id).classList.toggle('show');}
-async function addEntityInline(type,selId,nameId,colorId,rowId,typeSelId){
-  const name=document.getElementById(nameId).value.trim(),color=document.getElementById(colorId).value,etype=typeSelId?document.getElementById(typeSelId).value:'internal';
+async function addInline(px,type){
+  const base=px+'-new-'+type,name=v(base+'-name'),color=document.getElementById(base+'-color').value;
+  const co=v(px+'-company')||defaultEntryCompanyId();
   if(!name){toast('Enter a name.','error');return;}
+  const row={name,color,company_id:co};
+  if(type==='role')row.parent_id='';
+  if(type==='project'){const r=v(px+'-role');if(!r){toast('Select or add a role first.','error');return;}row.parent_id=r;}
+  if(type==='customer')row.type=v(base+'-type')||'internal';
   try{
-    let item;
-    if(type==='project')item=await dbInsert('projects',DEMO_MODE?{id:uid(),name,color}:{name,color});
-    else item=await dbInsert('customers',DEMO_MODE?{id:uid(),name,type:etype,color}:{name,type:etype,color});
-    document.getElementById(nameId).value='';document.getElementById(rowId).classList.remove('show');
-    populateSel(selId,type==='project'?db.projects:db.customers,type==='project'?'Select project…':'None','id','name');
-    setSel(selId,item.id);toast(name+' added!','success');
+    const item=await dbInsert(type==='customer'?'customers':'projects',DEMO_MODE?{id:uid(),...row}:row);
+    document.getElementById(base+'-name').value='';document.getElementById(base+'-row').classList.remove('show');
+    if(type==='role')fillEntryPickers(px,co,item.id,'',v(px+'-customer'));
+    else if(type==='project')fillProjectPicker(px,item.id);
+    else{populateSel(px+'-customer',customersForCompany(co),'None','id','name');setSel(px+'-customer',item.id);}
+    toast(name+' added!','success');
   }catch(err){toast(err.message,'error');}
 }
+
+/* STANDUP — derived live from entries; re-rendered by refresh() so completing a task updates it */
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let suMode=localStorage.getItem('wt_su_mode')==='weekly'?'weekly':'daily';
+function dow(s){return new Date(s+'T00:00:00').getDay();}
+function fmtDay(s){return new Date(s+'T00:00:00').toLocaleDateString('en-SG',{weekday:'short',day:'numeric',month:'short'});}
+function suDays(){try{const d=JSON.parse(localStorage.getItem('wt_standup_days'));if(Array.isArray(d)&&d.length)return d;}catch(_){}return[2,4];}  // Tue + Thu
+function toggleSuDay(d){let a=suDays();a=a.includes(d)?a.filter(x=>x!==d):[...a,d].sort();if(!a.length)return;localStorage.setItem('wt_standup_days',JSON.stringify(a));renderStandup();}
+function setStandupMode(m){suMode=m;localStorage.setItem('wt_su_mode',m);renderStandup();}
+function prevWorkday(s){let d=addDays(s,-1);while(isWeekend(d))d=addDays(d,-1);return d;}
+function adjSession(s,days,dir){for(let i=1;i<=14;i++){const d=addDays(s,i*dir);if(days.includes(dow(d)))return d;}return addDays(s,7*dir);}
+function standupData(){
+  const date=v('su-date')||today(),days=suDays(),daily=suMode==='daily';
+  // Daily: last working day (Mon covers Fri→Sun). Weekly: since previous session day.
+  const from=daily?prevWorkday(date):adjSession(date,days,-1),to=addDays(date,-1);
+  const nextTo=daily?date:addDays(adjSession(date,days,1),-1);
+  const se=scopedEntries(),inWin=e=>e.date&&e.date>=from&&e.date<=to;
+  const done=se.filter(e=>inWin(e)&&e.status==='completed');
+  const progressed=se.filter(e=>inWin(e)&&e.status==='in-progress');
+  const rank=e=>e.status==='in-progress'?0:e.status==='pending'?1:2;
+  const next=se.filter(e=>e.status==='in-progress'||(e.date&&e.date<=nextTo&&(e.status==='pending'||e.date>=date)))
+    .filter(e=>!(inWin(e)&&e.status==='completed'))
+    .sort((a,b)=>rank(a)-rank(b)||(a.date||'').localeCompare(b.date||''));
+  const chal=se.filter(e=>(e.challenges||'').trim()&&(inWin(e)||e.status!=='completed'||e.date===date));
+  const leaves=new Set([...done,...progressed].map(e=>leafOf(e).id));
+  return{date,from,to,nextTo,daily,days,done,progressed,next,chal,hours:sumHours(done),projects:leaves.size};
+}
+function groupByLeaf(list){
+  const m=new Map();
+  list.forEach(e=>{const L=leafOf(e),key=L.id;const g=m.get(key)||{name:(L.role&&L.role.id!==L.id?L.role.name+' › ':'')+L.name,short:L.name,color:L.color||'#000',items:[],h:0};g.items.push(e);if(e.status==='completed')g.h+=parseFloat(e.hours)||0;m.set(key,g);});
+  return[...m.values()].sort((a,b)=>b.h-a.h||b.items.length-a.items.length);
+}
+function suLabels(d){
+  const span=d.from===d.to?fmtDay(d.from):fmtDay(d.from)+' → '+fmtDay(d.to);
+  return d.daily
+    ?{kind:'Daily standup',done:d.from===d.to&&d.to===addDays(d.date,-1)?'Yesterday':'Since '+DOW[dow(d.from)],next:'Today',span}
+    :{kind:'Weekly update',done:'Since last session',next:'Up next',span};
+}
+function itemMeta(e){const s=e.status==='completed'?(parseFloat(e.hours)||0)+'h':e.status==='in-progress'?'in progress':'planned';return s;}
+function renderStandup(){
+  const sd=document.getElementById('su-date');if(sd&&!sd.value)setDate('su-date',today());
+  document.querySelectorAll('#su-tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===suMode));
+  const days=suDays();
+  document.getElementById('su-days-wrap').style.display=suMode==='weekly'?'':'none';
+  document.getElementById('su-days').innerHTML=[1,2,3,4,5].map(i=>'<button class="'+(days.includes(i)?'on':'')+'" onclick="toggleSuDay('+i+')">'+DOW[i]+'</button>').join('');
+  const d=standupData(),L=suLabels(d),co=getActiveCompany();
+  document.getElementById('su-sub').textContent=(co?(co.role||'')+' @ '+co.name+' · ':'')+'covers '+L.span+'. Updates live as you log and complete tasks.';
+  const groupsHtml=list=>{const g=groupByLeaf(list);return g.length?g.map(x=>'<div class="su-group"><div class="su-gname"><i style="background:'+x.color+'"></i>'+htmlEscape(x.name)+(x.h?'<span class="h">'+x.h+'h</span>':'')+'</div>'+x.items.map(e=>'<div class="su-item"><span>'+htmlEscape(e.title)+(e.status==='completed'&&d.next.includes(e)?' ✓':'')+'</span><span class="m">'+itemMeta(e)+'</span></div>').join('')+'</div>').join(''):'';};
+  const doneList=[...d.done,...d.progressed];
+  document.getElementById('su-body').innerHTML=
+    '<div class="su-hero"><div class="su-hero-l"><div class="su-hero-kick">'+L.kind+' · '+fmtDay(d.date)+'</div><div class="su-hero-title">'+L.done+' → '+L.next+'</div><div class="su-hero-sub">'+L.span+(co?' · '+htmlEscape(co.name):'')+'</div></div>'+
+    '<div class="su-hero-r"><div class="su-kpi"><div class="su-kpi-v">'+d.hours+'</div><div class="su-kpi-l">Hours done</div></div><div class="su-kpi"><div class="su-kpi-v">'+d.done.length+'</div><div class="su-kpi-l">Tasks done</div></div><div class="su-kpi"><div class="su-kpi-v">'+d.projects+'</div><div class="su-kpi-l">Projects touched</div></div><div class="su-kpi"><div class="su-kpi-v" style="color:'+(d.chal.length?'var(--primary)':'inherit')+'">'+d.chal.length+'</div><div class="su-kpi-l">Blockers</div></div></div></div>'+
+    '<div class="su-grid">'+
+      '<div class="su-col"><div class="su-col-h"><span class="su-num">01</span><span class="su-col-t">'+L.done+'</span><span class="su-col-c">'+doneList.length+'</span></div>'+(groupsHtml(doneList)||'<div class="su-none">Nothing logged for '+L.span+'. Log work and it appears here.</div>')+'</div>'+
+      '<div class="su-col"><div class="su-col-h"><span class="su-num">02</span><span class="su-col-t">'+L.next+'</span><span class="su-col-c">'+d.next.length+'</span></div>'+(groupsHtml(d.next)||'<div class="su-none">No pending or in-progress tasks. Add planned work with status “Pending”.</div>')+'</div>'+
+      '<div class="su-col"><div class="su-col-h"><span class="su-num">03</span><span class="su-col-t">Challenges</span><span class="su-col-c">'+d.chal.length+'</span></div>'+(d.chal.length?d.chal.map(e=>'<div class="su-item chal"><span><b>'+htmlEscape(e.challenges)+'</b><br><span style="color:var(--muted);font-size:12px">'+htmlEscape(rpLabel(e))+' — '+htmlEscape(e.title)+'</span></span></div>').join(''):'<div class="su-none">No blockers logged 🎉<br>Add one in the “Challenges / Blockers” field of any task.</div>')+'</div>'+
+    '</div>';
+}
+function standupText(){
+  const d=standupData(),L=suLabels(d),co=getActiveCompany();
+  const lines=[L.kind+' — '+fmtDay(d.date)+(co?' · '+co.name:''),''];
+  const sec=(title,list)=>{lines.push(title+':');const g=groupByLeaf(list);if(!g.length)lines.push('• —');g.forEach(x=>{lines.push('['+x.name+']');x.items.forEach(e=>lines.push('• '+e.title+' ('+itemMeta(e)+')'));});lines.push('');};
+  sec(L.done+' ('+L.span+')',[...d.done,...d.progressed]);
+  sec(L.next,d.next);
+  lines.push('Challenges:');if(!d.chal.length)lines.push('• None');d.chal.forEach(e=>lines.push('• '+e.challenges+' — '+rpLabel(e)));
+  return lines.join('\n');
+}
+async function copyStandup(){
+  const t=standupText();
+  try{await navigator.clipboard.writeText(t);toast('Standup copied — paste into Teams/Slack','success');}
+  catch(_){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Standup copied','success');}catch(e){toast('Copy failed','error');}ta.remove();}
+}
+
+/* PRESENT MODE — full-screen slides, ←/→ to navigate, Esc to close */
+let prIdx=0;
+function presentOpen(){const p=document.getElementById('present');return p&&!p.hidden;}
+function openPresent(){prIdx=0;document.getElementById('present').hidden=false;try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{});}catch(_){}renderPresent();}
+function closePresent(){document.getElementById('present').hidden=true;try{if(document.fullscreenElement)document.exitFullscreen();}catch(_){}}
+function presentSlides(){
+  const d=standupData(),L=suLabels(d),co=getActiveCompany();
+  const name=(currentUser&&(currentUser.name||(currentUser.email||'').split('@')[0]))||'My update';
+  const groups=list=>{const g=groupByLeaf(list);return g.length?'<div class="pr-groups">'+g.map(x=>'<div class="pr-group" style="border-top-color:'+x.color+'"><div class="pr-gname"><i style="background:'+x.color+'"></i>'+htmlEscape(x.name)+(x.h?'<span>'+x.h+'h</span>':'')+'</div>'+x.items.map(e=>'<div class="pr-item">'+htmlEscape(e.title)+'<small>'+itemMeta(e)+'</small></div>').join('')+'</div>').join('')+'</div>':'<div class="pr-sub">Nothing logged.</div>';};
+  return[
+    '<div class="pr-kick">'+L.kind+' · '+fmtDay(d.date)+'</div><div class="pr-h">'+htmlEscape(name)+'</div><div class="pr-sub">'+(co?htmlEscape((co.role?co.role+' @ ':'')+co.name)+' · ':'')+L.span+'</div>'+
+      '<div class="pr-kpis"><div class="pr-kpi"><div class="pr-kpi-v">'+d.hours+'</div><div class="pr-kpi-l">Hours done</div></div><div class="pr-kpi"><div class="pr-kpi-v">'+d.done.length+'</div><div class="pr-kpi-l">Tasks done</div></div><div class="pr-kpi"><div class="pr-kpi-v">'+d.projects+'</div><div class="pr-kpi-l">Projects</div></div><div class="pr-kpi"><div class="pr-kpi-v" style="color:'+(d.chal.length?'var(--primary)':'inherit')+'">'+d.chal.length+'</div><div class="pr-kpi-l">Blockers</div></div></div>',
+    '<div class="pr-kick">01 — '+L.span+'</div><div class="pr-h">'+L.done+'</div>'+groups([...d.done,...d.progressed]),
+    '<div class="pr-kick">02 — Plan</div><div class="pr-h">'+L.next+'</div>'+groups(d.next),
+    '<div class="pr-kick">03 — Need help with</div><div class="pr-h">Challenges</div>'+(d.chal.length?'<div class="pr-groups"><div class="pr-group">'+d.chal.map(e=>'<div class="pr-item"><span><b>'+htmlEscape(e.challenges)+'</b><br><span style="color:var(--muted);font-size:.75em">'+htmlEscape(rpLabel(e))+' — '+htmlEscape(e.title)+'</span></span></div>').join('')+'</div></div>':'<div class="pr-sub">No blockers right now.</div>')
+  ];
+}
+function renderPresent(){
+  const s=presentSlides();prIdx=Math.max(0,Math.min(prIdx,s.length-1));
+  document.getElementById('pr-title').textContent=suLabels(standupData()).kind;
+  document.getElementById('pr-count').textContent=(prIdx+1)+' / '+s.length;
+  document.getElementById('pr-stage').innerHTML='<div class="pr-slide">'+s[prIdx]+'</div>';
+  document.getElementById('pr-dots').innerHTML=s.map((_,i)=>'<span class="'+(i===prIdx?'on':'')+'" onclick="prIdx='+i+';renderPresent()"></span>').join('');
+}
+function presentGo(n){prIdx+=n;renderPresent();document.getElementById('pr-stage').scrollTop=0;}
+function presentClick(ev){if(window.getSelection&&String(window.getSelection()).length)return;presentGo(ev.clientX>window.innerWidth/2?1:-1);}
+document.addEventListener('keydown',e=>{
+  if(!presentOpen())return;
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();presentGo(1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();presentGo(-1);}
+  else if(e.key==='Escape')closePresent();
+});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&presentOpen())closePresent();});
 
 /* MODAL */
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -2292,12 +2795,14 @@ function refresh(){
   updateCompanyChip();
   if(currentPage==='dashboard')renderDashboard();
   else if(currentPage==='tasks')renderTasks();
+  else if(currentPage==='standup')renderStandup();
   else if(currentPage==='log')renderLog();
   else if(currentPage==='customers')renderCustomers();
   else if(currentPage==='projects')renderProjects();
   else if(currentPage==='skills')renderSkills();
   else if(currentPage==='certifications')renderCertifications();
   else if(currentPage==='companies')renderCompanies();
+  if(presentOpen())renderPresent();
 }
 
 /* TOAST */
@@ -2307,14 +2812,14 @@ function toast(msg,type='info'){const box=document.getElementById('toast-box');c
 function initResponsive(){const mq=window.matchMedia('(max-width:768px)');const t=m=>document.getElementById('mob-hamburger').style.display=m.matches?'flex':'none';mq.addEventListener('change',t);t(mq);}
 
 /* KEYBOARD */
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!presentOpen())document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));});
 document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');}));
 
 /* BOOT */
 function initDatePickers(){
   if(typeof flatpickr==='undefined')return;
   const opts={dateFormat:'Y-m-d',allowInput:true,disableMobile:true,position:'auto'};
-  ['lw-date','m-date','date-from','date-to'].forEach(id=>{
+  ['lw-date','m-date','date-from','date-to','su-date'].forEach(id=>{
     const el=document.getElementById(id);
     if(el&&!el._flatpickr)flatpickr(el,opts);
   });

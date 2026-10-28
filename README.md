@@ -9,11 +9,12 @@ A personal work effort tracker — log hours, manage tasks, and visualise produc
 ## Features
 
 ### Time & Task Tracking
-- **Dashboard** — stat cards + 3 charts, with a **month-period filter** so you can drill into hours by month. Total Hours, Tasks Completed, **🌙 Weekend Hours**, and Status breakdown
-- **Tasks** — filterable list with status tabs, project/customer filters, and a **date-range filter** (From / To)
-- **Log Work** — form to add work entries with **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable), **Skills Gained** tag field, and **Company / Role** selector
-- **Customers** — internal 🏢 vs external 🤝 customer cards
-- **Projects** — project overview with total hours and editable resume-bullet field
+- **Dashboard** — stat cards (total hours, this week, top project, completed, open + blockers) and charts by project / role / customer, with a **month-period filter**. Everything is scoped to the active company
+- **Tasks** — filterable list with status tabs, role / project / customer filters, and a **date-range filter** (From / To)
+- **🎤 Standup** — auto-built from your logs, no slides needed. **Daily** (yesterday → today → challenges) and **Weekly** (since the last Tue/Thu session; meeting days editable). **▶ Present** opens full-screen slides (←/→, Esc); **📋 Copy text** pastes into Teams/Slack. Updates live as you log and complete tasks
+- **Log Work** — form to add work entries with **🔁 Recurring task** option (auto-creates the same entry across N future months, each independently editable), **Skills Gained** tag field, **Challenges / Blockers** field (feeds Standup), and a cascading **Company → Role → Project → Customer** picker
+- **Customers** — internal 🏢 vs external 🤝 customer cards, per company
+- **Roles & Projects** — a *role* (e.g. AI Engineering) contains *projects* (e.g. RAG Assistant). Hours roll up per project and role. Each role/project/customer belongs to one company, so switching company only shows its own
 - **🌙 Non-working day tracking** — tasks completed on weekends are tagged separately and broken out across the dashboard and exports
 - **Export** — one-click **CSV** (Excel) and **PDF** export with totals (Weekday / Weekend split) and active-filter summary
 
@@ -68,7 +69,7 @@ On the **Log Work** page, tick **🔁 Recurring task** and set how many months t
    - Pick the right **Company / Role** (defaults to active)
    - Add comma-separated **Skills Gained** (e.g. `Python, AWS, Stakeholder Management`)
 
-3. **Polish your project bullets** (📁 Projects → Edit any project)
+3. **Polish your project bullets** (📁 Roles & Projects → ✏️ any project)
    - Fill in the **Resume bullet** field with a polished one-liner
    - Without it, an auto-derived bullet shows in italic listing customers + key skills
 
@@ -115,6 +116,8 @@ Then create three collections inside it — use these **exact Collection IDs**:
   | `name` | String | ✅ | 255 |
   | `color` | String | | 20 |
   | `description` | String | | 1000 |
+  | `parent_id` | String | | 36 |
+  | `company_id` | String | | 36 |
   | `user_id` | String | ✅ | 36 |
 - **Indexes:** Add key index on `user_id`
 
@@ -126,6 +129,7 @@ Then create three collections inside it — use these **exact Collection IDs**:
   | `name` | String | ✅ | 255 |
   | `type` | String | ✅ | 20 |
   | `color` | String | | 20 |
+  | `company_id` | String | | 36 |
   | `user_id` | String | ✅ | 36 |
 - **Indexes:** Add key index on `user_id`
 
@@ -143,6 +147,7 @@ Then create three collections inside it — use these **exact Collection IDs**:
   | `notes` | String | | 2000 |
   | `skills` | String | | 1000 |
   | `company_id` | String | | 36 |
+  | `challenges` | String | | 2000 |
   | `user_id` | String | ✅ | 36 |
 - **Indexes:** Add key indexes on `user_id` and `date`
 
@@ -252,6 +257,16 @@ wrangler pages deploy dist --project-name work-effort-tracker --branch master
 
 Set the three environment variables in Cloudflare Pages → **Settings** → **Environment variables**.
 
+#### Roles → Projects + per-company scoping (`migrate-roles.js`)
+
+`projects.parent_id` (empty = role, set = project under that role), `projects.company_id`, `customers.company_id` and `entries.challenges` are new. Add them in the dashboard (String attributes above) **or** run:
+
+```bash
+node migrate-roles.js schema   # adds the 4 attributes, assigns existing projects/customers to a company
+```
+
+Until the attributes exist the app still works — it silently skips fields the collection doesn't have yet — but roles, per-company lists and blockers won't persist. Existing projects with no `parent_id` simply appear as roles; open **Roles & Projects** to add projects under them and edit entries to pick one.
+
 ---
 
 ## File Reference
@@ -260,6 +275,7 @@ Set the three environment variables in Cloudflare Pages → **Settings** → **E
 |---|---|
 | `index.html` | Entire app — HTML + CSS + JS |
 | `schema.sql` | Collection attribute reference (not SQL — see file) |
+| `migrate-roles.js` | One-off: adds role/project/blocker attributes and company ownership (`schema`), plus optional `dump` / `apply` helpers |
 | `build.js` | Reads `.env.local` / CI env → writes `dist/config.js` and copies `dist/index.html` |
 | `dist/` | **Generated, gitignored** — Cloudflare Pages build output |
 | `.env.local` | **Gitignored** — your local Appwrite keys |
@@ -270,9 +286,10 @@ Set the three environment variables in Cloudflare Pages → **Settings** → **E
 ## Data Model
 
 ```
-projects   $id · user_id · name · color · description
-customers  $id · user_id · name · type (internal|external) · color
-entries    $id · user_id · title · project_id · customer_id · hours · status · date · notes
+projects   $id · user_id · name · color · description · parent_id · company_id   (parent_id empty = Role)
+customers  $id · user_id · name · type (internal|external) · color · company_id
+entries    $id · user_id · title · project_id · customer_id · company_id · hours · status · date
+           notes · skills · challenges
 ```
 
 Document-level permissions ensure each user sees only their own records.

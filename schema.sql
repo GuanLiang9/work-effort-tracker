@@ -14,6 +14,8 @@
 --   name       string   required  size:255
 --   color      string   size:20   (hex colour, e.g. #3b82f6)
 --   description string  size:1000
+--   parent_id  string   size:36   (empty = Role, set = Project under that Role)
+--   company_id string   size:36
 --   user_id    string   required  size:36
 -- Indexes:
 --   user_id_idx  key  attribute: user_id
@@ -26,6 +28,7 @@
 --   name    string   required  size:255
 --   type    string   required  size:20   (internal | external)
 --   color   string   size:20
+--   company_id string size:36
 --   user_id string   required  size:36
 -- Indexes:
 --   user_id_idx  key  attribute: user_id
@@ -40,6 +43,9 @@
 --   status      string   size:20   (pending | in-progress | completed)
 --   date        string   size:20   (YYYY-MM-DD)
 --   notes       string   size:2000
+--   skills      string   size:1000
+--   company_id  string   size:36
+--   challenges  string   size:2000  (blockers shown on the Standup page)
 --   user_id     string   required  size:36
 -- Indexes:
 --   user_id_idx  key  attribute: user_id

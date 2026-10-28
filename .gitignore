@@ -27,3 +27,6 @@ index.html.bak
 node_modules/
 package-lock.json
 setup.js
+
+# migrate-roles.js dumps (contain work data)
+.migrate/

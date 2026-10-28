@@ -26,7 +26,7 @@ Everything lives in `index.html` as three inline sections:
 | Section | Purpose |
 |---|---|
 | `<style>` | All CSS — CSS custom properties on `:root`, dark theme |
-| `<body>` | `#auth-screen` overlay + 5 `.page` divs (`dashboard`, `tasks`, `log`, `customers`, `projects`) |
+| `<body>` | `#auth-screen` overlay + `.page` divs (`dashboard`, `tasks`, `standup`, `log`, `projects`, `customers`, `skills`, `certifications`, `companies`) + `#present` overlay |
 | `<script>` | App logic — Appwrite init, auth flow, data layer, render functions |
 
 ### Config injection
@@ -69,10 +69,21 @@ In DEMO mode all Appwrite calls are skipped; data lives in `localStorage` under 
 ### Data model (Appwrite collections — IDs are exact strings)
 
 ```
-projects   $id · user_id · name · color · description
-customers  $id · user_id · name · type (internal|external) · color
-entries    $id · user_id · title · project_id · customer_id
-           hours · status (pending|in-progress|completed) · date · notes
+projects   $id · user_id · name · color · description · parent_id · company_id
+customers  $id · user_id · name · type (internal|external) · color · company_id
+entries    $id · user_id · title · project_id · customer_id · company_id
+           hours · status (pending|in-progress|completed) · date · notes · skills · challenges
+companies  $id · user_id · name · role · start_date · end_date · …
+```
+
+**Roles vs Projects:** both live in `projects`. `parent_id` empty = **Role** (e.g. AI Engineering), set = **Project** under that role. `entries.project_id` points at a Project, or directly at a Role for legacy/general work. Helpers: `entryRP(e)`, `rpLabel(e)`, `leafOf(e)`, `rolesFor(coId)`, `childrenOf(roleId)`.
+
+**Company scoping:** projects/customers carry `company_id`; `projectsForCompany/customersForCompany` filter on it (legacy docs without it fall back to the entries that reference them). Entry forms cascade Company → Role → Project → Customer.
+
+**Pre-migration safety:** `awTolerant()` retries Appwrite writes without attributes the collection doesn't have yet. Run `node migrate-roles.js schema` once (needs `APPWRITE_API_KEY`) to add them.
+
+```
+
 ```
 
 All collections have **Document security** enabled. Each document carries `Permission.read/update/delete(Role.user(uid))`.
@@ -145,6 +156,9 @@ Chart.js 4.4.0 (CDN). Stored in module-level `chartH` / `chartS` / `chartC`. Eac
 - **Live URL**: https://work-effort-tracker.pages.dev/ (Cloudflare Pages — auto-deploys from `master`. Build command: `node build.js`. Output dir: `dist`. Deploy command must be left **empty** in dashboard.)
 
 ## Domain logic worth knowing
+
+- **Standup page** is derived live from entries (re-rendered by `refresh()`). Daily = last working day (Mon covers Fri→Sun) → today. Weekly = since previous session day (default Tue/Thu, `localStorage.wt_standup_days`) → day before next session. "Challenges" = `entries.challenges` on in-window or open tasks. **Present** opens full-screen slides (←/→/Esc); **Copy text** gives a Teams/Slack-ready summary.
+- **Theme** follows `skills/SKILL.md` (off-white `#F2EFE6`, black, terracotta `#C38133`, uppercase Inter display). Tokens on `:root`; overrides in the "EDITORIAL THEME OVERRIDES" CSS block.
 
 - **Recurring tasks** (Log Work → 🔁): creates N independent entries (2–36 months), one per month, same day-of-month as the original. Clamps to month-end when the day doesn't exist (Jan 31 → Feb 28). Each occurrence is independently editable/deletable.
 - **Export filenames** auto-encode the active filters, e.g. `worktracker_completed_BMC_Sentosa_2026-05-26.{csv,pdf}`.
